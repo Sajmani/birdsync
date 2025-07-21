@@ -4,6 +4,7 @@ import (
 	"encoding/csv"
 	"fmt"
 	"log"
+	"math/rand"
 	"os"
 	"strconv"
 
@@ -27,7 +28,7 @@ func main() {
 	}
 	observations := eBirdExportToiNatObservations(eBirdCSVFile)
 	if len(observations) > 0 {
-		pretty.Println("%+v\n", observations[0])
+		pretty.Println("%+v\n", observations[rand.Intn(len(observations))])
 	} else {
 		fmt.Println("no observations in", eBirdCSVFile)
 	}
@@ -75,7 +76,6 @@ func eBirdExportToiNatObservations(exportFile string) (observations []inat.Obser
 		obs := inat.Observation{
 			UUID:             uuid.New(),
 			CaptiveFlag:      false, // eBird checklists should only include wild birds
-			Description:      "TODO",
 			Latitude:         parseFloat64("Latitude"),
 			Longitude:        parseFloat64("Longitude"),
 			LocationIsExact:  false,
