@@ -15,18 +15,6 @@ import (
 
 const (
 	userAgent = "github-com-Sajmani-birdsync/0.1"
-
-	// iNaturalist observation fields. Look up IDs using:
-	// https://www.inaturalist.org/observation_fields?order=asc&order_by=created_at
-	countField           = 1   // https://www.inaturalist.org/observation_fields/1
-	locationField        = 157 // https://www.inaturalist.org/observation_fields/157
-	countyField          = 245
-	commonNameField      = 256
-	distanceField        = 396
-	protocolField        = 1285
-	numObserversField    = 2527
-	eBirdField           = 6033
-	stateOrProvinceField = 7739
 )
 
 func main() {
@@ -93,14 +81,14 @@ func eBirdExportToiNatObservations(exportFile string) (observations []inat.Obser
 			SpeciesGuess:     rec[field["Scientific Name"]],
 			ObservedOnString: rec[field["Date"]] + " " + rec[field["Time"]],
 			ObservationFieldValuesAttributes: []inat.ObservationFieldValue{
-				keyField(countField, "Count"),
-				keyField(commonNameField, "Common Name"),
-				keyField(locationField, "Location"),
-				keyField(countyField, "County"),
-				keyField(stateOrProvinceField, "State/Province"),
-				keyField(protocolField, "Protocol"),
-				keyField(numObserversField, "Number of Observers"),
-				stringField(eBirdField,
+				keyField(inat.CountField, "Count"),
+				keyField(inat.CommonNameField, "Common Name"),
+				keyField(inat.LocationField, "Location"),
+				keyField(inat.CountyField, "County"),
+				keyField(inat.StateOrProvinceField, "State/Province"),
+				keyField(inat.ProtocolField, "Protocol"),
+				keyField(inat.NumObserversField, "Number of Observers"),
+				stringField(inat.EBirdField,
 					"https://ebird.org/checklist/"+rec[field["Submission ID"]]),
 			},
 		}

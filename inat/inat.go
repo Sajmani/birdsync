@@ -3,6 +3,20 @@ package inat
 
 import "github.com/google/uuid"
 
+const (
+	// iNaturalist observation fields. Look up IDs using:
+	// https://www.inaturalist.org/observation_fields?order=asc&order_by=created_at
+	CountField           = 1   // https://www.inaturalist.org/observation_fields/1
+	LocationField        = 157 // https://www.inaturalist.org/observation_fields/157
+	CountyField          = 245
+	CommonNameField      = 256
+	DistanceField        = 396
+	ProtocolField        = 1285
+	NumObserversField    = 2527
+	EBirdField           = 6033
+	StateOrProvinceField = 7739
+)
+
 type CreateObservation struct {
 	Fields      any
 	Observation Observation
@@ -43,4 +57,24 @@ type Observation struct {
 type ObservationFieldValue struct {
 	ObservationFieldID int `json:"observation_field_id"`
 	Value              any `json:"value"`
+}
+
+// Returned by https://api.inaturalist.org/v2/observations
+type Observations struct {
+	TotalResults int      `json:"total_results"`
+	Page         int      `json:"page"`
+	PerPage      int      `json:"per_page"`
+	Results      []Result `json:"results"`
+}
+
+type Result struct {
+	UUID uuid.UUID `json:"uuid"`
+	Ofvs []Ofv     `json:"ofvs"`
+}
+
+type Ofv struct {
+	ID      int    `json:"id"`
+	FieldID int    `json:"field_id"`
+	Name    string `json:"name"`
+	Value   string `json:"value"`
 }

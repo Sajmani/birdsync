@@ -3,12 +3,67 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"log"
+	"net/http"
+	"net/url"
+	"os"
+	"strconv"
 	"strings"
 
 	"github.com/Sajmani/birdsync/inat"
 )
 
 func main() {
+	inatUserID := os.Getenv("INAT_USER_ID")
+	if inatUserID == "" {
+		log.Fatal("INAT_USER_ID environment variable not set")
+	}
+	var results []inat.Result
+	var totalResults int
+	for page := 1; ; page++ {
+		u, err := url.Parse("https://api.inaturalist.org/v2/observations")
+		if err != nil {
+			log.Fatal(err)
+		}
+		q := u.Query()
+		q.Set("user_id", inatUserID)
+		q.Set("page", strconv.Itoa(page))
+		q.Set("fields", strings.Join([]string{
+			"ofvs.id",
+			"ofvs.name",
+			"ofvs.value",
+		}, ","))
+		u.RawQuery = q.Encode()
+		fmt.Println("Fetching page", page)
+		resp, err := http.Get(u.String())
+		if err != nil {
+			log.Fatal(err)
+		}
+		var observations inat.Observations
+		err = json.NewDecoder(resp.Body).Decode(&observations)
+		if err != nil {
+			log.Fatal(err)
+		}
+		resp.Body.Close()
+		if observations.TotalResults == 0 {
+			fmt.Println("no observations")
+		}
+		if totalResults == 0 {
+			totalResults = observations.TotalResults
+		}
+		results = append(results, observations.Results...)
+		if len(results) >= totalResults {
+			break
+		}
+	}
+	b, err := json.MarshalIndent(results, "", "  ")
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(string(b))
+}
+
+func getToken() string {
 	var _ inat.Observation
 	var apiToken string
 	for {
@@ -32,7 +87,7 @@ func main() {
 			fmt.Println("Empty token")
 			continue
 		}
-		break
+		fmt.Println("Got token:", apiToken)
+		return apiToken
 	}
-	fmt.Println("Got token:", apiToken)
 }
