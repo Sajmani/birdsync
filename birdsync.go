@@ -14,11 +14,19 @@ import (
 )
 
 const (
-	userAgent       = "github-com-Sajmani-birdsync/0.1"
-	countField      = 1
-	eBirdField      = 6033
-	locationField   = 157
-	commonNameField = 256
+	userAgent = "github-com-Sajmani-birdsync/0.1"
+
+	// iNaturalist observation fields. Look up IDs using:
+	// https://www.inaturalist.org/observation_fields?order=asc&order_by=created_at
+	countField           = 1   // https://www.inaturalist.org/observation_fields/1
+	locationField        = 157 // https://www.inaturalist.org/observation_fields/157
+	countyField          = 245
+	commonNameField      = 256
+	distanceField        = 396
+	protocolField        = 1285
+	numObserversField    = 2527
+	eBirdField           = 6033
+	stateOrProvinceField = 7739
 )
 
 func main() {
@@ -67,11 +75,14 @@ func eBirdExportToiNatObservations(exportFile string) (observations []inat.Obser
 			}
 			return f
 		}
-		stringField := func(id int, key string) inat.ObservationFieldValue {
+		stringField := func(id int, val string) inat.ObservationFieldValue {
 			return inat.ObservationFieldValue{
 				ObservationFieldID: id,
-				Value:              rec[field[key]],
+				Value:              val,
 			}
+		}
+		keyField := func(id int, key string) inat.ObservationFieldValue {
+			return stringField(id, rec[field[key]])
 		}
 		obs := inat.Observation{
 			UUID:             uuid.New(),
@@ -82,13 +93,15 @@ func eBirdExportToiNatObservations(exportFile string) (observations []inat.Obser
 			SpeciesGuess:     rec[field["Scientific Name"]],
 			ObservedOnString: rec[field["Date"]] + " " + rec[field["Time"]],
 			ObservationFieldValuesAttributes: []inat.ObservationFieldValue{
-				stringField(countField, "Count"),
-				stringField(commonNameField, "Common Name"),
-				stringField(locationField, "Location"),
-				{
-					ObservationFieldID: eBirdField,
-					Value:              "https://ebird.org/checklist/" + rec[field["Submission ID"]],
-				},
+				keyField(countField, "Count"),
+				keyField(commonNameField, "Common Name"),
+				keyField(locationField, "Location"),
+				keyField(countyField, "County"),
+				keyField(stateOrProvinceField, "State/Province"),
+				keyField(protocolField, "Protocol"),
+				keyField(numObserversField, "Number of Observers"),
+				stringField(eBirdField,
+					"https://ebird.org/checklist/"+rec[field["Submission ID"]]),
 			},
 		}
 		if field["Observation Details"] < len(rec) && rec[field["Observation Details"]] != "" {
