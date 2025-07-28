@@ -21,7 +21,7 @@ const UserAgent = "birdsync-testing/0.1"
 
 func usage() {
 	fmt.Print(`poke [create|image]
-poke image <source URL> <dest observation UUID>
+poke image <Macaulay Library Asset ID> <iNat Observation UUID>
 `)
 	os.Exit(1)
 }
@@ -37,13 +37,13 @@ func main() {
 		if len(os.Args) < 4 {
 			usage()
 		}
-		imageURL := os.Args[2]
+		mlAssetID := os.Args[2]
 		obsUUID := os.Args[3]
-		filename, err := downloadImage(imageURL)
+		filename, err := downloadImage(mlAssetID)
 		if err != nil {
 			log.Fatal(err)
 		}
-		err = uploadImage(getAPIToken(), filename, obsUUID)
+		err = uploadImage(getAPIToken(), filename, mlAssetID, obsUUID)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -52,8 +52,8 @@ func main() {
 	}
 }
 
-// downloadImage downloads an image from a given URL and saves it to a specified file path.
-func downloadImage(url string) (string, error) {
+func downloadImage(mlAssetID string) (string, error) {
+	url := fmt.Sprintf("https://cdn.download.ams.birds.cornell.edu/api/v2/asset/%s/2400", mlAssetID)
 	resp, err := http.Get(url)
 	if err != nil {
 		return "", fmt.Errorf("failed to make HTTP request: %w", err)
@@ -97,14 +97,15 @@ func downloadImage(url string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("failed to rename file: %w", err)
 	}
-	fmt.Printf("Image downloaded and saved to %s\n", newPath)
 	return newPath, nil
 }
 
-func uploadImage(apiToken string, filename string, obsUUID string) error {
+func uploadImage(apiToken string, filename string, mlAssetID string, obsUUID string) error {
+	destFilename := "ML" + mlAssetID + path.Ext(filename)
+	fmt.Println("uploading image as", destFilename)
 	var requestBody bytes.Buffer
 	writer := multipart.NewWriter(&requestBody)
-	fileWriter, err := writer.CreateFormFile("file", path.Base(filename))
+	fileWriter, err := writer.CreateFormFile("file", destFilename)
 	if err != nil {
 		return err
 	}
@@ -141,6 +142,9 @@ func uploadImage(apiToken string, filename string, obsUUID string) error {
 	if err != nil {
 		log.Fatal(err)
 	}
+	if resp.StatusCode != http.StatusOK {
+		log.Fatalf("bad status code: %s", resp.Status)
+	}
 	//fmt.Printf("\nRESPONSE: %+v\n", resp)
 	b, err := io.ReadAll(resp.Body)
 	if err != nil {
@@ -172,12 +176,15 @@ func createTestObservation(apiToken string) {
 	req.Header.Set("User-Agent", UserAgent)
 	req.Header.Set("Authorization", apiToken)
 
-	fmt.Printf("\nREQUEST: %+v\n", req)
+	//fmt.Printf("\nREQUEST: %+v\n", req)
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("\nRESPONSE: %+v\n", resp)
+	if resp.StatusCode != http.StatusOK {
+		log.Fatalf("bad status code: %s", resp.Status)
+	}
+	//fmt.Printf("\nRESPONSE: %+v\n", resp)
 	b, err := io.ReadAll(resp.Body)
 	if err != nil {
 		log.Fatal(err)
