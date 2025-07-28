@@ -7,15 +7,14 @@ import (
 	"math/rand"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/Sajmani/birdsync/inat"
 	"github.com/google/uuid"
 	"github.com/kr/pretty"
 )
 
-const (
-	userAgent = "github-com-Sajmani-birdsync/0.1"
-)
+const UserAgent = "birdsync/0.1"
 
 func main() {
 	eBirdCSVFile := os.Getenv("EBIRD_CSV_FILE")
@@ -24,7 +23,7 @@ func main() {
 	}
 	observations := eBirdExportToiNatObservations(eBirdCSVFile)
 	if len(observations) > 0 {
-		pretty.Println("%+v\n", observations[rand.Intn(len(observations))])
+		pretty.Println(observations[rand.Intn(len(observations))])
 	} else {
 		fmt.Println("no observations in", eBirdCSVFile)
 	}
@@ -55,6 +54,10 @@ func eBirdExportToiNatObservations(exportFile string) (observations []inat.Obser
 	recs = recs[1:]
 	for i, rec := range recs {
 		line := i + 2 // header was line 1
+		if field["ML Catalog Numbers"] >= len(rec) || len(rec[field["ML Catalog Numbers"]]) == 0 {
+			fmt.Printf("line %d: skipping %s[%s](%s) as it has no photos\n", line, rec[field["Submission ID"]], rec[field["Scientific Name"]], rec[field["Count"]])
+			continue
+		}
 		parseFloat64 := func(key string) float64 {
 			s := rec[field[key]]
 			f, err := strconv.ParseFloat(s, 64)
@@ -92,13 +95,20 @@ func eBirdExportToiNatObservations(exportFile string) (observations []inat.Obser
 					"https://ebird.org/checklist/"+rec[field["Submission ID"]]),
 			},
 		}
-		if field["Observation Details"] < len(rec) && rec[field["Observation Details"]] != "" {
+		if field["Observation Details"] < len(rec) && len(rec[field["Observation Details"]]) > 0 {
 			obs.Description += "eBird observation details:|n" +
 				rec[field["Observation Details"]] + "\n"
 		}
-		if field["Checklist Comments"] < len(rec) && rec[field["Checklist Comments"]] != "" {
+		if field["Checklist Comments"] < len(rec) && len(rec[field["Checklist Comments"]]) > 0 {
 			obs.Description += "eBird checklist comments:\n" +
 				rec[field["Checklist Comments"]] + "\n"
+		}
+		if field["ML Catalog Numbers"] < len(rec) && len(rec[field["ML Catalog Numbers"]]) > 0 {
+			photoIDs := strings.Split(rec[field["ML Catalog Numbers"]], " ")
+			for _, id := range photoIDs {
+				obs.Description += "Macaulay Library Asset:  https://macaulaylibrary.org/asset/" + id + "\n"
+
+			}
 		}
 		observations = append(observations, obs)
 	}

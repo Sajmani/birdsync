@@ -18,63 +18,69 @@ const (
 )
 
 type CreateObservation struct {
-	Fields      any
-	Observation Observation
+	Fields      any         `json:"fields,omitempty"`
+	Observation Observation `json:"observation,omitempty"`
 }
 
 type Observation struct {
-	UUID                             uuid.UUID               `json:"uuid"`
-	CaptiveFlag                      bool                    `json:"captive_flag"`
-	CoordinateSystem                 string                  `json:"coordinate_system"`
-	Description                      string                  `json:"description"`
-	GeoX                             float64                 `json:"geo_x"`
-	GeoY                             float64                 `json:"geo_y"`
-	Geoprivacy                       string                  `json:"geoprivacy"`
-	Latitude                         float64                 `json:"latitude"`
-	License                          string                  `json:"license"`
-	LocationIsExact                  bool                    `json:"location_is_exact"`
-	Longitude                        float64                 `json:"longitude"`
-	MakeLicenseDefault               bool                    `json:"make_license_default"`
-	MakeLicensesSame                 bool                    `json:"make_licenses_same"`
-	MapScale                         int                     `json:"map_scale"`
-	ObservationFieldValuesAttributes []ObservationFieldValue `json:"observation_field_values_attributes"`
-	ObservedOnString                 string                  `json:"observed_on_string"`
-	OwnersIdentificationFromVision   bool                    `json:"owners_identification_from_vision"`
-	PlaceGuess                       string                  `json:"place_guess"`
-	PositionalAccuracy               float64                 `json:"positional_accuracy"`
-	PositioningDevice                string                  `json:"positioning_device"`
-	PositioningMethod                string                  `json:"positioning_method"`
-	ProjectID                        int                     `json:"project_id"`
-	PrefersCommunityTaxon            bool                    `json:"prefers_community_taxon"`
-	SiteID                           int                     `json:"site_id"`
-	SpeciesGuess                     string                  `json:"species_guess"`
-	TagList                          string                  `json:"tag_list"`
-	TaxonID                          float64                 `json:"taxon_id"`
-	TaxonName                        float64                 `json:"taxon_name"`
-	TimeZone                         string                  `json:"time_zone"`
+	UUID                             uuid.UUID               `json:"uuid,omitempty"`
+	CaptiveFlag                      bool                    `json:"captive_flag,omitempty"`
+	CoordinateSystem                 string                  `json:"coordinate_system,omitempty"`
+	Description                      string                  `json:"description,omitempty"`
+	GeoX                             float64                 `json:"geo_x,omitempty"`
+	GeoY                             float64                 `json:"geo_y,omitempty"`
+	Geoprivacy                       string                  `json:"geoprivacy,omitempty"`
+	Latitude                         float64                 `json:"latitude,omitempty"`
+	License                          string                  `json:"license,omitempty"`
+	LocationIsExact                  bool                    `json:"location_is_exact,omitempty"`
+	Longitude                        float64                 `json:"longitude,omitempty"`
+	MakeLicenseDefault               bool                    `json:"make_license_default,omitempty"`
+	MakeLicensesSame                 bool                    `json:"make_licenses_same,omitempty"`
+	MapScale                         int                     `json:"map_scale,omitempty"`
+	ObservationFieldValuesAttributes []ObservationFieldValue `json:"observation_field_values_attributes,omitempty"`
+	ObservedOnString                 string                  `json:"observed_on_string,omitempty"`
+	OwnersIdentificationFromVision   bool                    `json:"owners_identification_from_vision,omitempty"`
+	PlaceGuess                       string                  `json:"place_guess,omitempty"`
+	PositionalAccuracy               float64                 `json:"positional_accuracy,omitempty"`
+	PositioningDevice                string                  `json:"positioning_device,omitempty"`
+	PositioningMethod                string                  `json:"positioning_method,omitempty"`
+	ProjectID                        int                     `json:"project_id,omitempty"`
+	PrefersCommunityTaxon            bool                    `json:"prefers_community_taxon,omitempty"`
+	SiteID                           int                     `json:"site_id,omitempty"`
+	SpeciesGuess                     string                  `json:"species_guess,omitempty"`
+	TagList                          string                  `json:"tag_list,omitempty"`
+	TaxonID                          float64                 `json:"taxon_id,omitempty"`
+	TaxonName                        float64                 `json:"taxon_name,omitempty"`
+	TimeZone                         string                  `json:"time_zone,omitempty"`
+	User                             User                    `json:"user,omitempty"`
+}
+
+type User struct {
+	Login string `json:"login,omitempty"`
+	ID    string `json:"id,omitempty"`
 }
 
 type ObservationFieldValue struct {
-	ObservationFieldID int `json:"observation_field_id"`
-	Value              any `json:"value"`
+	ObservationFieldID int `json:"observation_field_id,omitempty"`
+	Value              any `json:"value,omitempty"`
 }
 
 // Returned by https://api.inaturalist.org/v2/observations
 type Observations struct {
-	TotalResults int      `json:"total_results"`
-	Page         int      `json:"page"`
-	PerPage      int      `json:"per_page"`
-	Results      []Result `json:"results"`
+	TotalResults int      `json:"total_results,omitempty"`
+	Page         int      `json:"page,omitempty"`
+	PerPage      int      `json:"per_page,omitempty"`
+	Results      []Result `json:"results,omitempty"`
 }
 
 type Result struct {
-	UUID uuid.UUID `json:"uuid"`
-	Ofvs []Ofv     `json:"ofvs"`
+	UUID uuid.UUID `json:"uuid,omitempty"`
+	Ofvs []Ofv     `json:"ofvs,omitempty"`
 }
 
 type Ofv struct {
-	ID      int    `json:"id"`
-	FieldID int    `json:"field_id"`
-	Name    string `json:"name"`
-	Value   string `json:"value"`
+	ID      int    `json:"id,omitempty"`
+	FieldID int    `json:"field_id,omitempty"`
+	Name    string `json:"name,omitempty"`
+	Value   string `json:"value,omitempty"`
 }

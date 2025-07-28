@@ -13,11 +13,23 @@ import (
 	"github.com/Sajmani/birdsync/inat"
 )
 
+// If using the API to fetch a lot of results, please use the highest supported per_page value.
+// For example you can get up to 200 observations in a single request,
+// which would be faster and more efficient than fetching the default 30 results at a time.
+// From https://www.inaturalist.org/pages/api+recommended+practices
+const perPage = 200
+
 func main() {
 	inatUserID := os.Getenv("INAT_USER_ID")
 	if inatUserID == "" {
 		log.Fatal("INAT_USER_ID environment variable not set")
 	}
+	results := downloadObservations(inatUserID, "ofvs.id", "ofvs.name", "ofvs.value")
+
+	fmt.Println("downloaded", len(results), "results")
+}
+
+func downloadObservations(inatUserID string, fields ...string) []inat.Result {
 	var results []inat.Result
 	var totalResults int
 	for page := 1; ; page++ {
@@ -28,11 +40,10 @@ func main() {
 		q := u.Query()
 		q.Set("user_id", inatUserID)
 		q.Set("page", strconv.Itoa(page))
-		q.Set("fields", strings.Join([]string{
-			"ofvs.id",
-			"ofvs.name",
-			"ofvs.value",
-		}, ","))
+		q.Set("per_page", strconv.Itoa(perPage))
+		if len(fields) > 0 {
+			q.Set("fields", strings.Join(fields, ","))
+		}
 		u.RawQuery = q.Encode()
 		fmt.Println("Fetching page", page)
 		resp, err := http.Get(u.String())
@@ -46,9 +57,9 @@ func main() {
 		}
 		resp.Body.Close()
 		if observations.TotalResults == 0 {
-			fmt.Println("no observations")
+			break
 		}
-		if totalResults == 0 {
+		if totalResults == 0 { // first loop
 			totalResults = observations.TotalResults
 		}
 		results = append(results, observations.Results...)
@@ -56,38 +67,13 @@ func main() {
 			break
 		}
 	}
-	b, err := json.MarshalIndent(results, "", "  ")
+	return results
+}
+
+func prettyPrint(v any) {
+	b, err := json.MarshalIndent(v, "", "  ")
 	if err != nil {
 		log.Fatal(err)
 	}
 	fmt.Println(string(b))
-}
-
-func getToken() string {
-	var _ inat.Observation
-	var apiToken string
-	for {
-		fmt.Println("Your iNaturalist API token allows this tool to act on your behalf. The token needs to be refreshed every 24 hours.")
-		fmt.Println(`The token is a long string of characters starting and ending with curly braces, like this: {"api_token":"...""}`)
-		fmt.Println("Copy your current iNaturalist API token from https://www.inaturalist.org/users/api_token and paste it here:")
-		var tokenJSON string
-		_, err := fmt.Scan(&tokenJSON)
-		if err != nil {
-			fmt.Println("Didn't get your token: ", err)
-			continue
-		}
-		m := make(map[string]string)
-		err = json.NewDecoder(strings.NewReader(tokenJSON)).Decode(&m)
-		if err != nil {
-			fmt.Println("Bad token: ", err)
-			continue
-		}
-		apiToken = m["api_token"]
-		if apiToken == "" {
-			fmt.Println("Empty token")
-			continue
-		}
-		fmt.Println("Got token:", apiToken)
-		return apiToken
-	}
 }
