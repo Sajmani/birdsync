@@ -54,14 +54,6 @@ func createTestObservation(apiToken string) {
 	fmt.Println("\nBODY: " + string(b))
 }
 
-func prettyPrint(v any) {
-	b, err := json.MarshalIndent(v, "", "  ")
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println(string(b))
-}
-
 func getAPIToken() string {
 	apiToken := os.Getenv("INAT_API_TOKEN")
 	if apiToken != "" {

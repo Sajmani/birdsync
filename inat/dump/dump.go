@@ -69,11 +69,3 @@ func downloadObservations(inatUserID string, fields ...string) []inat.Result {
 	}
 	return results
 }
-
-func prettyPrint(v any) {
-	b, err := json.MarshalIndent(v, "", "  ")
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println(string(b))
-}
