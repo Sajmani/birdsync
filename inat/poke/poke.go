@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"mime"
 	"net/http"
 	"os"
 	"strings"
@@ -17,8 +18,61 @@ import (
 const UserAgent = "birdsync-testing/0.1"
 
 func main() {
-	apiToken := getAPIToken()
-	createTestObservation(apiToken)
+	switch os.Args[1] {
+	case "fetch":
+		downloadImage(os.Args[2])
+	case "create":
+		createTestObservation(getAPIToken())
+	}
+}
+
+// downloadImage downloads an image from a given URL and saves it to a specified file path.
+func downloadImage(url string) error {
+	resp, err := http.Get(url)
+	if err != nil {
+		return fmt.Errorf("failed to make HTTP request: %w", err)
+	}
+	defer resp.Body.Close() // Close the response body when the function exits
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("bad status code: %s", resp.Status)
+	}
+
+	tmpFile, err := os.CreateTemp("", "birdsync")
+	if err != nil {
+		log.Fatal(err)
+	}
+	_, err = io.Copy(tmpFile, resp.Body)
+	if err != nil {
+		return fmt.Errorf("failed to copy image data to file: %w", err)
+	}
+
+	// Re-open the file to detect content type
+	_, err = tmpFile.Seek(0, 0)
+	if err != nil {
+		return fmt.Errorf("failed to seek to beginning of temp file: %w", err)
+	}
+
+	buf := make([]byte, 512) // 512 bytes is the required size for DetectContentType
+	n, err := tmpFile.Read(buf)
+	if err != nil && err != io.EOF {
+		return fmt.Errorf("failed to read from temp file for content type detection: %w", err)
+	}
+	buf = buf[:n]
+
+	mimeType := http.DetectContentType(buf)
+	extensions, err := mime.ExtensionsByType(mimeType)
+	if err != nil || len(extensions) == 0 {
+		return fmt.Errorf("failed to find file extension for mime type %s: %w", mimeType, err)
+	}
+	tmpFile.Close() // Close the file before renaming it.
+
+	newPath := tmpFile.Name() + extensions[0]
+	err = os.Rename(tmpFile.Name(), newPath)
+	if err != nil {
+		return fmt.Errorf("failed to rename file: %w", err)
+	}
+	fmt.Printf("Image downloaded and saved to %s\n", newPath)
+	return nil
 }
 
 func createTestObservation(apiToken string) {
@@ -55,13 +109,14 @@ func createTestObservation(apiToken string) {
 }
 
 func getAPIToken() string {
+	// If you use INAT_API_TOKEN, set it to the TOKEN without the surrounding {"api_token":"TOKEN"}
 	apiToken := os.Getenv("INAT_API_TOKEN")
 	if apiToken != "" {
 		return apiToken
 	}
 	for {
 		fmt.Println("Your iNaturalist API token allows this tool to act on your behalf. The token needs to be refreshed every 24 hours.")
-		fmt.Println(`The token is a long string of characters starting and ending with curly braces, like this: {"api_token":"...""}`)
+		fmt.Println(`The token is a long string of characters starting and ending with curly braces, like this: {"api_token":"..."}`)
 		fmt.Println("Copy your current iNaturalist API token from https://www.inaturalist.org/users/api_token and paste it here:")
 		var tokenJSON string
 		_, err := fmt.Scan(&tokenJSON)
