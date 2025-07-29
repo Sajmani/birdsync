@@ -42,7 +42,7 @@ func main() {
 	apiToken := inat.GetAPIToken()
 	client := inat.NewClient(apiToken, UserAgent)
 
-	fmt.Println("Downloading observations for" + inatUserID)
+	fmt.Println("Downloading observations for", inatUserID)
 	results := inat.DownloadObservations(inatUserID, "description", "taxon.name", "ofvs.all")
 	fmt.Println("Downloaded", len(results), "observations")
 	type ebirdSpecies struct{ ebirdChecklist, speciesName string }
