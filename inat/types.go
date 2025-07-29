@@ -73,8 +73,11 @@ type Observations struct {
 }
 
 type Result struct {
-	UUID uuid.UUID `json:"uuid,omitempty"`
-	Ofvs []Ofv     `json:"ofvs,omitempty"`
+	UUID        uuid.UUID `json:"uuid,omitempty"`
+	Description string    `json:"description,omitempty"`
+	Ofvs        []Ofv     `json:"ofvs,omitempty"`
+	Photos      []Photo   `json:"photos,omitempty"`
+	Taxon       Taxon     `json:"taxon,omitempty"`
 }
 
 type Ofv struct {
@@ -82,4 +85,18 @@ type Ofv struct {
 	FieldID int    `json:"field_id,omitempty"`
 	Name    string `json:"name,omitempty"`
 	Value   string `json:"value,omitempty"`
+}
+
+type Photo struct {
+	ID          int    `json:"id,omitempty"`
+	Attribution string `json:"attribution,omitempty"`
+	LicenseCode string `json:"license_code,omitempty"`
+	URL         string `json:"url,omitempty"`
+}
+
+type Taxon struct {
+	ID                  int    `json:"id,omitempty"`
+	Name                string `json:"name,omitempty"`
+	IconicTaxonName     string `json:"iconic_taxon_name,omitempty"`
+	PreferredCommonName string `json:"preferred_common_name,omitempty"`
 }

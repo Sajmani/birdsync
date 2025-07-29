@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/Sajmani/birdsync/inat"
+	"github.com/kr/pretty"
 )
 
 func main() {
@@ -13,7 +14,10 @@ func main() {
 	if inatUserID == "" {
 		log.Fatal("INAT_USER_ID environment variable not set")
 	}
-	results := inat.DownloadObservations(inatUserID, "ofvs.id", "ofvs.name", "ofvs.value")
+	results := inat.DownloadObservations(inatUserID, "description", "taxon.name", "ofvs.all")
 
 	fmt.Println("downloaded", len(results), "results")
+	for _, r := range results {
+		pretty.Println(r)
+	}
 }
