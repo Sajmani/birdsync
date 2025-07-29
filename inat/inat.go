@@ -9,6 +9,8 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+
+	"github.com/google/uuid"
 )
 
 // DownloadObservations downloads and returns all observations for inatUserID.
@@ -58,4 +60,13 @@ func DownloadObservations(inatUserID string, fields ...string) []Result {
 		}
 	}
 	return results
+}
+
+func TestObservation() Observation {
+	return Observation{
+		UUID:         uuid.New(),
+		CaptiveFlag:  true, // casual observation for testing
+		Description:  "Testing github.com/Sajmani/birdsync tools",
+		SpeciesGuess: "Homo Sapiens",
+	}
 }

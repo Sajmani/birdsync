@@ -10,7 +10,6 @@ const (
 	CountyField          = 245
 	CommonNameField      = 256
 	DistanceField        = 396
-	ProtocolField        = 1285
 	NumObserversField    = 2527
 	EBirdField           = 6033
 	StateOrProvinceField = 7739
@@ -78,6 +77,18 @@ type Result struct {
 	Ofvs        []Ofv     `json:"ofvs,omitempty"`
 	Photos      []Photo   `json:"photos,omitempty"`
 	Taxon       Taxon     `json:"taxon,omitempty"`
+}
+
+// ObservationFieldValue returns the value of the observation field
+// with the given field ID.
+// It returns "" if the field is empty or not found.
+func (r Result) ObservationFieldValue(fieldID int) string {
+	for _, ofv := range r.Ofvs {
+		if ofv.FieldID == fieldID {
+			return ofv.Value
+		}
+	}
+	return ""
 }
 
 type Ofv struct {

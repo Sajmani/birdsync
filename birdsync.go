@@ -4,35 +4,58 @@ import (
 	"encoding/csv"
 	"fmt"
 	"log"
-	"math/rand"
 	"os"
 	"strconv"
 	"strings"
 
+	"github.com/Sajmani/birdsync/ebird"
 	"github.com/Sajmani/birdsync/inat"
 	"github.com/google/uuid"
-	"github.com/kr/pretty"
 )
 
 const UserAgent = "birdsync/0.1"
 
+// birdsync works as follows:
+// 1) download all iNaturalist observations for INAT_USER_ID into memory
+// 2) index these observations by (eBird checklist ID, species name)
+// 3) read eBird observations from the CSV file provided as a command line argument
+// For each eBird observation:
+// - 4) skip any eBird observations that have already been uploaded
+// - 5) create the iNaturalist observation
+// - For each Macaulay Library ID for this eBird observation:
+// --- 6) Download the image from the Macaulay Library
+// --- 7) Upload the image to iNaturalist, associated with the new observation
 func main() {
-	eBirdCSVFile := os.Getenv("EBIRD_CSV_FILE")
-	if eBirdCSVFile == "" {
-		log.Fatal("EBIRD_CSV_FILE environment variable not set")
+	if len(os.Args) != 2 {
+		fmt.Println("usage: birdsync MyEBirdData.csv")
+		os.Exit(1)
 	}
-	observations := eBirdExportToiNatObservations(eBirdCSVFile)
-	if len(observations) > 0 {
-		pretty.Println(observations[rand.Intn(len(observations))])
-	} else {
-		fmt.Println("no observations in", eBirdCSVFile)
-	}
-}
+	eBirdCSVFile := os.Args[1]
+	inatUserID := inat.GetUserID()
+	apiToken := inat.GetAPIToken()
+	client := inat.NewClient(apiToken, UserAgent)
 
-func eBirdExportToiNatObservations(exportFile string) (observations []inat.Observation) {
-	f, err := os.Open(exportFile)
+	fmt.Println("Downloading observations for" + inatUserID)
+	results := inat.DownloadObservations(inatUserID, "description", "taxon.name", "ofvs.all")
+	fmt.Println("Downloaded", len(results), "observations")
+	type ebirdSpecies struct{ ebirdChecklist, speciesName string }
+	previouslySynced := map[ebirdSpecies]inat.Result{}
+	for _, r := range results {
+		key := ebirdSpecies{
+			ebirdChecklist: r.ObservationFieldValue(inat.EBirdField),
+			speciesName:    r.Taxon.Name,
+		}
+		if key.ebirdChecklist == "" || key.speciesName == "" {
+			// not a synced observation, skip this one
+			continue
+		}
+		previouslySynced[key] = r
+	}
+	fmt.Printf("Previously synced %d observations\n", len(previouslySynced))
+	fmt.Println("Reading eBird observations from", eBirdCSVFile)
+	f, err := os.Open(eBirdCSVFile)
 	if err != nil {
-		log.Fatalf("Error opening %s: %v", exportFile, err)
+		log.Fatalf("Error opening %s: %v", eBirdCSVFile, err)
 	}
 	defer f.Close()
 	r := csv.NewReader(f)
@@ -42,23 +65,27 @@ func eBirdExportToiNatObservations(exportFile string) (observations []inat.Obser
 	r.FieldsPerRecord = -1
 	recs, err := r.ReadAll()
 	if err != nil {
-		log.Fatalf("Error reading CSV records from %s: %v", exportFile, err)
+		log.Fatalf("Error reading CSV records from %s: %v", eBirdCSVFile, err)
 	}
 	if len(recs) < 1 {
-		log.Fatalf("No records found in %s", exportFile)
+		log.Fatalf("No records found in %s", eBirdCSVFile)
 	}
 	field := make(map[string]int)
 	for i, f := range recs[0] {
 		field[f] = i
 	}
 	recs = recs[1:]
+	fmt.Println("Read", len(recs), "eBird observations")
 	for i, rec := range recs {
 		line := i + 2 // header was line 1
-		if false {    // skip this check for now
-			if field["ML Catalog Numbers"] >= len(rec) || len(rec[field["ML Catalog Numbers"]]) == 0 {
-				fmt.Printf("line %d: skipping %s[%s](%s) as it has no photos\n", line, rec[field["Submission ID"]], rec[field["Scientific Name"]], rec[field["Count"]])
-				continue
-			}
+		key := ebirdSpecies{
+			ebirdChecklist: rec[field["Submission ID"]],
+			speciesName:    rec[field["Scientific Name"]],
+		}
+		if r, ok := previouslySynced[key]; ok {
+			fmt.Printf("Already synced %s(%s) to iNaturalist: http://inaturalist.org/observations/%s\n",
+				key.ebirdChecklist, key.speciesName, r.UUID)
+			continue
 		}
 		parseFloat64 := func(key string) float64 {
 			s := rec[field[key]]
@@ -68,14 +95,11 @@ func eBirdExportToiNatObservations(exportFile string) (observations []inat.Obser
 			}
 			return f
 		}
-		stringField := func(id int, val string) inat.ObservationFieldValue {
+		keyField := func(id int, key string) inat.ObservationFieldValue {
 			return inat.ObservationFieldValue{
 				ObservationFieldID: id,
-				Value:              val,
+				Value:              rec[field[key]],
 			}
-		}
-		keyField := func(id int, key string) inat.ObservationFieldValue {
-			return stringField(id, rec[field[key]])
 		}
 		obs := inat.Observation{
 			UUID:             uuid.New(),
@@ -91,28 +115,43 @@ func eBirdExportToiNatObservations(exportFile string) (observations []inat.Obser
 				keyField(inat.LocationField, "Location"),
 				keyField(inat.CountyField, "County"),
 				keyField(inat.StateOrProvinceField, "State/Province"),
-				keyField(inat.ProtocolField, "Protocol"),
 				keyField(inat.NumObserversField, "Number of Observers"),
-				stringField(inat.EBirdField,
-					"https://ebird.org/checklist/"+rec[field["Submission ID"]]),
+				keyField(inat.EBirdField, "Submission ID"),
 			},
 		}
+		obs.Description = "Observation created using github.com/Sajmani/birdsync \n"
 		if field["Observation Details"] < len(rec) && len(rec[field["Observation Details"]]) > 0 {
-			obs.Description += "eBird observation details:|n" +
+			obs.Description += "eBird observation details:\n" +
 				rec[field["Observation Details"]] + "\n"
 		}
+		obs.Description += "Checklist: https://ebird.org/checklist/" + rec[field["Submission ID"]] + "\n"
+		obs.Description += "Protocol: " + rec[field["Protocol"]] + "\n"
 		if field["Checklist Comments"] < len(rec) && len(rec[field["Checklist Comments"]]) > 0 {
 			obs.Description += "eBird checklist comments:\n" +
 				rec[field["Checklist Comments"]] + "\n"
 		}
+		var photoIDs []string
 		if field["ML Catalog Numbers"] < len(rec) && len(rec[field["ML Catalog Numbers"]]) > 0 {
-			photoIDs := strings.Split(rec[field["ML Catalog Numbers"]], " ")
+			photoIDs = strings.Split(rec[field["ML Catalog Numbers"]], " ")
 			for _, id := range photoIDs {
 				obs.Description += "Macaulay Library Asset: https://macaulaylibrary.org/asset/" + id + "\n"
-
 			}
 		}
-		observations = append(observations, obs)
+		fmt.Printf("Syncing eBird observation %s(%s) to iNaturalist (%d photos)\n",
+			key.ebirdChecklist, key.speciesName, len(photoIDs))
+		err = client.CreateObservation(obs)
+		if err != nil {
+			log.Fatalf("CreateObservation: %v", err)
+		}
+		for _, id := range photoIDs {
+			filename, err := ebird.DownloadMLAsset(id)
+			if err != nil {
+				log.Fatalf("Couldn't download ML asset %s from eBird: %v", id, err)
+			}
+			err = client.UploadImage(filename, id, obs.UUID.String())
+			if err != nil {
+				log.Fatalf("Couldn't upload ML asset %s to iNaturalist: %v", id, err)
+			}
+		}
 	}
-	return
 }

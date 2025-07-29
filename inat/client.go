@@ -10,9 +10,9 @@ import (
 	"net/http"
 	"os"
 	"path"
-
-	"github.com/google/uuid"
 )
+
+const debug = false
 
 type Client struct {
 	apiToken  string
@@ -26,9 +26,46 @@ func NewClient(apiToken, userAgent string) *Client {
 	}
 }
 
+func (c *Client) CreateObservation(obs Observation) error {
+	buf := &bytes.Buffer{}
+	err := json.NewEncoder(buf).Encode(CreateObservation{
+		Observation: obs,
+	})
+	if err != nil {
+		return fmt.Errorf("json.Encode observation: %w", err)
+	}
+	req, err := http.NewRequest("POST", "https://api.inaturalist.org/v2/observations", buf)
+	if err != nil {
+		return fmt.Errorf("http.NewRequest: %w", err)
+	}
+	req.Header.Set("User-Agent", c.userAgent)
+	req.Header.Set("Authorization", c.apiToken)
+
+	if debug {
+		fmt.Printf("\nREQUEST: %+v\n", req)
+	}
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("HTTP POST: %w", err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("HTTP POST: bad status: %s", resp.Status)
+	}
+	if debug {
+		b, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return fmt.Errorf("reading HTTP response: %w", err)
+		}
+		fmt.Println("\nBODY: " + string(b))
+	}
+	fmt.Printf("Uploaded as http://inaturalist.org/observations/%s\n", obs.UUID)
+	return nil
+}
+
 func (c *Client) UploadImage(filename string, mlAssetID string, obsUUID string) error {
 	destFilename := "ML" + mlAssetID + path.Ext(filename)
-	fmt.Println("uploading image as", destFilename)
+	fmt.Println("Uploading image as", destFilename)
 	var requestBody bytes.Buffer
 	writer := multipart.NewWriter(&requestBody)
 	fileWriter, err := writer.CreateFormFile("file", destFilename)
@@ -63,7 +100,9 @@ func (c *Client) UploadImage(filename string, mlAssetID string, obsUUID string) 
 	// Set the Content-Type header to the multipart writer's boundary.
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 
-	//fmt.Printf("\nREQUEST: %+v\n", req)
+	if debug {
+		fmt.Printf("\nREQUEST: %+v\n", req)
+	}
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		log.Fatal(err)
@@ -71,49 +110,13 @@ func (c *Client) UploadImage(filename string, mlAssetID string, obsUUID string) 
 	if resp.StatusCode != http.StatusOK {
 		log.Fatalf("bad status code: %s", resp.Status)
 	}
-	//fmt.Printf("\nRESPONSE: %+v\n", resp)
-	b, err := io.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatal(err)
+	if debug {
+		b, err := io.ReadAll(resp.Body)
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Println("\nBODY: " + string(b))
 	}
-	fmt.Println("\nBODY: " + string(b))
-
+	// TODO: log the image URL
 	return nil
-}
-
-func (c *Client) CreateTestObservation() {
-	create := CreateObservation{
-		Observation: Observation{
-			UUID:         uuid.New(),
-			CaptiveFlag:  true, // casual observation for testing
-			Description:  "Testing github.com/Sajmani/birdsync tools",
-			SpeciesGuess: "Homo Sapiens",
-		},
-	}
-	buf := &bytes.Buffer{}
-	err := json.NewEncoder(buf).Encode(create)
-	if err != nil {
-		log.Fatal(err)
-	}
-	req, err := http.NewRequest("POST", "https://api.inaturalist.org/v2/observations", buf)
-	if err != nil {
-		log.Fatal(err)
-	}
-	req.Header.Set("User-Agent", c.userAgent)
-	req.Header.Set("Authorization", c.apiToken)
-
-	//fmt.Printf("\nREQUEST: %+v\n", req)
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		log.Fatal(err)
-	}
-	if resp.StatusCode != http.StatusOK {
-		log.Fatalf("bad status code: %s", resp.Status)
-	}
-	//fmt.Printf("\nRESPONSE: %+v\n", resp)
-	b, err := io.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println("\nBODY: " + string(b))
 }

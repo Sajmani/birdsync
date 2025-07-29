@@ -25,7 +25,7 @@ func main() {
 	c := inat.NewClient(inat.GetAPIToken(), UserAgent)
 	switch os.Args[1] {
 	case "create":
-		c.CreateTestObservation()
+		c.CreateObservation(inat.TestObservation())
 	case "image":
 		if len(os.Args) < 4 {
 			usage()
