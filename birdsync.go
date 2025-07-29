@@ -54,9 +54,11 @@ func eBirdExportToiNatObservations(exportFile string) (observations []inat.Obser
 	recs = recs[1:]
 	for i, rec := range recs {
 		line := i + 2 // header was line 1
-		if field["ML Catalog Numbers"] >= len(rec) || len(rec[field["ML Catalog Numbers"]]) == 0 {
-			fmt.Printf("line %d: skipping %s[%s](%s) as it has no photos\n", line, rec[field["Submission ID"]], rec[field["Scientific Name"]], rec[field["Count"]])
-			continue
+		if false {    // skip this check for now
+			if field["ML Catalog Numbers"] >= len(rec) || len(rec[field["ML Catalog Numbers"]]) == 0 {
+				fmt.Printf("line %d: skipping %s[%s](%s) as it has no photos\n", line, rec[field["Submission ID"]], rec[field["Scientific Name"]], rec[field["Count"]])
+				continue
+			}
 		}
 		parseFloat64 := func(key string) float64 {
 			s := rec[field[key]]
@@ -106,7 +108,7 @@ func eBirdExportToiNatObservations(exportFile string) (observations []inat.Obser
 		if field["ML Catalog Numbers"] < len(rec) && len(rec[field["ML Catalog Numbers"]]) > 0 {
 			photoIDs := strings.Split(rec[field["ML Catalog Numbers"]], " ")
 			for _, id := range photoIDs {
-				obs.Description += "Macaulay Library Asset:  https://macaulaylibrary.org/asset/" + id + "\n"
+				obs.Description += "Macaulay Library Asset: https://macaulaylibrary.org/asset/" + id + "\n"
 
 			}
 		}
