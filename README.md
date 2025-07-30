@@ -12,9 +12,9 @@ Birdsync works as follows:
     - Download the image from the Macaulay Library
     - Upload the image to iNaturalist, associated with the new observation
 
-*Known limitation: Since we detect previously synced observations using
+* **Known limitation**: Since we detect previously synced observations using
 (eBird checklist ID, species name), we will reupload an observation if
-// the species name is changed in iNaturalist. This may happen based on
-// iNaturalist community idenfitications, resulting in duplicates.
-// As far as I can tell, there are no other fields in the eBird CSV
-// export that we can use to detect duplicate observations more reliably.
+the species name is changed in iNaturalist. This may happen based on
+iNaturalist community idenfitications, resulting in duplicates.
+As far as I can tell, there are no other fields in the eBird CSV
+export that we can use to detect duplicate observations more reliably.
