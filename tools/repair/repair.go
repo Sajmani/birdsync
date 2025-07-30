@@ -67,7 +67,7 @@ func main() {
 			// While the taxon name works in most cases, it fails in cases where
 			// iNaturalist and eBird disagree on the scientific name of a species
 			// or where the eBird name is not specific (like spuhs and slashes).
-			// These legacy observations need to be fixed manually (see tools/repair).
+			// These legacy observations need to be fixed manually.
 		}
 		if key.ebirdChecklist == "" || key.speciesName == "" {
 			// not a synced observation, skip this one
@@ -103,6 +103,12 @@ func main() {
 	last := time.Now()
 	for i, rec := range recs {
 		line := i + 2 // header was line 1
+		if false {    //REMOVE
+			// TODO: left off at 7105
+			if line > 2000 {
+				os.Exit(0)
+			}
+		}
 		elapsed := time.Since(last)
 		last = time.Now()
 		log.Println("Line", line, "of", len(recs), "-- estimate", elapsed*time.Duration(len(recs)-i), "remaining")
@@ -113,6 +119,11 @@ func main() {
 		if r, ok := previouslySynced[key]; ok {
 			log.Printf("Already synced %s(%s) to iNaturalist: http://inaturalist.org/observations/%s\n",
 				key.ebirdChecklist, key.speciesName, r.UUID)
+			continue
+		}
+		if false { //REMOVE
+			log.Printf("WOULD SYNC eBird observation %s(%s) to iNaturalist\n",
+				key.ebirdChecklist, key.speciesName)
 			continue
 		}
 		parseFloat64 := func(key string) float64 {
