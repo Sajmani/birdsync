@@ -1,5 +1,5 @@
 # birdsync
-Bidirectional sync between eBird and iNaturalist
+Sync eBird observations and photos to iNaturalist
 
 Birdsync works as follows:
 - download all iNaturalist observations for INAT_USER_ID into memory
