@@ -29,3 +29,5 @@ the species name is changed in iNaturalist. This may happen based on
 iNaturalist community idenfitications, resulting in duplicates.
 As far as I can tell, there are no other fields in the eBird CSV
 export that we can use to detect duplicate observations more reliably.
+Instead we might want to introduce a
+birdsync observation field in iNaturalist to track metadata for this tool.
