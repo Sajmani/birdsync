@@ -1,4 +1,4 @@
-// Package inat provides types for messages defined in the iNaturalist API.
+// Package inat provides types and helper functions for the iNaturalist API.
 package inat
 
 import (
