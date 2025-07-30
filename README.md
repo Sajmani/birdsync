@@ -5,6 +5,13 @@ As a prerequisite, you must download your data from eBird using
 https://ebird.org/downloadMyData — save the zip file and unzip it
 to get the MyEBirdData.csv file.
 
+To run birdsync, you'll need the Go language toolchain.
+Download it from go.dev.
+Then you can run the tool as
+`go run github.com/Sajmani/birdsync MyEBirdData.csv`.
+The tool will prompt you to enter your iNaturalist user name and API token.
+Alternatively, you can provide these as environment variables.
+
 Birdsync works as follows:
 - download all iNaturalist observations for INAT_USER_ID into memory
 - index these observations by (eBird checklist ID, species name)
