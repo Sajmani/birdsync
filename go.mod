@@ -7,7 +7,6 @@ toolchain go1.24.5
 require (
 	github.com/google/uuid v1.6.0
 	github.com/kr/pretty v0.3.1
-	golang.org/x/exp v0.0.0-20250718183923-645b1fa84792
 )
 
 require (
