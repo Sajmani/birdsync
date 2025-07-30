@@ -1,17 +1,19 @@
-// Birdsync syncs eBird observations and photos to iNaturalist
+// Birdsync syncs eBird observations and photos to iNaturalist.
 //
-// It works as follows:
-// 1) download all iNaturalist observations for INAT_USER_ID into memory
-// 2) index these observations by (eBird checklist ID, species name)
-// 3) read eBird observations from the CSV file provided as a command line argument
+// Birdsync works as follows:
+//  1) download all iNaturalist observations for INAT_USER_ID into memory
+//  2) index these observations by (eBird checklist ID, species name)
+//  3) read eBird observations from the CSV file provided as a command line argument
+//
 // For each eBird observation:
-// - 4) skip* any eBird observations that have already been uploaded
-// - 5) create the iNaturalist observation
-// - For each Macaulay Library ID for this eBird observation:
-// --- 6) Download the image from the Macaulay Library
-// --- 7) Upload the image to iNaturalist, associated with the new observation
+//  4) skip* any eBird observations that have already been uploaded
+//  5) create the iNaturalist observation
 //
-// *Known limitation: Since we detect previously synced observations using
+// For each Macaulay Library ID for this eBird observation:
+//  6) Download the image from the Macaulay Library
+//  7) Upload the image to iNaturalist, associated with the new observation
+//
+// * **Known limitation**: Since we detect previously synced observations using
 // (eBird checklist ID, species name), we will reupload an observation if
 // the species name is changed in iNaturalist. This may happen based on
 // iNaturalist community idenfitications, resulting in duplicates.
