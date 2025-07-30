@@ -42,7 +42,7 @@ func (c *Client) CreateObservation(obs Observation) error {
 	req.Header.Set("Authorization", c.apiToken)
 
 	if debug {
-		fmt.Printf("\nREQUEST: %+v\n", req)
+		log.Printf("\nREQUEST: %+v\n", req)
 	}
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -57,15 +57,15 @@ func (c *Client) CreateObservation(obs Observation) error {
 		if err != nil {
 			return fmt.Errorf("reading HTTP response: %w", err)
 		}
-		fmt.Println("\nBODY: " + string(b))
+		log.Println("\nBODY: " + string(b))
 	}
-	fmt.Printf("Uploaded as http://inaturalist.org/observations/%s\n", obs.UUID)
+	log.Printf("Uploaded as http://inaturalist.org/observations/%s\n", obs.UUID)
 	return nil
 }
 
 func (c *Client) UploadImage(filename string, mlAssetID string, obsUUID string) error {
 	destFilename := "ML" + mlAssetID + path.Ext(filename)
-	fmt.Println("Uploading image as", destFilename)
+	log.Println("Uploading image as", destFilename)
 	var requestBody bytes.Buffer
 	writer := multipart.NewWriter(&requestBody)
 	fileWriter, err := writer.CreateFormFile("file", destFilename)
@@ -101,7 +101,7 @@ func (c *Client) UploadImage(filename string, mlAssetID string, obsUUID string) 
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 
 	if debug {
-		fmt.Printf("\nREQUEST: %+v\n", req)
+		log.Printf("\nREQUEST: %+v\n", req)
 	}
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -115,7 +115,7 @@ func (c *Client) UploadImage(filename string, mlAssetID string, obsUUID string) 
 		if err != nil {
 			log.Fatal(err)
 		}
-		fmt.Println("\nBODY: " + string(b))
+		log.Println("\nBODY: " + string(b))
 	}
 	// TODO: log the image URL
 	return nil

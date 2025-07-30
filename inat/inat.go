@@ -3,7 +3,6 @@ package inat
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"net/url"
@@ -37,7 +36,6 @@ func DownloadObservations(inatUserID string, fields ...string) []Result {
 			q.Set("fields", strings.Join(fields, ","))
 		}
 		u.RawQuery = q.Encode()
-		fmt.Println("Fetching page", page)
 		resp, err := http.Get(u.String())
 		if err != nil {
 			log.Fatal(err)
@@ -55,6 +53,7 @@ func DownloadObservations(inatUserID string, fields ...string) []Result {
 			totalResults = observations.TotalResults
 		}
 		results = append(results, observations.Results...)
+		log.Printf("Fetched %d of %d observations", len(results), totalResults)
 		if len(results) >= totalResults {
 			break
 		}

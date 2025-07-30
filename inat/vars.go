@@ -3,6 +3,7 @@ package inat
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 	"strings"
 )
@@ -19,7 +20,7 @@ func GetUserID() string {
 		return userID
 	}
 	for {
-		fmt.Print(`
+		log.Print(`
 Your iNaturalist user ID allows this tool to act on your behalf.
 Copy your iNaturalist user ID from the top of https://www.inaturalist.org/home
 (next to your profile picture) and paste it below.
@@ -29,11 +30,11 @@ your user ID.
 		var userID string
 		_, err := fmt.Scan(&userID)
 		if err != nil {
-			fmt.Println("Didn't get your user ID: ", err)
+			log.Println("Didn't get your user ID: ", err)
 			continue
 		}
 		if userID == "" {
-			fmt.Println("Empty user ID")
+			log.Println("Empty user ID")
 			continue
 		}
 		return userID
@@ -54,7 +55,7 @@ func GetAPIToken() string {
 		return apiToken
 	}
 	for {
-		fmt.Print(`
+		log.Print(`
 Your iNaturalist API token allows this tool to act on your behalf.
 The API token needs to be refreshed every 24 hours.
 The token is a long string of characters starting and ending with curly braces,
@@ -67,18 +68,18 @@ your token every 24 hours!
 		var tokenJSON string
 		_, err := fmt.Scan(&tokenJSON)
 		if err != nil {
-			fmt.Println("Didn't get your API token: ", err)
+			log.Println("Didn't get your API token: ", err)
 			continue
 		}
 		m := make(map[string]string)
 		err = json.NewDecoder(strings.NewReader(tokenJSON)).Decode(&m)
 		if err != nil {
-			fmt.Println("Bad API token: ", err)
+			log.Println("Bad API token: ", err)
 			continue
 		}
 		apiToken = m["api_token"]
 		if apiToken == "" {
-			fmt.Println("Empty API token")
+			log.Println("Empty API token")
 			continue
 		}
 		return apiToken

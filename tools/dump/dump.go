@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 
@@ -16,7 +15,7 @@ func main() {
 	}
 	results := inat.DownloadObservations(inatUserID, "description", "taxon.name", "ofvs.all")
 
-	fmt.Println("downloaded", len(results), "results")
+	log.Println("downloaded", len(results), "results")
 	for _, r := range results {
 		pretty.Println(r)
 	}

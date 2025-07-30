@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 
@@ -12,7 +11,7 @@ import (
 const UserAgent = "birdsync-testing/0.1"
 
 func usage() {
-	fmt.Print(`poke [create|image]
+	log.Print(`poke [create|image]
 poke image <Macaulay Library Asset ID> <iNat Observation UUID>
 `)
 	os.Exit(1)

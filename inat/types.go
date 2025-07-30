@@ -5,14 +5,15 @@ import "github.com/google/uuid"
 const (
 	// iNaturalist observation fields. Look up IDs using:
 	// https://www.inaturalist.org/observation_fields?order=asc&order_by=created_at
-	CountField           = 1   // https://www.inaturalist.org/observation_fields/1
-	LocationField        = 157 // https://www.inaturalist.org/observation_fields/157
-	CountyField          = 245
-	CommonNameField      = 256
-	DistanceField        = 396
-	NumObserversField    = 2527
-	EBirdField           = 6033
-	StateOrProvinceField = 7739
+	CountField               = 1   // https://www.inaturalist.org/observation_fields/1
+	LocationField            = 157 // https://www.inaturalist.org/observation_fields/157
+	CountyField              = 245
+	CommonNameField          = 256
+	DistanceField            = 396
+	NumObserversField        = 2527
+	EBirdField               = 6033
+	StateOrProvinceField     = 7739
+	EBirdScientificNameField = 20215
 )
 
 type CreateObservation struct {

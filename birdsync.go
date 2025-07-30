@@ -2,11 +2,11 @@ package main
 
 import (
 	"encoding/csv"
-	"fmt"
 	"log"
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/Sajmani/birdsync/ebird"
 	"github.com/Sajmani/birdsync/inat"
@@ -20,21 +20,14 @@ const UserAgent = "birdsync/0.1"
 // 2) index these observations by (eBird checklist ID, species name)
 // 3) read eBird observations from the CSV file provided as a command line argument
 // For each eBird observation:
-// - 4) skip* any eBird observations that have already been uploaded
+// - 4) skip any eBird observations that have already been uploaded
 // - 5) create the iNaturalist observation
 // - For each Macaulay Library ID for this eBird observation:
 // --- 6) Download the image from the Macaulay Library
 // --- 7) Upload the image to iNaturalist, associated with the new observation
-//
-// *Known limitation: Since we detect previously synced observations using
-// (eBird checklist ID, species name), we will reupload an observation if
-// the species name is changed in iNaturalist. This may happen based on
-// iNaturalist community idenfitications, resulting in duplicates.
-// As far as I can tell, there are no other fields in the eBird CSV
-// export that we can use to detect duplicate observations more reliably.
 func main() {
 	if len(os.Args) != 2 {
-		fmt.Println("usage: birdsync MyEBirdData.csv")
+		log.Println("usage: birdsync MyEBirdData.csv")
 		os.Exit(1)
 	}
 	eBirdCSVFile := os.Args[1]
@@ -42,15 +35,19 @@ func main() {
 	apiToken := inat.GetAPIToken()
 	client := inat.NewClient(apiToken, UserAgent)
 
-	fmt.Println("Downloading observations for", inatUserID)
+	log.Println("Downloading observations for", inatUserID)
 	results := inat.DownloadObservations(inatUserID, "description", "taxon.name", "ofvs.all")
-	fmt.Println("Downloaded", len(results), "observations")
+	log.Println("Downloaded", len(results), "observations")
 	type ebirdSpecies struct{ ebirdChecklist, speciesName string }
 	previouslySynced := map[ebirdSpecies]inat.Result{}
 	for _, r := range results {
 		key := ebirdSpecies{
 			ebirdChecklist: r.ObservationFieldValue(inat.EBirdField),
-			speciesName:    r.Taxon.Name,
+			speciesName:    r.ObservationFieldValue(inat.EBirdScientificNameField),
+		}
+		if key.ebirdChecklist != "" && key.speciesName == "" {
+			// Observation created before we introduced EBirdScientificNameField.
+			key.speciesName = r.Taxon.Name // match on the taxon name instead
 		}
 		if key.ebirdChecklist == "" || key.speciesName == "" {
 			// not a synced observation, skip this one
@@ -58,8 +55,8 @@ func main() {
 		}
 		previouslySynced[key] = r
 	}
-	fmt.Printf("Previously synced %d observations\n", len(previouslySynced))
-	fmt.Println("Reading eBird observations from", eBirdCSVFile)
+	log.Printf("Previously synced %d observations\n", len(previouslySynced))
+	log.Println("Reading eBird observations from", eBirdCSVFile)
 	f, err := os.Open(eBirdCSVFile)
 	if err != nil {
 		log.Fatalf("Error opening %s: %v", eBirdCSVFile, err)
@@ -82,16 +79,31 @@ func main() {
 		field[f] = i
 	}
 	recs = recs[1:]
-	fmt.Println("Read", len(recs), "eBird observations")
+	log.Println("Read", len(recs), "eBird observations")
+	last := time.Now()
 	for i, rec := range recs {
 		line := i + 2 // header was line 1
+		if false {    //REMOVE
+			// TODO: left off at 7105
+			if line > 2000 {
+				os.Exit(0)
+			}
+		}
+		elapsed := time.Since(last)
+		last = time.Now()
+		log.Println("Line", line, "of", len(recs), "-- estimate", elapsed*time.Duration(len(recs)-i), "remaining")
 		key := ebirdSpecies{
 			ebirdChecklist: rec[field["Submission ID"]],
 			speciesName:    rec[field["Scientific Name"]],
 		}
 		if r, ok := previouslySynced[key]; ok {
-			fmt.Printf("Already synced %s(%s) to iNaturalist: http://inaturalist.org/observations/%s\n",
+			log.Printf("Already synced %s(%s) to iNaturalist: http://inaturalist.org/observations/%s\n",
 				key.ebirdChecklist, key.speciesName, r.UUID)
+			continue
+		}
+		if false { //REMOVE
+			log.Printf("WOULD SYNC eBird observation %s(%s) to iNaturalist\n",
+				key.ebirdChecklist, key.speciesName)
 			continue
 		}
 		parseFloat64 := func(key string) float64 {
@@ -123,7 +135,11 @@ func main() {
 				keyField(inat.CountyField, "County"),
 				keyField(inat.StateOrProvinceField, "State/Province"),
 				keyField(inat.NumObserversField, "Number of Observers"),
+				// EBirdField and EBirdScientificNameField are used to match iNaturalist observations
+				// to the corresponding eBird checklist and species entry. We cannot rely on the taxon
+				// in the iNaturalist observation because it may be changed after upload.
 				keyField(inat.EBirdField, "Submission ID"),
+				keyField(inat.EBirdScientificNameField, "Scientific Name"),
 			},
 		}
 		obs.Description = "Observation created using github.com/Sajmani/birdsync \n"
@@ -144,7 +160,7 @@ func main() {
 				obs.Description += "Macaulay Library Asset: https://macaulaylibrary.org/asset/" + id + "\n"
 			}
 		}
-		fmt.Printf("Syncing eBird observation %s(%s) to iNaturalist (%d photos)\n",
+		log.Printf("Syncing eBird observation %s(%s) to iNaturalist (%d photos)\n",
 			key.ebirdChecklist, key.speciesName, len(photoIDs))
 		err = client.CreateObservation(obs)
 		if err != nil {
