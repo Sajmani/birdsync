@@ -1,6 +1,10 @@
 # birdsync
 Sync eBird observations and photos to iNaturalist
 
+As a prerequisite, you must download your data from eBird using
+https://ebird.org/downloadMyData — save the zip file and unzip it
+to get the MyEBirdData.csv file.
+
 Birdsync works as follows:
 - download all iNaturalist observations for INAT_USER_ID into memory
 - index these observations by (eBird checklist ID, species name)
