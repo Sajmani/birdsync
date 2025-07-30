@@ -1,3 +1,4 @@
+// Package ebird provides helper functions for working with eBird data.
 package ebird
 
 import (

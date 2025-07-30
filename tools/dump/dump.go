@@ -1,3 +1,4 @@
+// Dump is a tool for testing downloads of iNaturalist observations.
 package main
 
 import (
