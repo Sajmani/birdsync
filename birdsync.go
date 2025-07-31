@@ -20,6 +20,7 @@ package main
 
 import (
 	"encoding/csv"
+	"flag"
 	"log"
 	"os"
 	"strconv"
@@ -33,16 +34,72 @@ import (
 
 const UserAgent = "birdsync/0.1"
 
+type dateTimeFlag struct {
+	t time.Time
+}
+
+func (f *dateTimeFlag) String() string {
+	return f.t.Format(time.DateTime)
+}
+
+func (f *dateTimeFlag) Set(s string) error {
+	t, err := time.Parse(time.DateTime, s)
+	if err != nil {
+		t, err = time.Parse(time.DateOnly, s)
+		if err != nil {
+			return err
+		}
+	}
+	f.t = t
+	return nil
+}
+
+func (f *dateTimeFlag) Time() time.Time {
+	return f.t
+}
+
+var (
+	dryRun     bool
+	verifiable bool
+	before     dateTimeFlag
+	after      dateTimeFlag
+)
+
+func init() {
+	flag.BoolVar(&dryRun, "dryrun", false,
+		"Don't actually sync any observations, just log what birdsync would do")
+	flag.BoolVar(&verifiable, "verifiable", false,
+		"Sync only observations that include Macaulay Catalog Numbers (photos or sound)")
+	flag.Var(&before, "before",
+		"Sync only observations created before the provided DateTime (2006-01-02 15:04:05)")
+	flag.Var(&after, "after",
+		"Sync only observations created after the provided DateTime (2006-01-02 15:04:05)")
+}
+
+func parseEBirdDateTime(d, t string) (time.Time, error) {
+	if t == "" {
+		return time.Parse("2006-01-02", d)
+	}
+	return time.Parse("2006-01-02 03:04 PM", d+" "+t)
+}
+
 func main() {
-	if len(os.Args) != 2 {
+	flag.Parse()
+	if len(flag.Args()) != 1 {
 		log.Println("usage: birdsync MyEBirdData.csv")
+		flag.Usage()
 		os.Exit(1)
 	}
-	eBirdCSVFile := os.Args[1]
+	if !after.Time().IsZero() && !before.Time().IsZero() && after.Time().After(before.Time()) {
+		log.Fatalf("--after (%s) is after --before (%s), won't match any records",
+			after.Time(), before.Time())
+	}
+	eBirdCSVFile := flag.Arg(0)
 	inatUserID := inat.GetUserID()
 	apiToken := inat.GetAPIToken()
 	client := inat.NewClient(apiToken, UserAgent)
 
+	// TODO: optimize the observation download using before and after filters
 	log.Println("Downloading observations for", inatUserID)
 	results := inat.DownloadObservations(inatUserID, "description", "taxon.name", "ofvs.all")
 	log.Println("Downloaded", len(results), "observations")
@@ -90,6 +147,24 @@ func main() {
 	last := time.Now()
 	for i, rec := range recs {
 		line := i + 2 // header was line 1
+
+		// Skip records that were not created between --after and --before.
+		d, t := rec[field["Date"]], rec[field["Time"]]
+		created, err := parseEBirdDateTime(d, t)
+		if err != nil {
+			log.Fatalf("line %d: could not parse Date %q Time %q: %v", line, d, t, err)
+		}
+		if !after.Time().IsZero() && created.Before(after.Time()) {
+			log.Printf("line %d: SKIPPING record created on %s (before --after=%s)",
+				line, created, after.Time())
+			continue
+		}
+		if !before.Time().IsZero() && created.After(before.Time()) {
+			log.Printf("line %d: SKIPPING record created on %s (after --before=%s)",
+				line, created, before.Time())
+			continue
+		}
+
 		elapsed := time.Since(last)
 		last = time.Now()
 		log.Println("Line", line, "of", len(recs), "-- estimate", elapsed*time.Duration(len(recs)-i), "remaining")
@@ -98,7 +173,7 @@ func main() {
 			ebirdScientificName: rec[field["Scientific Name"]],
 		}
 		if r, ok := previouslySynced[key]; ok {
-			log.Printf("Already synced %s(%s) to iNaturalist: http://inaturalist.org/observations/%s\n",
+			log.Printf("Already synced %s(%s) to iNaturalist as http://inaturalist.org/observations/%s\n",
 				key.ebirdChecklist, key.ebirdScientificName, r.UUID)
 			continue
 		}
@@ -156,13 +231,26 @@ func main() {
 				obs.Description += "Macaulay Library Asset: https://macaulaylibrary.org/asset/" + id + "\n"
 			}
 		}
-		log.Printf("Syncing eBird observation %s(%s) to iNaturalist (%d photos)\n",
-			key.ebirdChecklist, key.ebirdScientificName, len(photoIDs))
-		err = client.CreateObservation(obs)
-		if err != nil {
-			log.Fatalf("CreateObservation: %v", err)
+		if verifiable && len(photoIDs) == 0 {
+			log.Printf("line %d: SKIPPING record that has no photos or sounds (--verifiable=true)", line)
+			continue
+		}
+		if dryRun {
+			log.Printf("DRYRUN: Syncing eBird observation %s(%s) to iNaturalist (%d photos)\n",
+				key.ebirdChecklist, key.ebirdScientificName, len(photoIDs))
+		} else {
+			log.Printf("Syncing eBird observation %s(%s) to iNaturalist (%d photos)\n",
+				key.ebirdChecklist, key.ebirdScientificName, len(photoIDs))
+			err = client.CreateObservation(obs)
+			if err != nil {
+				log.Fatalf("CreateObservation: %v", err)
+			}
 		}
 		for _, id := range photoIDs {
+			if dryRun {
+				log.Printf("DRYRUN: Download ML Asset %s and upload to iNaturalist", id)
+				continue
+			}
 			filename, err := ebird.DownloadMLAsset(id)
 			if err != nil {
 				log.Fatalf("Couldn't download ML asset %s from eBird: %v", id, err)
