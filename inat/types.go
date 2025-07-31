@@ -21,6 +21,12 @@ type CreateObservation struct {
 	Observation Observation `json:"observation,omitempty"`
 }
 
+type UpdateObservation struct {
+	Fields       any         `json:"fields,omitempty"`
+	IgnorePhotos bool        `json:"ignore_photos,omitempty"`
+	Observation  Observation `json:"observation,omitempty"`
+}
+
 type Observation struct {
 	UUID                             uuid.UUID               `json:"uuid,omitempty"`
 	CaptiveFlag                      bool                    `json:"captive_flag,omitempty"`
