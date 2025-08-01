@@ -85,7 +85,9 @@ type Result struct {
 	Photos               []Photo   `json:"photos,omitempty"`
 	Taxon                Taxon     `json:"taxon,omitempty"`
 	IdentificationsCount int       `json:"identifications_count,omitempty"`
+	ObservedOn           string    `json:"observed_on,omitempty"`
 	CreatedAt            string    `json:"created_at,omitempty"`
+	PreferredCommonName  string    `json:"preferred_common_name,omitempty"`
 }
 
 // ObservationFieldValue returns the value of the observation field

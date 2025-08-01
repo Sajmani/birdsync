@@ -8,6 +8,7 @@ import (
 	"flag"
 	"log"
 	"os"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -54,6 +55,7 @@ func (f *dateTimeFlag) Time() time.Time {
 var (
 	dryRun     bool
 	verifiable bool
+	fuzzy      bool
 	before     dateTimeFlag
 	after      dateTimeFlag
 )
@@ -63,6 +65,10 @@ func init() {
 		"Don't actually sync any observations, just log what birdsync would do")
 	flag.BoolVar(&verifiable, "verifiable", false,
 		"Sync only observations that include Macaulay Catalog Numbers (photos or sound)")
+	flag.BoolVar(&fuzzy, "fuzzy", false,
+		"Don't create a birdsync observation if a non-birdsync observation already exists for the same bird on the same date."+
+			"This fuzzy matching is useful when you've entered the same observation manually into both eBird and iNaturalist, "+
+			"but it may skip legitimate uploads if you saw the same bird twice on the same day.")
 	flag.Var(&before, "before",
 		"Sync only observations observed before the provided DateTime (2006-01-02 15:04:05). The time can be omitted (2006-01-02).")
 	flag.Var(&after, "after",
@@ -99,18 +105,32 @@ func main() {
 	client := inat.NewClient(inatAPIToken, UserAgent)
 
 	results := inat.DownloadObservations(inatUserID, after.Time(), before.Time(),
-		"description", "taxon.name", "ofvs.all")
+		"description", "observed_on", "taxon.all", "ofvs.all")
 
 	previouslySynced := map[ebird.ObservationID]inat.Result{}
+	type fuzzyKey struct {
+		observedDate string // 2006-01-02
+		commonName   string
+	}
+	fuzzyMatch := map[fuzzyKey][]string{}
 	for _, r := range results {
 		key := ebird.ObservationID{
 			SubmissionID:   r.ObservationFieldValue(inat.EBirdField),
 			ScientificName: r.ObservationFieldValue(inat.EBirdScientificNameField),
 		}
-		if !key.Valid() {
-			continue // not a synced observation, skip this one
+		if key.Valid() {
+			previouslySynced[key] = r
+		} else {
+			// This iNaturalist observation was not created by birdsync.
+			// Record its date and common name for fuzzy matching.
+			key := fuzzyKey{
+				observedDate: r.ObservedOn,
+				commonName:   r.Taxon.PreferredCommonName,
+			}
+			fuzzyMatch[key] = append(fuzzyMatch[key], r.UUID.String())
+			slices.Sort(fuzzyMatch[key])
+			debugf("fuzzy match: add %s to %+v", r.UUID, key)
 		}
-		previouslySynced[key] = r
 	}
 	debugf("Previously synced %d observations\n", len(previouslySynced))
 
@@ -134,8 +154,8 @@ func main() {
 	recs = recs[1:]
 	debugf("Read %d eBird observations", len(recs))
 	var stats struct {
-		afterSkips, beforeSkips, verifiableSkips, previouslySkips int
-		createdObservations, uploadedPhotos                       int
+		afterSkips, beforeSkips, verifiableSkips, previouslySkips, fuzzySkips int
+		createdObservations, uploadedPhotos                                   int
 	}
 	for i, rec := range recs {
 		line := i + 2 // header was line 1
@@ -159,6 +179,8 @@ func main() {
 			continue
 		}
 
+		// Skip records that have previously been uploaded by birdsync.
+		// TODO: check whether the photos have changed and sync them.
 		key := ebird.ObservationID{
 			SubmissionID:   rec[field["Submission ID"]],
 			ScientificName: rec[field["Scientific Name"]],
@@ -169,11 +191,27 @@ func main() {
 			stats.previouslySkips++
 			continue
 		}
+
+		if fuzzy {
+			// Skip records for the same bird and date as an existing non-birdsync observation.
+			key := fuzzyKey{
+				commonName:   rec[field["Common Name"]],
+				observedDate: rec[field["Date"]],
+			}
+			debugf("line %d: fuzzy match: check %+v", line, key)
+			if _, ok := fuzzyMatch[key]; ok {
+				log.Printf("line %d: SKIPPING fuzzy match: observation for same bird and date: %+v", line, key)
+				stats.fuzzySkips++
+				continue
+			}
+		}
+
+		// Create the iNaturalist observation from the eBird record.
 		parseFloat64 := func(key string) float64 {
 			s := rec[field[key]]
 			f, err := strconv.ParseFloat(s, 64)
 			if err != nil {
-				log.Fatalf("line %d: invalid float64 for %s: %q: %v", line, key, s, err)
+				log.Fatalf("line %d: Invalid float64 for %s: %q: %v", line, key, s, err)
 			}
 			return f
 		}
@@ -223,6 +261,7 @@ func main() {
 				obs.Description += "Macaulay Library Asset: https://macaulaylibrary.org/asset/" + id + "\n"
 			}
 		}
+		// Skip records without photos if --verifiable is set.
 		if verifiable && len(photoIDs) == 0 {
 			debugf("line %d: SKIPPING record that has no photos or sounds (--verifiable=true)", line)
 			stats.verifiableSkips++
@@ -259,6 +298,9 @@ func main() {
 	}
 	log.Printf("Finished processing %d eBird observations", len(recs))
 	log.Printf("Skipped %d previously uploaded by birdsync", stats.previouslySkips)
+	if fuzzy {
+		log.Printf("Skipped %d eBird observations with --fuzzy matching", stats.fuzzySkips)
+	}
 	if !after.Time().IsZero() {
 		log.Printf("Skipped %d eBird observations before --after", stats.afterSkips)
 	}
