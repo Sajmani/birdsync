@@ -5,6 +5,7 @@ import (
 	"cmp"
 	"log"
 	"slices"
+	"time"
 
 	"github.com/Sajmani/birdsync/ebird"
 	"github.com/Sajmani/birdsync/inat"
@@ -19,7 +20,8 @@ func main() {
 	apiToken := inat.GetAPIToken()
 	client := inat.NewClient(apiToken, UserAgent)
 
-	results := inat.DownloadObservations(inatUserID, "created_at", "identifications_count", "ofvs.all")
+	results := inat.DownloadObservations(inatUserID, time.Time{}, time.Time{},
+		"created_at", "identifications_count", "ofvs.all")
 
 	log.Println("downloaded", len(results), "results")
 	m := map[ebird.ObservationID][]inat.Result{}

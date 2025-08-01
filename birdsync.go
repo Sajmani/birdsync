@@ -71,9 +71,9 @@ func init() {
 	flag.BoolVar(&verifiable, "verifiable", false,
 		"Sync only observations that include Macaulay Catalog Numbers (photos or sound)")
 	flag.Var(&before, "before",
-		"Sync only observations created before the provided DateTime (2006-01-02 15:04:05)")
+		"Sync only observations observed before the provided DateTime (2006-01-02 15:04:05)")
 	flag.Var(&after, "after",
-		"Sync only observations created after the provided DateTime (2006-01-02 15:04:05)")
+		"Sync only observations observed after the provided DateTime (2006-01-02 15:04:05)")
 }
 
 func parseEBirdDateTime(d, t string) (time.Time, error) {
@@ -99,9 +99,9 @@ func main() {
 	apiToken := inat.GetAPIToken()
 	client := inat.NewClient(apiToken, UserAgent)
 
-	// TODO: optimize the observation download using before and after filters
 	log.Println("Downloading observations for", inatUserID)
-	results := inat.DownloadObservations(inatUserID, "description", "taxon.name", "ofvs.all")
+	results := inat.DownloadObservations(inatUserID, after.Time(), before.Time(),
+		"description", "taxon.name", "ofvs.all")
 	log.Println("Downloaded", len(results), "observations")
 	previouslySynced := map[ebird.ObservationID]inat.Result{}
 	for _, r := range results {
@@ -143,20 +143,20 @@ func main() {
 	for i, rec := range recs {
 		line := i + 2 // header was line 1
 
-		// Skip records that were not created between --after and --before.
+		// Skip records that were not observed between --after and --before.
 		d, t := rec[field["Date"]], rec[field["Time"]]
-		created, err := parseEBirdDateTime(d, t)
+		observed, err := parseEBirdDateTime(d, t)
 		if err != nil {
 			log.Fatalf("line %d: could not parse Date %q Time %q: %v", line, d, t, err)
 		}
-		if !after.Time().IsZero() && created.Before(after.Time()) {
-			log.Printf("line %d: SKIPPING record created on %s (before --after=%s)",
-				line, created, after.Time())
+		if !after.Time().IsZero() && observed.Before(after.Time()) {
+			log.Printf("line %d: SKIPPING record observed on %s (before --after=%s)",
+				line, observed, after.Time())
 			continue
 		}
-		if !before.Time().IsZero() && created.After(before.Time()) {
-			log.Printf("line %d: SKIPPING record created on %s (after --before=%s)",
-				line, created, before.Time())
+		if !before.Time().IsZero() && observed.After(before.Time()) {
+			log.Printf("line %d: SKIPPING record observed on %s (after --before=%s)",
+				line, observed, before.Time())
 			continue
 		}
 

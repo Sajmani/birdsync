@@ -3,6 +3,7 @@ package main
 
 import (
 	"log"
+	"time"
 
 	"github.com/Sajmani/birdsync/inat"
 	"github.com/kr/pretty"
@@ -10,7 +11,8 @@ import (
 
 func main() {
 	inatUserID := inat.GetUserID()
-	results := inat.DownloadObservations(inatUserID, "description", "taxon.name", "ofvs.all")
+	results := inat.DownloadObservations(inatUserID, time.Time{}, time.Time{},
+		"description", "taxon.name", "ofvs.all")
 
 	log.Println("downloaded", len(results), "results")
 	for _, r := range results {
