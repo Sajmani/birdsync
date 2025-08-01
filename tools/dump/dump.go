@@ -3,17 +3,13 @@ package main
 
 import (
 	"log"
-	"os"
 
 	"github.com/Sajmani/birdsync/inat"
 	"github.com/kr/pretty"
 )
 
 func main() {
-	inatUserID := os.Getenv("INAT_USER_ID")
-	if inatUserID == "" {
-		log.Fatal("INAT_USER_ID environment variable not set")
-	}
+	inatUserID := inat.GetUserID()
 	results := inat.DownloadObservations(inatUserID, "description", "taxon.name", "ofvs.all")
 
 	log.Println("downloaded", len(results), "results")

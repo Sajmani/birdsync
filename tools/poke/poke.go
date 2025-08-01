@@ -9,7 +9,7 @@ import (
 	"github.com/Sajmani/birdsync/inat"
 )
 
-const UserAgent = "birdsync-testing/0.1"
+const UserAgent = "birdsync-poke/0.1"
 
 func usage() {
 	log.Print(`poke [create|image]

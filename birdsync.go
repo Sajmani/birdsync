@@ -109,9 +109,8 @@ func main() {
 			SubmissionID:   r.ObservationFieldValue(inat.EBirdField),
 			ScientificName: r.ObservationFieldValue(inat.EBirdScientificNameField),
 		}
-		if key.SubmissionID == "" || key.ScientificName == "" {
-			// not a synced observation, skip this one
-			continue
+		if !key.Valid() {
+			continue // not a synced observation, skip this one
 		}
 		previouslySynced[key] = r
 	}

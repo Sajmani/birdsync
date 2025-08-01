@@ -27,6 +27,11 @@ type ObservationID struct {
 	ScientificName string
 }
 
+// Valid returns whether this observation ID has all fields set.
+func (o ObservationID) Valid() bool {
+	return o.SubmissionID != "" && o.ScientificName != ""
+}
+
 func (o ObservationID) String() string {
 	return fmt.Sprintf("%s[%s]", o.SubmissionID, o.ScientificName)
 }

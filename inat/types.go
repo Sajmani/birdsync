@@ -79,11 +79,13 @@ type Observations struct {
 }
 
 type Result struct {
-	UUID        uuid.UUID `json:"uuid,omitempty"`
-	Description string    `json:"description,omitempty"`
-	Ofvs        []Ofv     `json:"ofvs,omitempty"`
-	Photos      []Photo   `json:"photos,omitempty"`
-	Taxon       Taxon     `json:"taxon,omitempty"`
+	UUID                 uuid.UUID `json:"uuid,omitempty"`
+	Description          string    `json:"description,omitempty"`
+	Ofvs                 []Ofv     `json:"ofvs,omitempty"`
+	Photos               []Photo   `json:"photos,omitempty"`
+	Taxon                Taxon     `json:"taxon,omitempty"`
+	IdentificationsCount int       `json:"identifications_count,omitempty"`
+	CreatedAt            string    `json:"created_at,omitempty"`
 }
 
 // ObservationFieldValue returns the value of the observation field

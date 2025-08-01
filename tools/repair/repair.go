@@ -19,7 +19,7 @@ import (
 	"github.com/Sajmani/birdsync/inat"
 )
 
-const UserAgent = "birdsync/0.1"
+const UserAgent = "birdsync-repair/0.1"
 
 func main() {
 	if len(os.Args) != 2 {
