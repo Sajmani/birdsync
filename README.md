@@ -24,7 +24,7 @@ Run `birdsync` from the command line, specifying the path to your `MyEBirdData.c
 ```
 $HOME/go/bin/birdsync MyEBirdData.csv
 ```
-Birdsync tool will prompt you to enter your iNaturalist user name and [API token](https://www.inaturalist.org/users/api_token), which allow the tool to read and write your personal iNaturalist observations.
+Birdsync will prompt you to enter your iNaturalist user name and [API token](https://www.inaturalist.org/users/api_token), which allow the tool to read and write your personal iNaturalist observations.
 
 To skip these interactive steps, you can provide your iNaturalist user name and API token as environment variables, but remember that you need to refresh your [API token](https://www.inaturalist.org/users/api_token) every 24 hours:
 ```
@@ -41,9 +41,9 @@ Birdsync provides command-line flags to customize its behavior:
 * `-verifiable`
         Sync only observations that include Macaulay Catalog Numbers (photos or sound)
 * `-fuzzy`
-        Don't create a birdsync observation if a non-birdsync observation already exists for the same bird on the same date.This fuzzy matching is useful when you've entered the same observation manually into both eBird and iNaturalist, but it may skip legitimate uploads if you saw the same bird twice on the same day.
+        Don't create a birdsync observation if a non-birdsync observation already exists for the same bird on the same date. This fuzzy matching is useful when you've entered the same observation manually into both eBird and iNaturalist, but it may skip legitimate uploads if you saw the same bird twice on the same day.
 
-On the command line, flags must be listed before your `MyEBirdData.csv` file:
+On the command line, flags must be listed _before_ your `MyEBirdData.csv` file:
 ```
 $HOME/go/bin/birdsync --verifiable --after 2025-07-01 MyEBirdData.csv
 ```
@@ -61,7 +61,7 @@ Given (`iNaturalist user name`, `eBird CSV file`):
   - If `--verifiable` is set, skip any eBird observations lacking photos
   - If `--fuzzy` is set, skip any eBird observations for the same bird and day as a non-birdsync observation
   - Create a new iNaturalist observation from the eBird observation
-  - For each Macaulay Library ID for this eBird observation:
+  - For each [Macaulay Library](https://www.macaulaylibrary.org/) catalog ID for this eBird observation:
     - Download the image from the Macaulay Library
     - Upload the image to iNaturalist, associated with the new observation
 
