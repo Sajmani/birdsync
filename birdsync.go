@@ -1,21 +1,6 @@
 // Birdsync syncs eBird observations and photos to iNaturalist.
 //
-// As a prerequisite, you must download your data from eBird using
-// https://ebird.org/downloadMyData — save the zip file and unzip it
-// to get the MyEBirdData.csv file.
-//
-// Birdsync works as follows:
-//  1. Download all iNaturalist observations for INAT_USER_ID into memory
-//  2. Index these observations by (eBird checklist ID, species name)
-//  3. Read eBird observations from the CSV file provided as a command line argument
-//
-// For each eBird observation:
-//  4. Skip any eBird observations that have already been uploaded
-//  5. Create the iNaturalist observation
-//
-// For each Macaulay Library ID for this eBird observation:
-//  6. Download the image from the Macaulay Library
-//  7. Upload the image to iNaturalist, associated with the new observation
+// See README.md for detailed documentation.
 package main
 
 import (
@@ -71,9 +56,9 @@ func init() {
 	flag.BoolVar(&verifiable, "verifiable", false,
 		"Sync only observations that include Macaulay Catalog Numbers (photos or sound)")
 	flag.Var(&before, "before",
-		"Sync only observations observed before the provided DateTime (2006-01-02 15:04:05)")
+		"Sync only observations observed before the provided DateTime (2006-01-02 15:04:05). The time can be omitted (2006-01-02).")
 	flag.Var(&after, "after",
-		"Sync only observations observed after the provided DateTime (2006-01-02 15:04:05)")
+		"Sync only observations observed after the provided DateTime (2006-01-02 15:04:05). The time can be omitted (2006-01-02).")
 }
 
 func parseEBirdDateTime(d, t string) (time.Time, error) {
