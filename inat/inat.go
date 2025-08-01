@@ -17,6 +17,16 @@ import (
 // The dates d1 and d2 specify the start and end of the observation date range if nonzero.
 // The fields list specifies which fields are populated in the results.
 func DownloadObservations(inatUserID string, d1, d2 time.Time, fields ...string) []Result {
+	const dateFormat = "2006-01-02"
+	var d1str, d2str string
+	if !d1.IsZero() {
+		d1str = " after " + d1.Format(dateFormat)
+	}
+	if !d2.IsZero() {
+		d2str = " before " + d2.Format(dateFormat)
+	}
+	log.Printf("Downloading observations for %s%s%s", inatUserID, d1str, d2str)
+
 	// From https://www.inaturalist.org/pages/api+recommended+practices:
 	// If using the API to fetch a lot of results, please use the highest supported per_page value.
 	// For example you can get up to 200 observations in a single request,
@@ -35,10 +45,10 @@ func DownloadObservations(inatUserID string, d1, d2 time.Time, fields ...string)
 		q.Set("page", strconv.Itoa(page))
 		q.Set("per_page", strconv.Itoa(perPage))
 		if !d1.IsZero() {
-			q.Set("d1", d1.Format("2006-01-02"))
+			q.Set("d1", d1.Format(dateFormat))
 		}
 		if !d2.IsZero() {
-			q.Set("d2", d2.Format("2006-01-02"))
+			q.Set("d2", d2.Format(dateFormat))
 		}
 		if len(fields) > 0 {
 			q.Set("fields", strings.Join(fields, ","))
@@ -61,7 +71,7 @@ func DownloadObservations(inatUserID string, d1, d2 time.Time, fields ...string)
 			totalResults = observations.TotalResults
 		}
 		results = append(results, observations.Results...)
-		log.Printf("Fetched %d of %d observations", len(results), totalResults)
+		log.Printf("Downloaded %d of %d observations", len(results), totalResults)
 		if len(results) >= totalResults {
 			break
 		}

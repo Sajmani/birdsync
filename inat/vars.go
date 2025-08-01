@@ -20,7 +20,7 @@ func GetUserID() string {
 		return userID
 	}
 	for {
-		log.Print(`
+		log.Print(`Birdsync needs your iNaturalist user ID.
 Your iNaturalist user ID allows this tool to act on your behalf.
 Copy your iNaturalist user ID from the top of https://www.inaturalist.org/home
 (next to your profile picture) and paste it below.
@@ -55,7 +55,7 @@ func GetAPIToken() string {
 		return apiToken
 	}
 	for {
-		log.Print(`
+		log.Print(`Birdsync needs your iNaturalist API token.
 Your iNaturalist API token allows this tool to act on your behalf.
 The API token needs to be refreshed every 24 hours.
 The token is a long string of characters starting and ending with curly braces,

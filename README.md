@@ -13,32 +13,40 @@ Download it from http://go.dev.
 
 # Install and run birdsync
 
-Install or update `birdsync` to the latest version using `go install github.com/Sajmani/birdsync@latest`, then run it from the command line, specifying the path to your `MyEBirdData.csv` file:
+Install or update `birdsync` to the latest version using
 ```
-birdsync MyEBirdData.csv
+go install github.com/Sajmani/birdsync@latest
 ```
-Birdsync tool will prompt you to enter your iNaturalist user name and [API token](https://www.inaturalist.org/users/api_token), which allows the tool to read and write your personal iNaturalist observations.
+By default, Go installs binaries in the directory `$HOME/go/bin`.
+[Customize this location](https://pkg.go.dev/cmd/go#hdr-Compile_and_install_packages_and_dependencies) by setting the `GOBIN` environment variable.
 
-To skip these interactive steps, you can provide your iNaturalist user name and API token as environment variables, but remember that you need to refresh your API token every 24 hours:
+Run `birdsync` from the command line, specifying the path to your `MyEBirdData.csv` file:
+```
+$HOME/go/bin/birdsync MyEBirdData.csv
+```
+Birdsync tool will prompt you to enter your iNaturalist user name and [API token](https://www.inaturalist.org/users/api_token), which allow the tool to read and write your personal iNaturalist observations.
+
+To skip these interactive steps, you can provide your iNaturalist user name and API token as environment variables, but remember that you need to refresh your [API token](https://www.inaturalist.org/users/api_token) every 24 hours:
 ```
 export INAT_USER_ID=sameerajmani
 export INAT_API_TOKEN=(the TOKEN from {"api_token":"TOKEN"})
 ```
 Birdsync provides command-line flags to customize its behavior:
-*  `-after value`
-        Sync only observations observed after the provided DateTime (2006-01-02 15:04:05). The time can be omitted (2006-01-02).
-* `-before value`
-        Sync only observations observed before the provided DateTime (2006-01-02 15:04:05). The time can be omitted (2006-01-02).
+*  `-after 2006-01-02`
+        Sync only observations observed after the provided date and time (formatted as "2006-01-02 15:04:05"). The time can be omitted (2006-01-02).
+* `-before 2006-01-02`
+        Sync only observations observed before the provided date and time (formatted as "2006-01-02 15:04:05"). The time can be omitted (2006-01-02).
 * `-dryrun`
         Don't actually sync any observations, just log what birdsync would do
 * `-verifiable`
         Sync only observations that include Macaulay Catalog Numbers (photos or sound)
-Command-line flags must be listed before your `MyEBirdData.csv` file:
+
+On the command line, flags must be listed before your `MyEBirdData.csv` file:
 ```
-birdsync --verifiable --after 2025-07-01 MyEBirdData.csv
+$HOME/go/bin/birdsync --verifiable --after 2025-07-01 MyEBirdData.csv
 ```
 
-# How it works
+# How birdsync works
 
 Given (`iNaturalist user name`, `eBird CSV file`):
 - Download all iNaturalist observations for `iNaturalist user name` into memory
@@ -56,3 +64,5 @@ Given (`iNaturalist user name`, `eBird CSV file`):
 # Limitations
 
 Birdsync only works in the eBird → iNaturalist direction because (as far as I can tell) the [eBird API](https://support.ebird.org/en/support/solutions/articles/48000838205-download-ebird-data#API) doesn't support reading or writing personal checklists, only reading "limited, recent and summary outputs of eBird data".
+
+Birdsync cannot detect whether iNaturalist observations that you've created manually are duplicates of those in your eBird checklists unless you mark your existing iNaturalist observations with the [eBird submission ID](https://www.inaturalist.org/observation_fields/6033) and [eBird scientific name](https://www.inaturalist.org/observation_fields/20215) observation fields. While we could add "fuzzy matching" to suppress creating observations for the same bird species on the same day, this could skip a legitimate observation if you happened to actually see the same bird twice on the same day and enter it once into each tool. This case is unlikely enough that I might add "fuzzy matching" as a convenience feature.

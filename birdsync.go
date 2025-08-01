@@ -19,6 +19,14 @@ import (
 
 const UserAgent = "birdsync/0.1"
 
+const debug = false
+
+func debugf(format string, args ...any) {
+	if debug {
+		log.Printf(format, args...)
+	}
+}
+
 type dateTimeFlag struct {
 	t time.Time
 }
@@ -79,15 +87,20 @@ func main() {
 		log.Fatalf("--after (%s) is after --before (%s), won't match any records",
 			after.Time(), before.Time())
 	}
-	eBirdCSVFile := flag.Arg(0)
-	inatUserID := inat.GetUserID()
-	apiToken := inat.GetAPIToken()
-	client := inat.NewClient(apiToken, UserAgent)
+	eBirdCSVFilename := flag.Arg(0)
+	eBirdCSVFile, err := os.Open(eBirdCSVFilename)
+	if err != nil {
+		log.Fatalf("Error opening %s: %v", eBirdCSVFilename, err)
+	}
+	defer eBirdCSVFile.Close()
 
-	log.Println("Downloading observations for", inatUserID)
+	inatUserID := inat.GetUserID()
+	inatAPIToken := inat.GetAPIToken()
+	client := inat.NewClient(inatAPIToken, UserAgent)
+
 	results := inat.DownloadObservations(inatUserID, after.Time(), before.Time(),
 		"description", "taxon.name", "ofvs.all")
-	log.Println("Downloaded", len(results), "observations")
+
 	previouslySynced := map[ebird.ObservationID]inat.Result{}
 	for _, r := range results {
 		key := ebird.ObservationID{
@@ -99,32 +112,31 @@ func main() {
 		}
 		previouslySynced[key] = r
 	}
-	log.Printf("Previously synced %d observations\n", len(previouslySynced))
-	log.Println("Reading eBird observations from", eBirdCSVFile)
-	f, err := os.Open(eBirdCSVFile)
-	if err != nil {
-		log.Fatalf("Error opening %s: %v", eBirdCSVFile, err)
-	}
-	defer f.Close()
-	r := csv.NewReader(f)
+	debugf("Previously synced %d observations\n", len(previouslySynced))
+
+	log.Printf("Reading eBird observations from %s", eBirdCSVFilename)
+	r := csv.NewReader(eBirdCSVFile)
 	// iNaturalist's CSV export returns a variable number of fields per record,
 	// so disable this check. This means we need to explicitly check len(rec)
 	// before accessing fields that might not be there.
 	r.FieldsPerRecord = -1
 	recs, err := r.ReadAll()
 	if err != nil {
-		log.Fatalf("Error reading CSV records from %s: %v", eBirdCSVFile, err)
+		log.Fatalf("Error reading CSV records from %s: %v", eBirdCSVFilename, err)
 	}
 	if len(recs) < 1 {
-		log.Fatalf("No records found in %s", eBirdCSVFile)
+		log.Fatalf("No records found in %s", eBirdCSVFilename)
 	}
 	field := make(map[string]int)
 	for i, f := range recs[0] {
 		field[f] = i
 	}
 	recs = recs[1:]
-	log.Println("Read", len(recs), "eBird observations")
-	last := time.Now()
+	debugf("Read %d eBird observations", len(recs))
+	var stats struct {
+		afterSkips, beforeSkips, verifiableSkips, previouslySkips int
+		createdObservations, uploadedPhotos                       int
+	}
 	for i, rec := range recs {
 		line := i + 2 // header was line 1
 
@@ -135,26 +147,26 @@ func main() {
 			log.Fatalf("line %d: could not parse Date %q Time %q: %v", line, d, t, err)
 		}
 		if !after.Time().IsZero() && observed.Before(after.Time()) {
-			log.Printf("line %d: SKIPPING record observed on %s (before --after=%s)",
+			debugf("line %d: SKIPPING record observed on %s (before --after=%s)",
 				line, observed, after.Time())
+			stats.afterSkips++
 			continue
 		}
 		if !before.Time().IsZero() && observed.After(before.Time()) {
-			log.Printf("line %d: SKIPPING record observed on %s (after --before=%s)",
+			debugf("line %d: SKIPPING record observed on %s (after --before=%s)",
 				line, observed, before.Time())
+			stats.beforeSkips++
 			continue
 		}
 
-		elapsed := time.Since(last)
-		last = time.Now()
-		log.Println("Line", line, "of", len(recs), "-- estimate", elapsed*time.Duration(len(recs)-i), "remaining")
 		key := ebird.ObservationID{
 			SubmissionID:   rec[field["Submission ID"]],
 			ScientificName: rec[field["Scientific Name"]],
 		}
 		if r, ok := previouslySynced[key]; ok {
-			log.Printf("Already synced %s to iNaturalist as http://inaturalist.org/observations/%s\n",
-				key, r.UUID)
+			debugf("line %d: Already synced %s to iNaturalist as http://inaturalist.org/observations/%s\n",
+				line, key, r.UUID)
+			stats.previouslySkips++
 			continue
 		}
 		parseFloat64 := func(key string) float64 {
@@ -212,33 +224,50 @@ func main() {
 			}
 		}
 		if verifiable && len(photoIDs) == 0 {
-			log.Printf("line %d: SKIPPING record that has no photos or sounds (--verifiable=true)", line)
+			debugf("line %d: SKIPPING record that has no photos or sounds (--verifiable=true)", line)
+			stats.verifiableSkips++
 			continue
 		}
 		if dryRun {
 			log.Printf("DRYRUN: Syncing eBird observation %s to iNaturalist (%d photos)\n",
 				key, len(photoIDs))
 		} else {
-			log.Printf("Syncing eBird observation %s to iNaturalist (%d photos)\n",
+			debugf("Syncing eBird observation %s to iNaturalist (%d photos)\n",
 				key, len(photoIDs))
 			err = client.CreateObservation(obs)
 			if err != nil {
 				log.Fatalf("CreateObservation: %v", err)
 			}
 		}
+		stats.createdObservations++
+
 		for _, id := range photoIDs {
 			if dryRun {
 				log.Printf("DRYRUN: Download ML Asset %s and upload to iNaturalist", id)
-				continue
+			} else {
+				filename, err := ebird.DownloadMLAsset(id)
+				if err != nil {
+					log.Fatalf("Couldn't download ML asset %s from eBird: %v", id, err)
+				}
+				err = client.UploadImage(filename, id, obs.UUID.String())
+				if err != nil {
+					log.Fatalf("Couldn't upload ML asset %s to iNaturalist: %v", id, err)
+				}
 			}
-			filename, err := ebird.DownloadMLAsset(id)
-			if err != nil {
-				log.Fatalf("Couldn't download ML asset %s from eBird: %v", id, err)
-			}
-			err = client.UploadImage(filename, id, obs.UUID.String())
-			if err != nil {
-				log.Fatalf("Couldn't upload ML asset %s to iNaturalist: %v", id, err)
-			}
+			stats.uploadedPhotos++
 		}
 	}
+	log.Printf("Finished processing %d eBird observations", len(recs))
+	log.Printf("Skipped %d previously uploaded by birdsync", stats.previouslySkips)
+	if !after.Time().IsZero() {
+		log.Printf("Skipped %d eBird observations before --after", stats.afterSkips)
+	}
+	if !before.Time().IsZero() {
+		log.Printf("Skipped %d eBird observations after --before", stats.beforeSkips)
+	}
+	if verifiable {
+		log.Printf("Skipped %d unverifiable eBird observations", stats.verifiableSkips)
+	}
+	log.Printf("Created %d new iNaturalist observations", stats.createdObservations)
+	log.Printf("Uploaded %d photos to iNaturalist", stats.uploadedPhotos)
 }
