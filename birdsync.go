@@ -103,17 +103,13 @@ func main() {
 	log.Println("Downloading observations for", inatUserID)
 	results := inat.DownloadObservations(inatUserID, "description", "taxon.name", "ofvs.all")
 	log.Println("Downloaded", len(results), "observations")
-	type ebirdSpecies struct {
-		ebirdChecklist      string
-		ebirdScientificName string
-	}
-	previouslySynced := map[ebirdSpecies]inat.Result{}
+	previouslySynced := map[ebird.ObservationID]inat.Result{}
 	for _, r := range results {
-		key := ebirdSpecies{
-			ebirdChecklist:      r.ObservationFieldValue(inat.EBirdField),
-			ebirdScientificName: r.ObservationFieldValue(inat.EBirdScientificNameField),
+		key := ebird.ObservationID{
+			SubmissionID:   r.ObservationFieldValue(inat.EBirdField),
+			ScientificName: r.ObservationFieldValue(inat.EBirdScientificNameField),
 		}
-		if key.ebirdChecklist == "" || key.ebirdScientificName == "" {
+		if key.SubmissionID == "" || key.ScientificName == "" {
 			// not a synced observation, skip this one
 			continue
 		}
@@ -168,13 +164,13 @@ func main() {
 		elapsed := time.Since(last)
 		last = time.Now()
 		log.Println("Line", line, "of", len(recs), "-- estimate", elapsed*time.Duration(len(recs)-i), "remaining")
-		key := ebirdSpecies{
-			ebirdChecklist:      rec[field["Submission ID"]],
-			ebirdScientificName: rec[field["Scientific Name"]],
+		key := ebird.ObservationID{
+			SubmissionID:   rec[field["Submission ID"]],
+			ScientificName: rec[field["Scientific Name"]],
 		}
 		if r, ok := previouslySynced[key]; ok {
-			log.Printf("Already synced %s(%s) to iNaturalist as http://inaturalist.org/observations/%s\n",
-				key.ebirdChecklist, key.ebirdScientificName, r.UUID)
+			log.Printf("Already synced %s to iNaturalist as http://inaturalist.org/observations/%s\n",
+				key, r.UUID)
 			continue
 		}
 		parseFloat64 := func(key string) float64 {
@@ -236,11 +232,11 @@ func main() {
 			continue
 		}
 		if dryRun {
-			log.Printf("DRYRUN: Syncing eBird observation %s(%s) to iNaturalist (%d photos)\n",
-				key.ebirdChecklist, key.ebirdScientificName, len(photoIDs))
+			log.Printf("DRYRUN: Syncing eBird observation %s to iNaturalist (%d photos)\n",
+				key, len(photoIDs))
 		} else {
-			log.Printf("Syncing eBird observation %s(%s) to iNaturalist (%d photos)\n",
-				key.ebirdChecklist, key.ebirdScientificName, len(photoIDs))
+			log.Printf("Syncing eBird observation %s to iNaturalist (%d photos)\n",
+				key, len(photoIDs))
 			err = client.CreateObservation(obs)
 			if err != nil {
 				log.Fatalf("CreateObservation: %v", err)

@@ -9,6 +9,28 @@ import (
 	"os"
 )
 
+// ObservationID identifies a unique eBird observation
+// as a submission ID and eBird's scientific name. EBird's
+// scientific names may differ from iNaturalist's taxa
+// in various ways, notably for "slashes" and "spuhs".
+type ObservationID struct {
+	// Submission ID is the eBird checklist ID, including leading "S".
+	// Example: "S193523301"
+	SubmissionID string
+
+	// ScientificName examples:
+	// - "Struthio camelus"
+	// - "Cairina moschata (Domestic type)"
+	// - "Anas platyrhynchos x rubripes"
+	// - "Aythya marila/affinis"
+	// - "Melanitta sp."
+	ScientificName string
+}
+
+func (o ObservationID) String() string {
+	return fmt.Sprintf("%s[%s]", o.SubmissionID, o.ScientificName)
+}
+
 // DownloadMLAsset downloads the image with the provided ML asset ID
 // (numbers only) and returns the local filename.
 // This file is temporary and may be deleted at any time.
