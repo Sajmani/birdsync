@@ -36,6 +36,7 @@ func main() {
 			fmt.Println("DELETE", r.UUID)
 		} else {
 			fmt.Println("KEEP", r.UUID)
+			continue
 		}
 		if !debug {
 			err := client.DeleteObservation(r.UUID)
