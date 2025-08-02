@@ -28,13 +28,12 @@ type UpdateObservation struct {
 }
 
 type Observation struct {
-	UUID                             uuid.UUID               `json:"uuid,omitempty"`
 	CaptiveFlag                      bool                    `json:"captive_flag,omitempty"`
 	CoordinateSystem                 string                  `json:"coordinate_system,omitempty"`
 	Description                      string                  `json:"description,omitempty"`
+	Geoprivacy                       string                  `json:"geoprivacy,omitempty"`
 	GeoX                             float64                 `json:"geo_x,omitempty"`
 	GeoY                             float64                 `json:"geo_y,omitempty"`
-	Geoprivacy                       string                  `json:"geoprivacy,omitempty"`
 	Latitude                         float64                 `json:"latitude,omitempty"`
 	License                          string                  `json:"license,omitempty"`
 	LocationIsExact                  bool                    `json:"location_is_exact,omitempty"`
@@ -49,8 +48,8 @@ type Observation struct {
 	PositionalAccuracy               float64                 `json:"positional_accuracy,omitempty"`
 	PositioningDevice                string                  `json:"positioning_device,omitempty"`
 	PositioningMethod                string                  `json:"positioning_method,omitempty"`
-	ProjectID                        int                     `json:"project_id,omitempty"`
 	PrefersCommunityTaxon            bool                    `json:"prefers_community_taxon,omitempty"`
+	ProjectID                        int                     `json:"project_id,omitempty"`
 	SiteID                           int                     `json:"site_id,omitempty"`
 	SpeciesGuess                     string                  `json:"species_guess,omitempty"`
 	TagList                          string                  `json:"tag_list,omitempty"`
@@ -58,6 +57,7 @@ type Observation struct {
 	TaxonName                        float64                 `json:"taxon_name,omitempty"`
 	TimeZone                         string                  `json:"time_zone,omitempty"`
 	User                             User                    `json:"user,omitempty"`
+	UUID                             uuid.UUID               `json:"uuid,omitempty"`
 }
 
 type User struct {
@@ -72,22 +72,24 @@ type ObservationFieldValue struct {
 
 // Returned by https://api.inaturalist.org/v2/observations
 type Observations struct {
-	TotalResults int      `json:"total_results,omitempty"`
 	Page         int      `json:"page,omitempty"`
 	PerPage      int      `json:"per_page,omitempty"`
 	Results      []Result `json:"results,omitempty"`
+	TotalResults int      `json:"total_results,omitempty"`
 }
 
 type Result struct {
-	UUID                 uuid.UUID `json:"uuid,omitempty"`
+	CreatedAt            string    `json:"created_at,omitempty"`
 	Description          string    `json:"description,omitempty"`
-	Ofvs                 []Ofv     `json:"ofvs,omitempty"`
-	Photos               []Photo   `json:"photos,omitempty"`
-	Taxon                Taxon     `json:"taxon,omitempty"`
 	IdentificationsCount int       `json:"identifications_count,omitempty"`
 	ObservedOn           string    `json:"observed_on,omitempty"`
-	CreatedAt            string    `json:"created_at,omitempty"`
+	Ofvs                 []Ofv     `json:"ofvs,omitempty"`
+	Photos               []Photo   `json:"photos,omitempty"`
 	PreferredCommonName  string    `json:"preferred_common_name,omitempty"`
+	QualityGrade         string    `json:"quality_grade,omitempty"`
+	Sounds               []Photo   `json:"sounds,omitempty"`
+	Taxon                Taxon     `json:"taxon,omitempty"`
+	UUID                 uuid.UUID `json:"uuid,omitempty"`
 }
 
 // ObservationFieldValue returns the value of the observation field
@@ -103,22 +105,29 @@ func (r Result) ObservationFieldValue(fieldID int) string {
 }
 
 type Ofv struct {
-	ID      int    `json:"id,omitempty"`
 	FieldID int    `json:"field_id,omitempty"`
+	ID      int    `json:"id,omitempty"`
 	Name    string `json:"name,omitempty"`
 	Value   string `json:"value,omitempty"`
 }
 
 type Photo struct {
-	ID          int    `json:"id,omitempty"`
 	Attribution string `json:"attribution,omitempty"`
+	ID          int    `json:"id,omitempty"`
 	LicenseCode string `json:"license_code,omitempty"`
 	URL         string `json:"url,omitempty"`
 }
 
+type Sound struct {
+	Attribution string `json:"attribution,omitempty"`
+	ID          int    `json:"id,omitempty"`
+	LicenseCode string `json:"license_code,omitempty"`
+	FileURL     string `json:"file_url,omitempty"`
+}
+
 type Taxon struct {
+	IconicTaxonName     string `json:"iconic_taxon_name,omitempty"`
 	ID                  int    `json:"id,omitempty"`
 	Name                string `json:"name,omitempty"`
-	IconicTaxonName     string `json:"iconic_taxon_name,omitempty"`
 	PreferredCommonName string `json:"preferred_common_name,omitempty"`
 }

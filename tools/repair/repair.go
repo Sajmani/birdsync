@@ -75,7 +75,7 @@ func main() {
 	log.Println("Downloading observations for", inatUserID)
 	results := inat.DownloadObservations(inatUserID, time.Time{}, time.Time{},
 		"taxon.name", "ofvs.all")
-	log.Println("Downloaded", len(results), "observations")
+
 	for _, r := range results {
 		ebirdChecklist := r.ObservationFieldValue(inat.EBirdField)
 		ebirdScientificName := r.ObservationFieldValue(inat.EBirdScientificNameField)

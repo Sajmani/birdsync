@@ -23,7 +23,6 @@ func main() {
 	results := inat.DownloadObservations(inatUserID, time.Time{}, time.Time{},
 		"created_at", "identifications_count", "ofvs.all")
 
-	log.Println("downloaded", len(results), "results")
 	m := map[ebird.ObservationID][]inat.Result{}
 	for _, r := range results {
 		key := ebird.ObservationID{
