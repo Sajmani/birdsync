@@ -9,6 +9,11 @@ import (
 	"os"
 )
 
+// PositionalAccuracy is the default positional accuracy in meters
+// that we use for eBird observations. This is intended to serve as
+// an approximation of the radius of a typical eBird hotspot.
+const PositionalAccuracy = 500 // meters
+
 // ObservationID identifies a unique eBird observation
 // as a submission ID and eBird's scientific name. EBird's
 // scientific names may differ from iNaturalist's taxa

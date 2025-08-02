@@ -136,7 +136,7 @@ func main() {
 
 	log.Printf("Reading eBird observations from %s", eBirdCSVFilename)
 	r := csv.NewReader(eBirdCSVFile)
-	// iNaturalist's CSV export returns a variable number of fields per record,
+	// eBird's CSV export returns a variable number of fields per record,
 	// so disable this check. This means we need to explicitly check len(rec)
 	// before accessing fields that might not be there.
 	r.FieldsPerRecord = -1
@@ -222,13 +222,14 @@ func main() {
 			}
 		}
 		obs := inat.Observation{
-			UUID:             uuid.New(),
-			CaptiveFlag:      false, // eBird checklists should only include wild birds
-			Latitude:         parseFloat64("Latitude"),
-			Longitude:        parseFloat64("Longitude"),
-			LocationIsExact:  false,
-			SpeciesGuess:     rec[field["Scientific Name"]],
-			ObservedOnString: rec[field["Date"]] + " " + rec[field["Time"]],
+			UUID:               uuid.New(),
+			CaptiveFlag:        false, // eBird checklists should only include wild birds
+			Latitude:           parseFloat64("Latitude"),
+			Longitude:          parseFloat64("Longitude"),
+			LocationIsExact:    false,
+			PositionalAccuracy: ebird.PositionalAccuracy,
+			SpeciesGuess:       rec[field["Scientific Name"]],
+			ObservedOnString:   rec[field["Date"]] + " " + rec[field["Time"]],
 			ObservationFieldValuesAttributes: []inat.ObservationFieldValue{
 				keyField(inat.CountField, "Count"),
 				keyField(inat.CommonNameField, "Common Name"),

@@ -85,6 +85,7 @@ type Result struct {
 	ObservedOn           string    `json:"observed_on,omitempty"`
 	Ofvs                 []Ofv     `json:"ofvs,omitempty"`
 	Photos               []Photo   `json:"photos,omitempty"`
+	PositionalAccuracy   int       `json:"positional_accuracy,omitempty"`
 	PreferredCommonName  string    `json:"preferred_common_name,omitempty"`
 	QualityGrade         string    `json:"quality_grade,omitempty"`
 	Sounds               []Photo   `json:"sounds,omitempty"`

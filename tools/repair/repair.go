@@ -39,7 +39,7 @@ func main() {
 	}
 	defer f.Close()
 	r := csv.NewReader(f)
-	// iNaturalist's CSV export returns a variable number of fields per record,
+	// eBird's CSV export returns a variable number of fields per record,
 	// so disable this check. This means we need to explicitly check len(rec)
 	// before accessing fields that might not be there.
 	r.FieldsPerRecord = -1
