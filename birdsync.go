@@ -63,7 +63,7 @@ var (
 func init() {
 	flag.BoolVar(&dryRun, "dryrun", false,
 		"Don't actually sync any observations, just log what birdsync would do")
-	flag.BoolVar(&verifiable, "verifiable", false,
+	flag.BoolVar(&verifiable, "verifiable", true,
 		"Sync only observations that include Macaulay Catalog Numbers (photos or sound)")
 	flag.BoolVar(&fuzzy, "fuzzy", false,
 		"Don't create a birdsync observation if a non-birdsync observation already exists for the same bird on the same date."+
