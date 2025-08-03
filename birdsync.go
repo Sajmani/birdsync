@@ -219,29 +219,38 @@ func main() {
 		}
 
 		// Create the iNaturalist observation from the eBird record.
-		parseFloat64 := func(key string) float64 {
-			s := rec[field[key]]
-			f, err := strconv.ParseFloat(s, 64)
-			if err != nil {
-				log.Fatalf("line %d: Invalid float64 for %s: %q: %v", line, key, s, err)
+		floatField := func(key string) float64 {
+			if field[key] < len(rec) {
+				s := rec[field[key]]
+				f, err := strconv.ParseFloat(s, 64)
+				if err != nil {
+					log.Fatalf("line %d: Invalid float64 for %s: %q: %v", line, key, s, err)
+				}
+				return f
 			}
-			return f
+			return 0
+		}
+		stringField := func(key string) string {
+			if field[key] < len(rec) {
+				return rec[field[key]]
+			}
+			return ""
 		}
 		keyField := func(id int, key string) inat.ObservationFieldValue {
 			return inat.ObservationFieldValue{
 				ObservationFieldID: id,
-				Value:              rec[field[key]],
+				Value:              stringField(key),
 			}
 		}
 		obs := inat.Observation{
 			UUID:               uuid.New(),
 			CaptiveFlag:        false, // eBird checklists should only include wild birds
-			Latitude:           parseFloat64("Latitude"),
-			Longitude:          parseFloat64("Longitude"),
+			Latitude:           floatField("Latitude"),
+			Longitude:          floatField("Longitude"),
 			LocationIsExact:    false,
 			PositionalAccuracy: ebird.PositionalAccuracy,
-			SpeciesGuess:       rec[field["Scientific Name"]],
-			ObservedOnString:   rec[field["Date"]] + " " + rec[field["Time"]],
+			SpeciesGuess:       stringField("Scientific Name"),
+			ObservedOnString:   stringField("Date") + " " + stringField("Time"),
 			ObservationFieldValuesAttributes: []inat.ObservationFieldValue{
 				keyField(inat.CountField, "Count"),
 				keyField(inat.CommonNameField, "Common Name"),
@@ -257,19 +266,19 @@ func main() {
 			},
 		}
 		obs.Description = "Observation created using github.com/Sajmani/birdsync \n"
-		if field["Observation Details"] < len(rec) && len(rec[field["Observation Details"]]) > 0 {
+		if f := field["Observation Details"]; f < len(rec) && len(rec[f]) > 0 {
 			obs.Description += "eBird observation details:\n" +
-				rec[field["Observation Details"]] + "\n"
+				rec[f] + "\n"
 		}
 		obs.Description += "Checklist: https://ebird.org/checklist/" + rec[field["Submission ID"]] + "\n"
 		obs.Description += "Protocol: " + rec[field["Protocol"]] + "\n"
-		if field["Checklist Comments"] < len(rec) && len(rec[field["Checklist Comments"]]) > 0 {
+		if f := field["Checklist Comments"]; f < len(rec) && len(rec[f]) > 0 {
 			obs.Description += "eBird checklist comments:\n" +
-				rec[field["Checklist Comments"]] + "\n"
+				rec[f] + "\n"
 		}
 		var photoIDs []string
-		if field["ML Catalog Numbers"] < len(rec) && len(rec[field["ML Catalog Numbers"]]) > 0 {
-			photoIDs = strings.Split(rec[field["ML Catalog Numbers"]], " ")
+		if f := field["ML Catalog Numbers"]; f < len(rec) && len(rec[f]) > 0 {
+			photoIDs = strings.Split(rec[f], " ")
 			for _, id := range photoIDs {
 				obs.Description += "Macaulay Library Asset: https://macaulaylibrary.org/asset/" + id + "\n"
 			}
