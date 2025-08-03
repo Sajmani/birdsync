@@ -6,7 +6,9 @@ package main
 import (
 	"encoding/csv"
 	"flag"
+	"fmt"
 	"log"
+	"maps"
 	"os"
 	"slices"
 	"strconv"
@@ -180,7 +182,6 @@ func main() {
 		}
 
 		// Skip records that have previously been uploaded by birdsync.
-		// TODO: check whether the photos have changed and sync them.
 		key := ebird.ObservationID{
 			SubmissionID:   rec[field["Submission ID"]],
 			ScientificName: rec[field["Scientific Name"]],
@@ -189,6 +190,17 @@ func main() {
 			debugf("line %d: Already synced %s to iNaturalist as http://inaturalist.org/observations/%s\n",
 				line, key, r.UUID)
 			stats.previouslySkips++
+			if debug {
+				// Determine whether photos or sounds have changed.
+				// TODO: sync the changes
+				eSet := eBirdMLAssets(rec[field["ML Catalog Numbers"]])
+				iSet := iNatMLAssets(r)
+				if !maps.Equal(eSet, iSet) {
+					fmt.Printf("line %d: %s different ML assets: eBird %+v; iNat %+v\n", line, key, eSet, iSet)
+					fmt.Printf("added: %+v\n", mlAssetDiff(eSet, iSet))
+					fmt.Printf("deleted: %+v\n", mlAssetDiff(iSet, eSet))
+				}
+			}
 			continue
 		}
 
@@ -313,4 +325,35 @@ func main() {
 	}
 	log.Printf("Created %d new iNaturalist observations", stats.createdObservations)
 	log.Printf("Uploaded %d photos to iNaturalist", stats.uploadedPhotos)
+}
+
+type mlAssetSet map[string]bool
+
+func eBirdMLAssets(mlAssets string) mlAssetSet {
+	set := mlAssetSet{}
+	for _, id := range strings.Split(mlAssets, " ") {
+		set[strings.TrimSpace(id)] = true
+	}
+	return set
+}
+
+func iNatMLAssets(r inat.Result) mlAssetSet {
+	set := mlAssetSet{}
+	for _, line := range strings.Split(r.Description, "\n") {
+		if i := strings.Index(line, "macaulaylibrary.org/asset/"); i >= 0 {
+			id := line[i+len("macaulaylibrary.org/asset/"):]
+			set[strings.TrimSpace(id)] = true
+		}
+	}
+	return set
+}
+
+func mlAssetDiff(a, b mlAssetSet) mlAssetSet {
+	diff := mlAssetSet{}
+	for id := range a {
+		if !b[id] {
+			diff[id] = true
+		}
+	}
+	return diff
 }
