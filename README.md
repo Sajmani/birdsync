@@ -24,12 +24,19 @@ Run `birdsync` from the command line, specifying the path to your `MyEBirdData.c
 ```
 $HOME/go/bin/birdsync MyEBirdData.csv
 ```
+Consider running a "dry run" to test what birdsync would do without actually touching your iNaturalist observations:
+```
+$HOME/go/bin/birdsync MyEBirdData.csv
+```
+Look for log lines starting with "DRYRUN" to see what observations birdsync will create and which media files it will copy.
+
 Birdsync will prompt you to enter your iNaturalist user name and [API token](https://www.inaturalist.org/users/api_token), which allow the tool to read and write your personal iNaturalist observations.
+Copy the full string from the web page, including both curly braces: `{"api_token":"TOKEN"}`
 
 To skip these interactive steps, you can provide your iNaturalist user name and API token as environment variables, but remember that you need to refresh your [API token](https://www.inaturalist.org/users/api_token) every 24 hours:
 ```
 export INAT_USER_ID=sameerajmani
-export INAT_API_TOKEN=(the TOKEN from {"api_token":"TOKEN"})
+export INAT_API_TOKEN=(just the TOKEN part of {"api_token":"TOKEN"})
 ```
 Birdsync provides command-line flags to customize its behavior:
 *  `-after 2006-01-02`
@@ -47,6 +54,10 @@ On the command line, flags must be listed _before_ your `MyEBirdData.csv` file:
 ```
 $HOME/go/bin/birdsync --verifiable --after 2025-07-01 MyEBirdData.csv
 ```
+
+Once birdsync has finished running, you should check the observations it created:
+- If iNaturalist doesn't recognize the scientific name provided by eBird, the observation species name will say "Unknown". Fix this by editing the observation in iNaturalist.
+- If the iNaturalist observation has no photos or sounds, either because none were in eBird or because birdsync failed to copy them, then the observation will be marked "Casual". Fix this by uploading media for these observations or deleting them. Use the `--verifiable` flag to restrict birdsync to only copy observations that include photos or sounds. iNaturalist rejects sound files larger than 50 MB; in these cases you will need to add a smaller file to the observation.
 
 # How birdsync works
 
