@@ -1,5 +1,5 @@
 # birdsync
-Birdsync syncs eBird observations and photos to iNaturalist.
+Birdsync syncs eBird observations, photos, and sounds to iNaturalist.
 
 # Requirements
 

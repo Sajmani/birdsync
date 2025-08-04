@@ -107,43 +107,53 @@ func (c *Client) DeleteObservation(id uuid.UUID) error {
 	return nil
 }
 
-func (c *Client) UploadImage(filename string, mlAssetID string, obsUUID string) error {
+func (c *Client) UploadMedia(filename string, isPhoto bool, mlAssetID string, obsUUID string) error {
 	destFilename := "ML" + mlAssetID + path.Ext(filename)
-	log.Println("Uploading image as", destFilename)
+	var fieldName string
+	var postURL string
+	if isPhoto {
+		fieldName = "observation_photo[observation_id]"
+		postURL = "https://api.inaturalist.org/v2/observation_photos"
+		log.Println("Uploading photo as", destFilename)
+	} else {
+		fieldName = "observation_sound[observation_id]"
+		postURL = "https://api.inaturalist.org/v2/observation_sounds"
+		log.Println("Uploading sound as", destFilename)
+	}
 	var requestBody bytes.Buffer
 	writer := multipart.NewWriter(&requestBody)
 	fileWriter, err := writer.CreateFormFile("file", destFilename)
 	if err != nil {
-		return fmt.Errorf("UploadImage: %w", err)
+		return fmt.Errorf("UploadMedia: %w", err)
 	}
 	f, err := os.Open(filename)
 	if err != nil {
-		return fmt.Errorf("UploadImage: %w", err)
+		return fmt.Errorf("UploadMedia: %w", err)
 	}
 	defer f.Close()
 	_, err = io.Copy(fileWriter, f)
 	if err != nil {
-		return fmt.Errorf("UploadImage: %w", err)
+		return fmt.Errorf("UploadMedia: %w", err)
 	}
-	err = writer.WriteField("observation_photo[observation_id]", obsUUID)
+	err = writer.WriteField(fieldName, obsUUID)
 	if err != nil {
-		return fmt.Errorf("UploadImage: %w", err)
+		return fmt.Errorf("UploadMedia: %w", err)
 	}
 	err = writer.Close()
 	if err != nil {
-		return fmt.Errorf("UploadImage: %w", err)
+		return fmt.Errorf("UploadMedia: %w", err)
 	}
 
-	req, err := http.NewRequest("POST", "https://api.inaturalist.org/v2/observation_photos", &requestBody)
+	req, err := http.NewRequest("POST", postURL, &requestBody)
 	if err != nil {
-		return fmt.Errorf("UploadImage: %w", err)
+		return fmt.Errorf("UploadMedia: %w", err)
 	}
 	// Set the Content-Type header to the multipart writer's boundary.
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 	_, err = c.roundTrip(req)
 	if err != nil {
-		return fmt.Errorf("UploadImage: %w", err)
+		return fmt.Errorf("UploadMedia: %w", err)
 	}
-	// TODO: log the image URL
+	// TODO: log the media URL from the response body
 	return nil
 }

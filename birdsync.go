@@ -1,4 +1,4 @@
-// Birdsync syncs eBird observations and photos to iNaturalist.
+// Birdsync syncs eBird observations, photos, and sounds to iNaturalist.
 //
 // See README.md for detailed documentation.
 package main
@@ -160,7 +160,7 @@ func main() {
 	debugf("Read %d eBird observations", len(recs))
 	var stats struct {
 		afterSkips, beforeSkips, verifiableSkips, previouslySkips, fuzzySkips int
-		createdObservations, uploadedPhotos                                   int
+		createdObservations, uploadedMedia                                    int
 	}
 	for i, rec := range recs {
 		line := i + 2 // header was line 1
@@ -279,25 +279,25 @@ func main() {
 			obs.Description += "eBird checklist comments:\n" +
 				rec[f] + "\n"
 		}
-		var photoIDs []string
+		var assetIDs []string
 		if f := field["ML Catalog Numbers"]; f < len(rec) && len(rec[f]) > 0 {
-			photoIDs = strings.Split(rec[f], " ")
-			for _, id := range photoIDs {
+			assetIDs = strings.Split(rec[f], " ")
+			for _, id := range assetIDs {
 				obs.Description += "Macaulay Library Asset: https://macaulaylibrary.org/asset/" + id + "\n"
 			}
 		}
-		// Skip records without photos if --verifiable is set.
-		if verifiable && len(photoIDs) == 0 {
+		// Skip records without media assets if --verifiable is set.
+		if verifiable && len(assetIDs) == 0 {
 			debugf("line %d: SKIPPING record that has no photos or sounds (--verifiable=true)", line)
 			stats.verifiableSkips++
 			continue
 		}
 		if dryRun {
-			log.Printf("DRYRUN: Syncing eBird observation %s to iNaturalist (%d photos)\n",
-				key, len(photoIDs))
+			log.Printf("DRYRUN: Syncing eBird observation %s to iNaturalist (%d media assets)\n",
+				key, len(assetIDs))
 		} else {
-			debugf("Syncing eBird observation %s to iNaturalist (%d photos)\n",
-				key, len(photoIDs))
+			debugf("Syncing eBird observation %s to iNaturalist (%d media assets)\n",
+				key, len(assetIDs))
 			err = client.CreateObservation(obs)
 			if err != nil {
 				log.Fatalf("CreateObservation: %v", err)
@@ -305,20 +305,20 @@ func main() {
 		}
 		stats.createdObservations++
 
-		for _, id := range photoIDs {
+		for _, id := range assetIDs {
 			if dryRun {
 				log.Printf("DRYRUN: Download ML Asset %s and upload to iNaturalist", id)
 			} else {
-				filename, err := ebird.DownloadMLAsset(id)
+				filename, isPhoto, err := ebird.DownloadMLAsset(id)
 				if err != nil {
 					log.Fatalf("Couldn't download ML asset %s from eBird: %v", id, err)
 				}
-				err = client.UploadImage(filename, id, obs.UUID.String())
+				err = client.UploadMedia(filename, isPhoto, id, obs.UUID.String())
 				if err != nil {
 					log.Fatalf("Couldn't upload ML asset %s to iNaturalist: %v", id, err)
 				}
 			}
-			stats.uploadedPhotos++
+			stats.uploadedMedia++
 		}
 	}
 	log.Printf("Finished processing %d eBird observations", len(recs))
@@ -336,7 +336,7 @@ func main() {
 		log.Printf("Skipped %d unverifiable eBird observations", stats.verifiableSkips)
 	}
 	log.Printf("Created %d new iNaturalist observations", stats.createdObservations)
-	log.Printf("Uploaded %d photos to iNaturalist", stats.uploadedPhotos)
+	log.Printf("Uploaded %d photos or sounds to iNaturalist", stats.uploadedMedia)
 }
 
 type mlAssetSet map[string]bool

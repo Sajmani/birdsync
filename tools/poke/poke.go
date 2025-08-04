@@ -33,11 +33,11 @@ func main() {
 		}
 		mlAssetID := os.Args[2]
 		obsUUID := os.Args[3]
-		filename, err := ebird.DownloadMLAsset(mlAssetID)
+		filename, isPhoto, err := ebird.DownloadMLAsset(mlAssetID)
 		if err != nil {
 			log.Fatal(err)
 		}
-		err = c.UploadImage(filename, mlAssetID, obsUUID)
+		err = c.UploadMedia(filename, isPhoto, mlAssetID, obsUUID)
 		if err != nil {
 			log.Fatal(err)
 		}

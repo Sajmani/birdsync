@@ -41,55 +41,72 @@ func (o ObservationID) String() string {
 	return fmt.Sprintf("%s[%s]", o.SubmissionID, o.ScientificName)
 }
 
-// DownloadMLAsset downloads the image with the provided ML asset ID
-// (numbers only) and returns the local filename.
+// DownloadMLAsset downloads the photo or sound with the provided ML asset ID
+// (numbers only) and returns the local filename and whether it's a photo.
 // This file is temporary and may be deleted at any time.
 //
-// TODO: support downloading sound assets, too.
-func DownloadMLAsset(mlAssetID string) (string, error) {
+// Since the ML asset ID doesn't indicate whether this is a photo or sound file,
+// we try downloading the photo file first, and if it's not there,
+// we try downloading the sound file.
+func DownloadMLAsset(mlAssetID string) (string, bool, error) {
+	// Try fetching this ML asset as a photo
 	url := fmt.Sprintf("https://cdn.download.ams.birds.cornell.edu/api/v2/asset/%s/2400", mlAssetID)
 	resp, err := http.Get(url)
 	if err != nil {
-		return "", fmt.Errorf("failed to make HTTP request: %w", err)
+		return "", false, fmt.Errorf("DownloadMLAsset(%s): %s: %w", mlAssetID, url, err)
 	}
-	defer resp.Body.Close() // Close the response body when the function exits
+	defer resp.Body.Close()
+	isPhoto := resp.StatusCode == http.StatusOK
+	if resp.StatusCode == http.StatusNotFound {
+		// Photo not found; try fetching it as a sound
+		url = fmt.Sprintf("https://cdn.download.ams.birds.cornell.edu/api/v2/asset/%s/mp3", mlAssetID)
+		resp, err = http.Get(url)
+		if err != nil {
+			return "", isPhoto, fmt.Errorf("DownloadMLAsset(%s): %s: %w", mlAssetID, url, err)
+		}
+		defer resp.Body.Close()
+	}
 	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("bad status code: %s", resp.Status)
+		return "", isPhoto, fmt.Errorf("DownloadMLAsset(%s): %s: %s", mlAssetID, url, resp.Status)
 	}
 
 	tmpFile, err := os.CreateTemp("", "birdsync")
 	if err != nil {
-		return "", fmt.Errorf("failed to create temp file: %w", err)
+		return "", isPhoto, fmt.Errorf("DownloadMLAsset(%s): CreateTemp: %w", mlAssetID, err)
 	}
 	_, err = io.Copy(tmpFile, resp.Body)
 	if err != nil {
-		return "", fmt.Errorf("failed to copy image data to file: %w", err)
+		return "", isPhoto, fmt.Errorf("DownloadMLAsset(%s): failed to copy asset data to file: %w", mlAssetID, err)
 	}
 
-	// Re-open the file to detect content type
-	_, err = tmpFile.Seek(0, 0)
-	if err != nil {
-		return "", fmt.Errorf("failed to seek to beginning of temp file: %w", err)
+	ext := ".mp3"
+	if isPhoto {
+		// For photos only: re-open the file to detect content type
+		_, err = tmpFile.Seek(0, 0)
+		if err != nil {
+			return "", isPhoto, fmt.Errorf("DownloadMLAsset(%s): failed to seek to beginning of temp file: %w", mlAssetID, err)
+		}
+
+		buf := make([]byte, 512) // 512 bytes is the required size for DetectContentType
+		n, err := tmpFile.Read(buf)
+		if err != nil && err != io.EOF {
+			return "", isPhoto, fmt.Errorf("DownloadMLAsset(%s): failed to read from temp file for content type detection: %w", mlAssetID, err)
+		}
+		buf = buf[:n]
+
+		mimeType := http.DetectContentType(buf)
+		extensions, err := mime.ExtensionsByType(mimeType)
+		if err != nil || len(extensions) == 0 {
+			return "", isPhoto, fmt.Errorf("DownloadMLAsset(%s): failed to find file extension for mime type %s: %w", mlAssetID, mimeType, err)
+		}
+		tmpFile.Close() // Close the file before renaming it.
+		ext = extensions[0]
 	}
 
-	buf := make([]byte, 512) // 512 bytes is the required size for DetectContentType
-	n, err := tmpFile.Read(buf)
-	if err != nil && err != io.EOF {
-		return "", fmt.Errorf("failed to read from temp file for content type detection: %w", err)
-	}
-	buf = buf[:n]
-
-	mimeType := http.DetectContentType(buf)
-	extensions, err := mime.ExtensionsByType(mimeType)
-	if err != nil || len(extensions) == 0 {
-		return "", fmt.Errorf("failed to find file extension for mime type %s: %w", mimeType, err)
-	}
-	tmpFile.Close() // Close the file before renaming it.
-
-	newPath := tmpFile.Name() + extensions[0]
+	newPath := tmpFile.Name() + ext
 	err = os.Rename(tmpFile.Name(), newPath)
 	if err != nil {
-		return "", fmt.Errorf("failed to rename file: %w", err)
+		return "", isPhoto, fmt.Errorf("DownloadMLAsset(%s): failed to rename file: %w", mlAssetID, err)
 	}
-	return newPath, nil
+	return newPath, isPhoto, nil
 }
