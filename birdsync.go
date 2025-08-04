@@ -55,11 +55,12 @@ func (f *dateTimeFlag) Time() time.Time {
 }
 
 var (
-	dryRun     bool
-	verifiable bool
-	fuzzy      bool
-	before     dateTimeFlag
-	after      dateTimeFlag
+	dryRun             bool
+	verifiable         bool
+	fuzzy              bool
+	before             dateTimeFlag
+	after              dateTimeFlag
+	positionalAccuracy int
 )
 
 func init() {
@@ -75,6 +76,8 @@ func init() {
 		"Sync only observations observed before the provided DateTime (2006-01-02 15:04:05). The time can be omitted (2006-01-02).")
 	flag.Var(&after, "after",
 		"Sync only observations observed after the provided DateTime (2006-01-02 15:04:05). The time can be omitted (2006-01-02).")
+	flag.IntVar(&positionalAccuracy, "positional_accuracy_meters", ebird.PositionalAccuracy,
+		"Positional accuracy in meters of the iNaturalist observations created by birdsync.")
 }
 
 func parseEBirdDateTime(d, t string) (time.Time, error) {
@@ -248,7 +251,7 @@ func main() {
 			Latitude:           floatField("Latitude"),
 			Longitude:          floatField("Longitude"),
 			LocationIsExact:    false,
-			PositionalAccuracy: ebird.PositionalAccuracy,
+			PositionalAccuracy: float64(positionalAccuracy),
 			SpeciesGuess:       stringField("Scientific Name"),
 			ObservedOnString:   stringField("Date") + " " + stringField("Time"),
 			ObservationFieldValuesAttributes: []inat.ObservationFieldValue{
