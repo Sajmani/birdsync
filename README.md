@@ -26,9 +26,9 @@ $HOME/go/bin/birdsync MyEBirdData.csv
 ```
 Consider running a "dry run" to test what birdsync would do without actually touching your iNaturalist observations:
 ```
-$HOME/go/bin/birdsync MyEBirdData.csv
+$HOME/go/bin/birdsync --dryrun MyEBirdData.csv
 ```
-Look for log lines starting with "DRYRUN" to see what observations birdsync will create and which media files it will copy.
+Look for log lines starting with "DRYRUN" to see what observations birdsync will create and which media files it will copy. The dry run prints out the full observation data structure and so can be quite verbose.
 
 Birdsync will prompt you to enter your iNaturalist user name and [API token](https://www.inaturalist.org/users/api_token), which allow the tool to read and write your personal iNaturalist observations.
 Copy the full string from the web page, including both curly braces: `{"api_token":"TOKEN"}`
