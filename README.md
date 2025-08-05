@@ -73,8 +73,8 @@ Given (`iNaturalist user name`, `eBird CSV file`):
   - If `--fuzzy` is set, skip any eBird observations for the same bird and day as a non-birdsync observation
   - Create a new iNaturalist observation from the eBird observation
   - For each [Macaulay Library](https://www.macaulaylibrary.org/) catalog ID for this eBird observation:
-    - Download the image from the Macaulay Library
-    - Upload the image to iNaturalist, associated with the new observation
+    - Download the photo or sound from the Macaulay Library
+    - Upload the photo or sound to iNaturalist, associated with the new observation
 
 # Limitations
 
