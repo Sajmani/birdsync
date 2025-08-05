@@ -85,8 +85,8 @@ func Records(filename string) (iter.Seq[Record], error) {
 	return func(yield func(Record) bool) {
 		for i, rec := range recs {
 			stringField := func(key string) string {
-				if field[key] < len(rec) {
-					return rec[field[key]]
+				if f := field[key]; f < len(rec) {
+					return rec[f]
 				}
 				return ""
 			}
