@@ -49,6 +49,11 @@ Birdsync provides command-line flags to customize its behavior:
         Sync only observations that include Macaulay Catalog Numbers (photos or sound)
 * `-fuzzy`
         Don't create a birdsync observation if a non-birdsync observation already exists for the same bird on the same date. This fuzzy matching is useful when you've entered the same observation manually into both eBird and iNaturalist, but it may skip legitimate uploads if you saw the same bird twice on the same day.
+* `-positional_accuracy_meters`
+        Positional accuracy in meters of the iNaturalist observations created by birdsync.
+        Since the latitude and longitude of birdsync observations is set to the checklist location,
+        this may be distant from the actual location where individual birds were observed.
+        Birdsync uses default positional accuracy of 500 meters; use this flag to adjust it.
 
 On the command line, flags must be listed _before_ your `MyEBirdData.csv` file:
 ```
