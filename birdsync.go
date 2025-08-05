@@ -4,7 +4,6 @@
 package main
 
 import (
-	"encoding/csv"
 	"flag"
 	"fmt"
 	"log"
@@ -18,6 +17,7 @@ import (
 	"github.com/Sajmani/birdsync/ebird"
 	"github.com/Sajmani/birdsync/inat"
 	"github.com/google/uuid"
+	"github.com/kr/pretty"
 )
 
 const UserAgent = "birdsync/0.1"
@@ -80,13 +80,6 @@ func init() {
 		"Positional accuracy in meters of the iNaturalist observations created by birdsync.")
 }
 
-func parseEBirdDateTime(d, t string) (time.Time, error) {
-	if t == "" {
-		return time.Parse("2006-01-02", d)
-	}
-	return time.Parse("2006-01-02 03:04 PM", d+" "+t)
-}
-
 func main() {
 	flag.Parse()
 	if len(flag.Args()) != 1 {
@@ -98,13 +91,13 @@ func main() {
 		log.Fatalf("--after (%s) is after --before (%s), won't match any records",
 			after.Time(), before.Time())
 	}
-	eBirdCSVFilename := flag.Arg(0)
-	eBirdCSVFile, err := os.Open(eBirdCSVFilename)
-	if err != nil {
-		log.Fatalf("Error opening %s: %v", eBirdCSVFilename, err)
-	}
-	defer eBirdCSVFile.Close()
 
+	eBirdCSVFilename := flag.Arg(0)
+	if f, err := os.Open(eBirdCSVFilename); err != nil {
+		log.Fatalf("Can't open %s: %v", eBirdCSVFilename, err)
+	} else {
+		f.Close()
+	}
 	inatUserID := inat.GetUserID()
 	inatAPIToken := inat.GetAPIToken()
 	client := inat.NewClient(inatAPIToken, UserAgent)
@@ -140,66 +133,47 @@ func main() {
 	debugf("Previously synced %d observations\n", len(previouslySynced))
 
 	log.Printf("Reading eBird observations from %s", eBirdCSVFilename)
-	r := csv.NewReader(eBirdCSVFile)
-	// eBird's CSV export returns a variable number of fields per record,
-	// so disable this check. This means we need to explicitly check len(rec)
-	// before accessing fields that might not be there.
-	r.FieldsPerRecord = -1
-	recs, err := r.ReadAll()
+	records, err := ebird.Records(eBirdCSVFilename)
 	if err != nil {
-		log.Fatalf("Error reading CSV records from %s: %v", eBirdCSVFilename, err)
+		log.Fatal(err)
 	}
-	if len(recs) < 1 {
-		log.Fatalf("No records found in %s", eBirdCSVFilename)
-	}
-	field := make(map[string]int)
-	for i, f := range recs[0] {
-		field[f] = i
-	}
-	recs = recs[1:]
-	debugf("Read %d eBird observations", len(recs))
 	var stats struct {
 		afterSkips, beforeSkips, verifiableSkips, previouslySkips, fuzzySkips int
-		createdObservations, uploadedMedia                                    int
+		totalRecords, createdObservations, uploadedMedia                      int
 	}
-	for i, rec := range recs {
-		line := i + 2 // header was line 1
-
-		// Skip records that were not observed between --after and --before.
-		d, t := rec[field["Date"]], rec[field["Time"]]
-		observed, err := parseEBirdDateTime(d, t)
+	for rec := range records {
+		stats.totalRecords++
+		observed, err := rec.Observed()
 		if err != nil {
-			log.Fatalf("line %d: could not parse Date %q Time %q: %v", line, d, t, err)
+			log.Fatalf("line %d: bad date/time: %v", rec.Line, err)
 		}
+		// Skip records that were not observed between --after and --before.
 		if !after.Time().IsZero() && observed.Before(after.Time()) {
 			debugf("line %d: SKIPPING record observed on %s (before --after=%s)",
-				line, observed, after.Time())
+				rec.Line, observed, after.Time())
 			stats.afterSkips++
 			continue
 		}
 		if !before.Time().IsZero() && observed.After(before.Time()) {
 			debugf("line %d: SKIPPING record observed on %s (after --before=%s)",
-				line, observed, before.Time())
+				rec.Line, observed, before.Time())
 			stats.beforeSkips++
 			continue
 		}
 
 		// Skip records that have previously been uploaded by birdsync.
-		key := ebird.ObservationID{
-			SubmissionID:   rec[field["Submission ID"]],
-			ScientificName: rec[field["Scientific Name"]],
-		}
+		key := rec.ObservationID()
 		if r, ok := previouslySynced[key]; ok {
 			debugf("line %d: Already synced %s to iNaturalist as http://inaturalist.org/observations/%s\n",
-				line, key, r.UUID)
+				rec.Line, key, r.UUID)
 			stats.previouslySkips++
 			if debug {
 				// Determine whether photos or sounds have changed.
 				// TODO: sync the changes
-				eSet := eBirdMLAssets(rec[field["ML Catalog Numbers"]])
+				eSet := eBirdMLAssets(rec.MLCatalogNumbers)
 				iSet := iNatMLAssets(r)
 				if !maps.Equal(eSet, iSet) {
-					fmt.Printf("line %d: %s different ML assets: eBird %+v; iNat %+v\n", line, key, eSet, iSet)
+					fmt.Printf("line %d: %s different ML assets: eBird %+v; iNat %+v\n", rec.Line, key, eSet, iSet)
 					fmt.Printf("added: %+v\n", mlAssetDiff(eSet, iSet))
 					fmt.Printf("deleted: %+v\n", mlAssetDiff(iSet, eSet))
 				}
@@ -210,91 +184,85 @@ func main() {
 		if fuzzy {
 			// Skip records for the same bird and date as an existing non-birdsync observation.
 			key := fuzzyKey{
-				commonName:   rec[field["Common Name"]],
-				observedDate: rec[field["Date"]],
+				commonName:   rec.CommonName,
+				observedDate: rec.Date,
 			}
-			debugf("line %d: fuzzy match: check %+v", line, key)
+			debugf("line %d: fuzzy match: check %+v", rec.Line, key)
 			if _, ok := fuzzyMatch[key]; ok {
-				log.Printf("line %d: SKIPPING fuzzy match: observation for same bird and date: %+v", line, key)
+				log.Printf("line %d: SKIPPING fuzzy match: observation for same bird and date: %+v", rec.Line, key)
 				stats.fuzzySkips++
 				continue
 			}
 		}
 
 		// Create the iNaturalist observation from the eBird record.
-		floatField := func(key string) float64 {
-			if field[key] < len(rec) {
-				s := rec[field[key]]
-				f, err := strconv.ParseFloat(s, 64)
-				if err != nil {
-					log.Fatalf("line %d: Invalid float64 for %s: %q: %v", line, key, s, err)
-				}
-				return f
+		floatField := func(line int, s string) float64 {
+			if s == "" {
+				return 0
 			}
-			return 0
-		}
-		stringField := func(key string) string {
-			if field[key] < len(rec) {
-				return rec[field[key]]
+			f, err := strconv.ParseFloat(s, 64)
+			if err != nil {
+				log.Fatalf("line %d: Invalid float64 %q: %v", line, s, err)
 			}
-			return ""
+			return f
 		}
-		keyField := func(id int, key string) inat.ObservationFieldValue {
+		keyField := func(id int, s string) inat.ObservationFieldValue {
 			return inat.ObservationFieldValue{
 				ObservationFieldID: id,
-				Value:              stringField(key),
+				Value:              s,
 			}
 		}
 		obs := inat.Observation{
 			UUID:               uuid.New(),
 			CaptiveFlag:        false, // eBird checklists should only include wild birds
-			Latitude:           floatField("Latitude"),
-			Longitude:          floatField("Longitude"),
+			Latitude:           floatField(rec.Line, rec.Latitude),
+			Longitude:          floatField(rec.Line, rec.Longitude),
 			LocationIsExact:    false,
 			PositionalAccuracy: float64(positionalAccuracy),
-			SpeciesGuess:       stringField("Scientific Name"),
-			ObservedOnString:   stringField("Date") + " " + stringField("Time"),
+			SpeciesGuess:       rec.ScientificName,
+			ObservedOnString:   rec.Date + " " + rec.Time,
 			ObservationFieldValuesAttributes: []inat.ObservationFieldValue{
-				keyField(inat.CountField, "Count"),
-				keyField(inat.CommonNameField, "Common Name"),
-				keyField(inat.LocationField, "Location"),
-				keyField(inat.CountyField, "County"),
-				keyField(inat.StateOrProvinceField, "State/Province"),
-				keyField(inat.NumObserversField, "Number of Observers"),
+				keyField(inat.CountField, rec.Count),
+				keyField(inat.CommonNameField, rec.CommonName),
+				keyField(inat.LocationField, rec.Location),
+				keyField(inat.CountyField, rec.County),
+				keyField(inat.StateOrProvinceField, rec.StateProvince),
+				keyField(inat.NumObserversField, rec.NumberOfObservers),
 				// EBirdField and EBirdScientificNameField are used to match iNaturalist observations
 				// to the corresponding eBird checklist and species entry. We cannot rely on the taxon
 				// in the iNaturalist observation because it may be changed after upload.
-				keyField(inat.EBirdField, "Submission ID"),
-				keyField(inat.EBirdScientificNameField, "Scientific Name"),
+				keyField(inat.EBirdField, rec.SubmissionID),
+				keyField(inat.EBirdScientificNameField, rec.ScientificName),
 			},
 		}
 		obs.Description = "Observation created using github.com/Sajmani/birdsync \n"
-		if f := field["Observation Details"]; f < len(rec) && len(rec[f]) > 0 {
+		if len(rec.ObservationDetails) > 0 {
 			obs.Description += "eBird observation details:\n" +
-				rec[f] + "\n"
+				rec.ObservationDetails + "\n"
 		}
-		obs.Description += "Checklist: https://ebird.org/checklist/" + rec[field["Submission ID"]] + "\n"
-		obs.Description += "Protocol: " + rec[field["Protocol"]] + "\n"
-		if f := field["Checklist Comments"]; f < len(rec) && len(rec[f]) > 0 {
+		obs.Description += "Checklist: https://ebird.org/checklist/" + rec.SubmissionID + "\n"
+		obs.Description += "Protocol: " + rec.Protocol + "\n"
+		if len(rec.ChecklistComments) > 0 {
 			obs.Description += "eBird checklist comments:\n" +
-				rec[f] + "\n"
+				rec.ChecklistComments + "\n"
 		}
 		var assetIDs []string
-		if f := field["ML Catalog Numbers"]; f < len(rec) && len(rec[f]) > 0 {
-			assetIDs = strings.Split(rec[f], " ")
+		if len(rec.MLCatalogNumbers) > 0 {
+			assetIDs = strings.Split(rec.MLCatalogNumbers, " ")
 			for _, id := range assetIDs {
 				obs.Description += "Macaulay Library Asset: https://macaulaylibrary.org/asset/" + id + "\n"
 			}
 		}
 		// Skip records without media assets if --verifiable is set.
 		if verifiable && len(assetIDs) == 0 {
-			debugf("line %d: SKIPPING record that has no photos or sounds (--verifiable=true)", line)
+			debugf("line %d: SKIPPING record that has no photos or sounds (--verifiable=true)", rec.Line)
 			stats.verifiableSkips++
 			continue
 		}
 		if dryRun {
 			log.Printf("DRYRUN: Syncing eBird observation %s to iNaturalist (%d media assets)\n",
 				key, len(assetIDs))
+			pretty.Println(obs)
 		} else {
 			debugf("Syncing eBird observation %s to iNaturalist (%d media assets)\n",
 				key, len(assetIDs))
@@ -321,7 +289,7 @@ func main() {
 			stats.uploadedMedia++
 		}
 	}
-	log.Printf("Finished processing %d eBird observations", len(recs))
+	log.Printf("Finished processing %d eBird observations", stats.totalRecords)
 	log.Printf("Skipped %d previously uploaded by birdsync", stats.previouslySkips)
 	if fuzzy {
 		log.Printf("Skipped %d eBird observations with --fuzzy matching", stats.fuzzySkips)

@@ -12,11 +12,11 @@
 package main
 
 import (
-	"encoding/csv"
 	"log"
 	"os"
 	"time"
 
+	"github.com/Sajmani/birdsync/ebird"
 	"github.com/Sajmani/birdsync/inat"
 )
 
@@ -27,40 +27,20 @@ func main() {
 		log.Println("usage: repair MyEBirdData.csv")
 		os.Exit(1)
 	}
-	eBirdCSVFile := os.Args[1]
+	eBirdCSVFilename := os.Args[1]
 	inatUserID := inat.GetUserID()
 	apiToken := inat.GetAPIToken()
 	client := inat.NewClient(apiToken, UserAgent)
 
-	log.Println("Reading eBird observations from", eBirdCSVFile)
-	f, err := os.Open(eBirdCSVFile)
+	log.Println("Reading eBird observations from", eBirdCSVFilename)
+	records, err := ebird.Records(eBirdCSVFilename)
 	if err != nil {
-		log.Fatalf("Error opening %s: %v", eBirdCSVFile, err)
+		log.Fatal(err)
 	}
-	defer f.Close()
-	r := csv.NewReader(f)
-	// eBird's CSV export returns a variable number of fields per record,
-	// so disable this check. This means we need to explicitly check len(rec)
-	// before accessing fields that might not be there.
-	r.FieldsPerRecord = -1
-	recs, err := r.ReadAll()
-	if err != nil {
-		log.Fatalf("Error reading CSV records from %s: %v", eBirdCSVFile, err)
-	}
-	if len(recs) < 1 {
-		log.Fatalf("No records found in %s", eBirdCSVFile)
-	}
-	field := make(map[string]int)
-	for i, f := range recs[0] {
-		field[f] = i
-	}
-	recs = recs[1:]
-	log.Println("Read", len(recs), "eBird observations")
-
 	checklistScientificNames := map[string]map[string]bool{}
-	for _, rec := range recs {
-		checklist := rec[field["Submission ID"]]
-		scientificName := rec[field["Scientific Name"]]
+	for rec := range records {
+		checklist := rec.SubmissionID
+		scientificName := rec.ScientificName
 		if checklistScientificNames[checklist] == nil {
 			checklistScientificNames[checklist] = map[string]bool{}
 		}

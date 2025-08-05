@@ -2,17 +2,151 @@
 package ebird
 
 import (
+	"encoding/csv"
 	"fmt"
 	"io"
+	"iter"
+	"log"
 	"mime"
 	"net/http"
 	"os"
+	"time"
 )
 
 // PositionalAccuracy is the default positional accuracy in meters
 // that we use for eBird observations. This is intended to serve as
 // an approximation of the radius of a typical eBird hotspot.
 const PositionalAccuracy = 500 // meters
+
+// Record contains the fields in MyEBirdData.csv records.
+type Record struct {
+	Line               int // line in the CSV file
+	SubmissionID       string
+	CommonName         string
+	ScientificName     string
+	TaxonomicOrder     string
+	Count              string // "X" or integer
+	StateProvince      string
+	County             string
+	LocationID         string
+	Location           string
+	Latitude           string
+	Longitude          string
+	Date               string // YYYY-MM-DD
+	Time               string // 07:00 AM
+	Protocol           string
+	DurationMin        string
+	AllObsReported     string // "1" means yes
+	DistanceTraveledKm string
+	AreaCoveredHa      string
+	NumberOfObservers  string
+	BreedingCode       string
+	ObservationDetails string
+	ChecklistComments  string
+	MLCatalogNumbers   string
+}
+
+func (r Record) Observed() (time.Time, error) {
+	if r.Time == "" {
+		return time.Parse("2006-01-02", r.Date)
+	}
+	return time.Parse("2006-01-02 03:04 PM", r.Date+" "+r.Time)
+}
+
+func (r Record) ObservationID() ObservationID {
+	return ObservationID{r.SubmissionID, r.ScientificName}
+}
+
+func Records(filename string) (iter.Seq[Record], error) {
+	f, err := os.Open(filename)
+	if err != nil {
+		log.Fatalf("ebird.Records(%s): %v", filename, err)
+	}
+	defer f.Close()
+
+	r := csv.NewReader(f)
+	// eBird's CSV export returns a variable number of fields per record,
+	// so disable this check. This means we need to explicitly check len(rec)
+	// before accessing fields that might not be there.
+	r.FieldsPerRecord = -1
+	recs, err := r.ReadAll()
+	if err != nil {
+		log.Fatalf("Error reading CSV records from %s: %v", filename, err)
+	}
+	if len(recs) < 1 {
+		log.Fatalf("No records found in %s", filename)
+	}
+	field := make(map[string]int)
+	for i, f := range recs[0] {
+		field[f] = i
+	}
+	recs = recs[1:]
+	log.Printf("Read %d eBird observations", len(recs))
+	return func(yield func(Record) bool) {
+		for i, rec := range recs {
+			stringField := func(key string) string {
+				if field[key] < len(rec) {
+					return rec[field[key]]
+				}
+				return ""
+			}
+			if !yield(Record{
+				Line:               i + 2, // header was line 1
+				SubmissionID:       stringField(SubmissionID),
+				CommonName:         stringField(CommonName),
+				ScientificName:     stringField(ScientificName),
+				TaxonomicOrder:     stringField(TaxonomicOrder),
+				Count:              stringField(Count),
+				StateProvince:      stringField(StateProvince),
+				County:             stringField(County),
+				LocationID:         stringField(LocationID),
+				Location:           stringField(Location),
+				Latitude:           stringField(Latitude),
+				Longitude:          stringField(Longitude),
+				Date:               stringField(Date),
+				Time:               stringField(Time),
+				Protocol:           stringField(Protocol),
+				DurationMin:        stringField(DurationMin),
+				AllObsReported:     stringField(AllObsReported),
+				DistanceTraveledKm: stringField(DistanceTraveledKm),
+				AreaCoveredHa:      stringField(AreaCoveredHa),
+				NumberOfObservers:  stringField(NumberOfObservers),
+				BreedingCode:       stringField(BreedingCode),
+				ObservationDetails: stringField(ObservationDetails),
+				ChecklistComments:  stringField(ChecklistComments),
+				MLCatalogNumbers:   stringField(MLCatalogNumbers),
+			}) {
+				return
+			}
+		}
+	}, nil
+}
+
+const (
+	SubmissionID       = "Submission ID"
+	CommonName         = "Common Name"
+	ScientificName     = "Scientific Name"
+	TaxonomicOrder     = "Taxonomic Order"
+	Count              = "Count"
+	StateProvince      = "State/Province"
+	County             = "County"
+	LocationID         = "Location ID"
+	Location           = "Location"
+	Latitude           = "Latitude"
+	Longitude          = "Longitude"
+	Date               = "Date"
+	Time               = "Time"
+	Protocol           = "Protocol"
+	DurationMin        = "Duration (Min)"
+	AllObsReported     = "All Obs Reported"
+	DistanceTraveledKm = "Distance Traveled (km)"
+	AreaCoveredHa      = "Area Covered (ha)"
+	NumberOfObservers  = "Number of Observers"
+	BreedingCode       = "Breeding Code"
+	ObservationDetails = "Observation Details"
+	ChecklistComments  = "Checklist Comments"
+	MLCatalogNumbers   = "ML Catalog Numbers"
+)
 
 // ObservationID identifies a unique eBird observation
 // as a submission ID and eBird's scientific name. EBird's
