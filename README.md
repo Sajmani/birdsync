@@ -53,7 +53,7 @@ Birdsync provides command-line flags to customize its behavior:
         Positional accuracy in meters of the iNaturalist observations created by birdsync.
         Since the latitude and longitude of birdsync observations is set to the checklist location,
         this may be distant from the actual location where individual birds were observed.
-        Birdsync uses default positional accuracy of 500 meters; use this flag to adjust it.
+        Birdsync uses default positional accuracy of 1000 meters; use this flag to adjust it.
 
 On the command line, flags must be listed _before_ your `MyEBirdData.csv` file:
 ```
