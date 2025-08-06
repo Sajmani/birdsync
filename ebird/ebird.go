@@ -16,7 +16,7 @@ import (
 // PositionalAccuracy is the default positional accuracy in meters
 // that we use for eBird observations. This is intended to serve as
 // an approximation of the radius of a typical eBird hotspot.
-const PositionalAccuracy = 500 // meters
+const PositionalAccuracy = 1000 // meters
 
 // Record contains the fields in MyEBirdData.csv records.
 type Record struct {
