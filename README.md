@@ -35,7 +35,7 @@ Copy the full string from the web page, including both curly braces: `{"api_toke
 
 To skip these interactive steps, you can provide your iNaturalist user name and API token as environment variables, but remember that you need to refresh your [API token](https://www.inaturalist.org/users/api_token) every 24 hours:
 ```
-export INAT_USER_ID=sameerajmani
+export INAT_USER_ID=(your iNaturalist user name)
 export INAT_API_TOKEN=(just the TOKEN part of {"api_token":"TOKEN"})
 ```
 Birdsync provides command-line flags to customize its behavior:
