@@ -139,7 +139,7 @@ func main() {
 	}
 	var stats struct {
 		afterSkips, beforeSkips, verifiableSkips, previouslySkips, fuzzySkips int
-		totalRecords, createdObservations, uploadedMedia                      int
+		totalRecords, createdObservations, uploadedPhotos, uploadedSounds     int
 	}
 	for rec := range records {
 		stats.totalRecords++
@@ -276,6 +276,7 @@ func main() {
 		for _, id := range assetIDs {
 			if dryRun {
 				log.Printf("DRYRUN: Download ML Asset %s and upload to iNaturalist", id)
+				stats.uploadedPhotos++
 			} else {
 				filename, isPhoto, err := ebird.DownloadMLAsset(id)
 				if err != nil {
@@ -285,8 +286,12 @@ func main() {
 				if err != nil {
 					log.Fatalf("Couldn't upload ML asset %s to iNaturalist: %v", id, err)
 				}
+				if isPhoto {
+					stats.uploadedPhotos++
+				} else {
+					stats.uploadedSounds++
+				}
 			}
-			stats.uploadedMedia++
 		}
 	}
 	log.Printf("Finished processing %d eBird observations", stats.totalRecords)
@@ -304,7 +309,8 @@ func main() {
 		log.Printf("Skipped %d unverifiable eBird observations", stats.verifiableSkips)
 	}
 	log.Printf("Created %d new iNaturalist observations", stats.createdObservations)
-	log.Printf("Uploaded %d photos or sounds to iNaturalist", stats.uploadedMedia)
+	log.Printf("Uploaded %d photos to iNaturalist", stats.uploadedPhotos)
+	log.Printf("Uploaded %d sounds to iNaturalist", stats.uploadedSounds)
 }
 
 type mlAssetSet map[string]bool
