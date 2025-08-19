@@ -6,14 +6,12 @@ package main
 import (
 	"flag"
 	"fmt"
-	"iter"
 	"log"
 	"maps"
 	"os"
 	"slices"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/Sajmani/birdsync/ebird"
 	"github.com/Sajmani/birdsync/inat"
@@ -29,30 +27,6 @@ func debugf(format string, args ...any) {
 	if debug {
 		log.Printf(format, args...)
 	}
-}
-
-type dateTimeFlag struct {
-	t time.Time
-}
-
-func (f *dateTimeFlag) String() string {
-	return f.t.Format(time.DateTime)
-}
-
-func (f *dateTimeFlag) Set(s string) error {
-	t, err := time.Parse(time.DateTime, s)
-	if err != nil {
-		t, err = time.Parse(time.DateOnly, s)
-		if err != nil {
-			return err
-		}
-	}
-	f.t = t
-	return nil
-}
-
-func (f *dateTimeFlag) Time() time.Time {
-	return f.t
 }
 
 var (
@@ -86,53 +60,6 @@ type stats struct {
 	totalRecords, createdObservations, uploadedPhotos, uploadedSounds     int
 }
 
-type ebirdClient interface {
-	Records(string) (iter.Seq[ebird.Record], error)
-	DownloadMLAsset(string) (string, bool, error)
-}
-
-type inatClient interface {
-	GetUserID() string
-	GetAPIToken() string
-	DownloadObservations(string, time.Time, time.Time, ...string) []inat.Result
-	CreateObservation(inat.Observation) error
-	UploadMedia(string, bool, string, string) error
-}
-
-type ebirdClientImpl struct{}
-
-func (ebirdClientImpl) Records(path string) (iter.Seq[ebird.Record], error) {
-	return ebird.Records(path)
-}
-
-func (ebirdClientImpl) DownloadMLAsset(id string) (string, bool, error) {
-	return ebird.DownloadMLAsset(id)
-}
-
-type inatClientImpl struct {
-	client *inat.Client
-}
-
-func (c inatClientImpl) GetUserID() string {
-	return inat.GetUserID()
-}
-
-func (c inatClientImpl) GetAPIToken() string {
-	return inat.GetAPIToken()
-}
-
-func (c inatClientImpl) DownloadObservations(userID string, after, before time.Time, fields ...string) []inat.Result {
-	return inat.DownloadObservations(userID, after, before, fields...)
-}
-
-func (c inatClientImpl) CreateObservation(obs inat.Observation) error {
-	return c.client.CreateObservation(obs)
-}
-
-func (c inatClientImpl) UploadMedia(filename string, isPhoto bool, assetID, obsUUID string) error {
-	return c.client.UploadMedia(filename, isPhoto, assetID, obsUUID)
-}
-
 func main() {
 	flag.Parse()
 	if len(flag.Args()) != 1 {
@@ -157,7 +84,7 @@ func main() {
 	}
 	ebirdAPIClient := ebirdClientImpl{}
 
-	stats := birdsync(eBirdCSVFilename, inatAPIClient, ebirdAPIClient)
+	stats := birdsync(eBirdCSVFilename, ebirdAPIClient, inat.GetUserID(), inatAPIClient)
 
 	log.Printf("Finished processing %d eBird observations", stats.totalRecords)
 	log.Printf("Skipped %d previously uploaded by birdsync", stats.previouslySkips)
@@ -178,9 +105,7 @@ func main() {
 	log.Printf("Uploaded %d sounds to iNaturalist", stats.uploadedSounds)
 }
 
-func birdsync(eBirdCSVFilename string, inatClient inatClient, ebirdClient ebirdClient) stats {
-	inatUserID := inatClient.GetUserID()
-
+func birdsync(eBirdCSVFilename string, ebirdClient ebirdClient, inatUserID string, inatClient inatClient) stats {
 	results := inatClient.DownloadObservations(inatUserID, after.Time(), before.Time(),
 		"description", "observed_on", "taxon.all", "ofvs.all")
 

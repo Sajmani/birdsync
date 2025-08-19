@@ -134,7 +134,7 @@ func TestBirdsync(t *testing.T) {
 	verifiable = true
 	fuzzy = true
 
-	stats := birdsync("MyEBirdData.csv", mockInat, mockEbird)
+	stats := birdsync("MyEBirdData.csv", mockEbird, "myUserID", mockInat)
 
 	if stats.totalRecords != 6 {
 		t.Errorf("Expected 6 total records, got %d", stats.totalRecords)
