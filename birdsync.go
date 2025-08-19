@@ -6,6 +6,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"iter"
 	"log"
 	"maps"
 	"os"
@@ -80,6 +81,58 @@ func init() {
 		"Positional accuracy in meters of the iNaturalist observations created by birdsync.")
 }
 
+type stats struct {
+	afterSkips, beforeSkips, verifiableSkips, previouslySkips, fuzzySkips int
+	totalRecords, createdObservations, uploadedPhotos, uploadedSounds     int
+}
+
+type ebirdClient interface {
+	Records(string) (iter.Seq[ebird.Record], error)
+	DownloadMLAsset(string) (string, bool, error)
+}
+
+type inatClient interface {
+	GetUserID() string
+	GetAPIToken() string
+	DownloadObservations(string, time.Time, time.Time, ...string) []inat.Result
+	CreateObservation(inat.Observation) error
+	UploadMedia(string, bool, string, string) error
+}
+
+type ebirdClientImpl struct{}
+
+func (ebirdClientImpl) Records(path string) (iter.Seq[ebird.Record], error) {
+	return ebird.Records(path)
+}
+
+func (ebirdClientImpl) DownloadMLAsset(id string) (string, bool, error) {
+	return ebird.DownloadMLAsset(id)
+}
+
+type inatClientImpl struct {
+	client *inat.Client
+}
+
+func (c inatClientImpl) GetUserID() string {
+	return inat.GetUserID()
+}
+
+func (c inatClientImpl) GetAPIToken() string {
+	return inat.GetAPIToken()
+}
+
+func (c inatClientImpl) DownloadObservations(userID string, after, before time.Time, fields ...string) []inat.Result {
+	return inat.DownloadObservations(userID, after, before, fields...)
+}
+
+func (c inatClientImpl) CreateObservation(obs inat.Observation) error {
+	return c.client.CreateObservation(obs)
+}
+
+func (c inatClientImpl) UploadMedia(filename string, isPhoto bool, assetID, obsUUID string) error {
+	return c.client.UploadMedia(filename, isPhoto, assetID, obsUUID)
+}
+
 func main() {
 	flag.Parse()
 	if len(flag.Args()) != 1 {
@@ -98,11 +151,37 @@ func main() {
 	} else {
 		f.Close()
 	}
-	inatUserID := inat.GetUserID()
-	inatAPIToken := inat.GetAPIToken()
-	client := inat.NewClient(inatAPIToken, UserAgent)
 
-	results := inat.DownloadObservations(inatUserID, after.Time(), before.Time(),
+	inatAPIClient := inatClientImpl{
+		client: inat.NewClient(inat.GetAPIToken(), UserAgent),
+	}
+	ebirdAPIClient := ebirdClientImpl{}
+
+	stats := birdsync(eBirdCSVFilename, inatAPIClient, ebirdAPIClient)
+
+	log.Printf("Finished processing %d eBird observations", stats.totalRecords)
+	log.Printf("Skipped %d previously uploaded by birdsync", stats.previouslySkips)
+	if fuzzy {
+		log.Printf("Skipped %d eBird observations with --fuzzy matching", stats.fuzzySkips)
+	}
+	if !after.Time().IsZero() {
+		log.Printf("Skipped %d eBird observations before --after", stats.afterSkips)
+	}
+	if !before.Time().IsZero() {
+		log.Printf("Skipped %d eBird observations after --before", stats.beforeSkips)
+	}
+	if verifiable {
+		log.Printf("Skipped %d unverifiable eBird observations", stats.verifiableSkips)
+	}
+	log.Printf("Created %d new iNaturalist observations", stats.createdObservations)
+	log.Printf("Uploaded %d photos to iNaturalist", stats.uploadedPhotos)
+	log.Printf("Uploaded %d sounds to iNaturalist", stats.uploadedSounds)
+}
+
+func birdsync(eBirdCSVFilename string, inatClient inatClient, ebirdClient ebirdClient) stats {
+	inatUserID := inatClient.GetUserID()
+
+	results := inatClient.DownloadObservations(inatUserID, after.Time(), before.Time(),
 		"description", "observed_on", "taxon.all", "ofvs.all")
 
 	previouslySynced := map[ebird.ObservationID]inat.Result{}
@@ -133,16 +212,13 @@ func main() {
 	debugf("Previously synced %d observations\n", len(previouslySynced))
 
 	log.Printf("Reading eBird observations from %s", eBirdCSVFilename)
-	records, err := ebird.Records(eBirdCSVFilename)
+	records, err := ebirdClient.Records(eBirdCSVFilename)
 	if err != nil {
 		log.Fatal(err)
 	}
-	var stats struct {
-		afterSkips, beforeSkips, verifiableSkips, previouslySkips, fuzzySkips int
-		totalRecords, createdObservations, uploadedPhotos, uploadedSounds     int
-	}
+	var s stats
 	for rec := range records {
-		stats.totalRecords++
+		s.totalRecords++
 		observed, err := rec.Observed()
 		if err != nil {
 			log.Fatalf("line %d: bad date/time: %v", rec.Line, err)
@@ -151,13 +227,13 @@ func main() {
 		if !after.Time().IsZero() && observed.Before(after.Time()) {
 			debugf("line %d: SKIPPING record observed on %s (before --after=%s)",
 				rec.Line, observed, after.Time())
-			stats.afterSkips++
+			s.afterSkips++
 			continue
 		}
 		if !before.Time().IsZero() && observed.After(before.Time()) {
 			debugf("line %d: SKIPPING record observed on %s (after --before=%s)",
 				rec.Line, observed, before.Time())
-			stats.beforeSkips++
+			s.beforeSkips++
 			continue
 		}
 
@@ -166,7 +242,7 @@ func main() {
 		if r, ok := previouslySynced[key]; ok {
 			debugf("line %d: Already synced %s to iNaturalist as http://inaturalist.org/observations/%s\n",
 				rec.Line, key, r.UUID)
-			stats.previouslySkips++
+			s.previouslySkips++
 			if debug {
 				// Determine whether photos or sounds have changed.
 				// TODO: sync the changes
@@ -190,7 +266,7 @@ func main() {
 			debugf("line %d: fuzzy match: check %+v", rec.Line, key)
 			if _, ok := fuzzyMatch[key]; ok {
 				log.Printf("line %d: SKIPPING fuzzy match: observation for same bird and date: %+v", rec.Line, key)
-				stats.fuzzySkips++
+				s.fuzzySkips++
 				continue
 			}
 		}
@@ -256,7 +332,7 @@ func main() {
 		// Skip records without media assets if --verifiable is set.
 		if verifiable && len(assetIDs) == 0 {
 			debugf("line %d: SKIPPING record that has no photos or sounds (--verifiable=true)", rec.Line)
-			stats.verifiableSkips++
+			s.verifiableSkips++
 			continue
 		}
 		if dryRun {
@@ -266,51 +342,35 @@ func main() {
 		} else {
 			debugf("Syncing eBird observation %s to iNaturalist (%d media assets)\n",
 				key, len(assetIDs))
-			err = client.CreateObservation(obs)
+			err = inatClient.CreateObservation(obs)
 			if err != nil {
 				log.Fatalf("CreateObservation: %v", err)
 			}
 		}
-		stats.createdObservations++
+		s.createdObservations++
 
 		for _, id := range assetIDs {
 			if dryRun {
 				log.Printf("DRYRUN: Download ML Asset %s and upload to iNaturalist", id)
-				stats.uploadedPhotos++
+				s.uploadedPhotos++
 			} else {
-				filename, isPhoto, err := ebird.DownloadMLAsset(id)
+				filename, isPhoto, err := ebirdClient.DownloadMLAsset(id)
 				if err != nil {
 					log.Fatalf("Couldn't download ML asset %s from eBird: %v", id, err)
 				}
-				err = client.UploadMedia(filename, isPhoto, id, obs.UUID.String())
+				err = inatClient.UploadMedia(filename, isPhoto, id, obs.UUID.String())
 				if err != nil {
 					log.Fatalf("Couldn't upload ML asset %s to iNaturalist: %v", id, err)
 				}
 				if isPhoto {
-					stats.uploadedPhotos++
+					s.uploadedPhotos++
 				} else {
-					stats.uploadedSounds++
+					s.uploadedSounds++
 				}
 			}
 		}
 	}
-	log.Printf("Finished processing %d eBird observations", stats.totalRecords)
-	log.Printf("Skipped %d previously uploaded by birdsync", stats.previouslySkips)
-	if fuzzy {
-		log.Printf("Skipped %d eBird observations with --fuzzy matching", stats.fuzzySkips)
-	}
-	if !after.Time().IsZero() {
-		log.Printf("Skipped %d eBird observations before --after", stats.afterSkips)
-	}
-	if !before.Time().IsZero() {
-		log.Printf("Skipped %d eBird observations after --before", stats.beforeSkips)
-	}
-	if verifiable {
-		log.Printf("Skipped %d unverifiable eBird observations", stats.verifiableSkips)
-	}
-	log.Printf("Created %d new iNaturalist observations", stats.createdObservations)
-	log.Printf("Uploaded %d photos to iNaturalist", stats.uploadedPhotos)
-	log.Printf("Uploaded %d sounds to iNaturalist", stats.uploadedSounds)
+	return s
 }
 
 type mlAssetSet map[string]bool
