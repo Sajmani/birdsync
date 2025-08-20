@@ -5,9 +5,7 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"log"
-	"maps"
 	"os"
 	"slices"
 	"strconv"
@@ -108,7 +106,7 @@ func main() {
 
 func birdsync(eBirdCSVFilename string, ebirdClient ebirdClient, inatUserID string, inatClient inatClient) stats {
 	results := inatClient.DownloadObservations(inatUserID, after.Time(), before.Time(),
-		"description", "observed_on", "taxon.all", "ofvs.all")
+		"description", "observed_on", "photos", "sounds", "taxon.all", "ofvs.all")
 
 	previouslySynced := map[ebird.ObservationID]inat.Result{}
 	type fuzzyKey struct {
@@ -169,16 +167,9 @@ func birdsync(eBirdCSVFilename string, ebirdClient ebirdClient, inatUserID strin
 			debugf("line %d: Already synced %s to iNaturalist as http://inaturalist.org/observations/%s\n",
 				rec.Line, key, r.UUID)
 			s.previouslySkips++
-			if debug {
-				// Determine whether photos or sounds have changed.
-				// TODO: sync the changes
-				eSet := eBirdMLAssets(rec.MLCatalogNumbers)
-				iSet := iNatMLAssets(r)
-				if !maps.Equal(eSet, iSet) {
-					fmt.Printf("line %d: %s different ML assets: eBird %+v; iNat %+v\n", rec.Line, key, eSet, iSet)
-					fmt.Printf("added: %+v\n", mlAssetDiff(eSet, iSet))
-					fmt.Printf("deleted: %+v\n", mlAssetDiff(iSet, eSet))
-				}
+			if summary := mediaChange(rec, r); summary != "" {
+				log.Printf("Media assets differ between eBird https://ebird.org/checklist/%s (%s) and iNaturalist http://inaturalist.org/observations/%s: %s",
+					rec.SubmissionID, rec.CommonName, r.UUID, summary)
 			}
 			continue
 		}
@@ -297,35 +288,4 @@ func birdsync(eBirdCSVFilename string, ebirdClient ebirdClient, inatUserID strin
 		}
 	}
 	return s
-}
-
-type mlAssetSet map[string]bool
-
-func eBirdMLAssets(mlAssets string) mlAssetSet {
-	set := mlAssetSet{}
-	for _, id := range strings.Split(mlAssets, " ") {
-		set[strings.TrimSpace(id)] = true
-	}
-	return set
-}
-
-func iNatMLAssets(r inat.Result) mlAssetSet {
-	set := mlAssetSet{}
-	for _, line := range strings.Split(r.Description, "\n") {
-		if i := strings.Index(line, "macaulaylibrary.org/asset/"); i >= 0 {
-			id := line[i+len("macaulaylibrary.org/asset/"):]
-			set[strings.TrimSpace(id)] = true
-		}
-	}
-	return set
-}
-
-func mlAssetDiff(a, b mlAssetSet) mlAssetSet {
-	diff := mlAssetSet{}
-	for id := range a {
-		if !b[id] {
-			diff[id] = true
-		}
-	}
-	return diff
 }
