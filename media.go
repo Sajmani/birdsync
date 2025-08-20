@@ -51,6 +51,9 @@ func (set mlAssetSet) String() string {
 
 func eBirdMLAssets(mlAssets string) mlAssetSet {
 	set := mlAssetSet{}
+	if mlAssets == "" {
+		return set
+	}
 	for _, id := range strings.Split(mlAssets, " ") {
 		set[strings.TrimSpace(id)] = true
 	}

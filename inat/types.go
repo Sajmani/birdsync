@@ -88,7 +88,7 @@ type Result struct {
 	PositionalAccuracy   int       `json:"positional_accuracy,omitempty"`
 	PreferredCommonName  string    `json:"preferred_common_name,omitempty"`
 	QualityGrade         string    `json:"quality_grade,omitempty"`
-	Sounds               []Photo   `json:"sounds,omitempty"`
+	Sounds               []Sound   `json:"sounds,omitempty"`
 	Taxon                Taxon     `json:"taxon,omitempty"`
 	UUID                 uuid.UUID `json:"uuid,omitempty"`
 }
