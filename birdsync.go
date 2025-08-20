@@ -21,15 +21,8 @@ import (
 
 const UserAgent = "birdsync/0.1"
 
-const debug = false
-
-func debugf(format string, args ...any) {
-	if debug {
-		log.Printf(format, args...)
-	}
-}
-
 var (
+	debug              bool
 	dryRun             bool
 	verifiable         bool
 	fuzzy              bool
@@ -39,6 +32,8 @@ var (
 )
 
 func init() {
+	flag.BoolVar(&debug, "debug", false,
+		"Log verbosely")
 	flag.BoolVar(&dryRun, "dryrun", false,
 		"Don't actually sync any observations, just log what birdsync would do")
 	flag.BoolVar(&verifiable, "verifiable", true,
@@ -53,6 +48,12 @@ func init() {
 		"Sync only observations observed after the provided DateTime (2006-01-02 15:04:05). The time can be omitted (2006-01-02).")
 	flag.IntVar(&positionalAccuracy, "positional_accuracy_meters", ebird.PositionalAccuracy,
 		"Positional accuracy in meters of the iNaturalist observations created by birdsync.")
+}
+
+func debugf(format string, args ...any) {
+	if debug {
+		log.Printf(format, args...)
+	}
 }
 
 type stats struct {
