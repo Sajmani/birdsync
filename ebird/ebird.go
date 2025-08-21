@@ -92,61 +92,35 @@ func Records(filename string) (iter.Seq[Record], error) {
 			}
 			if !yield(Record{
 				Line:               i + 2, // header was line 1
-				SubmissionID:       stringField(SubmissionID),
-				CommonName:         stringField(CommonName),
-				ScientificName:     stringField(ScientificName),
-				TaxonomicOrder:     stringField(TaxonomicOrder),
-				Count:              stringField(Count),
-				StateProvince:      stringField(StateProvince),
-				County:             stringField(County),
-				LocationID:         stringField(LocationID),
-				Location:           stringField(Location),
-				Latitude:           stringField(Latitude),
-				Longitude:          stringField(Longitude),
-				Date:               stringField(Date),
-				Time:               stringField(Time),
-				Protocol:           stringField(Protocol),
-				DurationMin:        stringField(DurationMin),
-				AllObsReported:     stringField(AllObsReported),
-				DistanceTraveledKm: stringField(DistanceTraveledKm),
-				AreaCoveredHa:      stringField(AreaCoveredHa),
-				NumberOfObservers:  stringField(NumberOfObservers),
-				BreedingCode:       stringField(BreedingCode),
-				ObservationDetails: stringField(ObservationDetails),
-				ChecklistComments:  stringField(ChecklistComments),
-				MLCatalogNumbers:   stringField(MLCatalogNumbers),
+				SubmissionID:       stringField("Submission ID"),
+				CommonName:         stringField("Common Name"),
+				ScientificName:     stringField("Scientific Name"),
+				TaxonomicOrder:     stringField("Taxonomic Order"),
+				Count:              stringField("Count"),
+				StateProvince:      stringField("State/Province"),
+				County:             stringField("County"),
+				LocationID:         stringField("Location ID"),
+				Location:           stringField("Location"),
+				Latitude:           stringField("Latitude"),
+				Longitude:          stringField("Longitude"),
+				Date:               stringField("Date"),
+				Time:               stringField("Time"),
+				Protocol:           stringField("Protocol"),
+				DurationMin:        stringField("Duration (Min)"),
+				AllObsReported:     stringField("All Obs Reported"),
+				DistanceTraveledKm: stringField("Distance Traveled (km)"),
+				AreaCoveredHa:      stringField("Area Covered (ha)"),
+				NumberOfObservers:  stringField("Number of Observers"),
+				BreedingCode:       stringField("Breeding Code"),
+				ObservationDetails: stringField("Observation Details"),
+				ChecklistComments:  stringField("Checklist Comments"),
+				MLCatalogNumbers:   stringField("ML Catalog Numbers"),
 			}) {
 				return
 			}
 		}
 	}, nil
 }
-
-const (
-	SubmissionID       = "Submission ID"
-	CommonName         = "Common Name"
-	ScientificName     = "Scientific Name"
-	TaxonomicOrder     = "Taxonomic Order"
-	Count              = "Count"
-	StateProvince      = "State/Province"
-	County             = "County"
-	LocationID         = "Location ID"
-	Location           = "Location"
-	Latitude           = "Latitude"
-	Longitude          = "Longitude"
-	Date               = "Date"
-	Time               = "Time"
-	Protocol           = "Protocol"
-	DurationMin        = "Duration (Min)"
-	AllObsReported     = "All Obs Reported"
-	DistanceTraveledKm = "Distance Traveled (km)"
-	AreaCoveredHa      = "Area Covered (ha)"
-	NumberOfObservers  = "Number of Observers"
-	BreedingCode       = "Breeding Code"
-	ObservationDetails = "Observation Details"
-	ChecklistComments  = "Checklist Comments"
-	MLCatalogNumbers   = "ML Catalog Numbers"
-)
 
 // ObservationID identifies a unique eBird observation
 // as a submission ID and eBird's scientific name. EBird's
