@@ -40,6 +40,9 @@ func (c *Client) roundTrip(req *http.Request) (string, error) {
 		return "", fmt.Errorf("making HTTP request: %w", err)
 	}
 	defer resp.Body.Close()
+	if resp.StatusCode == http.StatusUnauthorized {
+		return "", fmt.Errorf("%s: refresh your INAT_API_TOKEN", resp.Status)
+	}
 	if resp.StatusCode != http.StatusOK {
 		return "", fmt.Errorf("bad HTTP status: %s", resp.Status)
 	}
