@@ -74,7 +74,7 @@ func (c *Client) CreateObservation(obs Observation) error {
 	if err != nil {
 		return fmt.Errorf("CreateObservation: %w", err)
 	}
-	log.Printf("Created http://inaturalist.org/observations/%s\n", obs.UUID)
+	log.Printf("Created http://inaturalist.org/observations/%s [%s]\n", obs.UUID, obs.SpeciesGuess)
 	return nil
 }
 

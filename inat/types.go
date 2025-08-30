@@ -70,7 +70,7 @@ type ObservationFieldValue struct {
 	Value              any `json:"value,omitempty"`
 }
 
-// Returned by https://api.inaturalist.org/v2/observations
+// Observations is returned by https://api.inaturalist.org/v2/observations
 type Observations struct {
 	Page         int      `json:"page,omitempty"`
 	PerPage      int      `json:"per_page,omitempty"`
