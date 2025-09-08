@@ -1,6 +1,7 @@
 package main
 
 import (
+	"slices"
 	"testing"
 
 	"github.com/Sajmani/birdsync/ebird"
@@ -9,10 +10,11 @@ import (
 
 func TestMediaChange(t *testing.T) {
 	tests := []struct {
-		name string
-		rec  ebird.Record
-		r    inat.Result
-		want string
+		name    string
+		rec     ebird.Record
+		r       inat.Result
+		wantSet mlAssetSet
+		want    string
 	}{
 		{
 			name: "no media",
@@ -40,7 +42,8 @@ func TestMediaChange(t *testing.T) {
 				Description: "macaulaylibrary.org/asset/12345",
 				Photos:      []inat.Photo{{}},
 			},
-			want: "1 ML Asset IDs added to eBird: 67890",
+			wantSet: mlAssetSet{ids: []string{"67890"}},
+			want:    "1 ML Asset IDs added to eBird: 67890",
 		},
 		{
 			name: "removed from ebird",
@@ -74,14 +77,19 @@ func TestMediaChange(t *testing.T) {
 				Photos:      []inat.Photo{{}},
 				Sounds:      []inat.Sound{{}},
 			},
-			want: "1 ML Asset IDs added to eBird: 99999; 1 ML Asset IDs removed from eBird: 67890",
+			wantSet: mlAssetSet{ids: []string{"99999"}},
+			want:    "1 ML Asset IDs added to eBird: 99999; 1 ML Asset IDs removed from eBird: 67890",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := mediaChange(tt.rec, tt.r); got != tt.want {
-				t.Errorf("mediaChange() = %q, want %q", got, tt.want)
+			gotSet, got := mediaChange(tt.rec, tt.r)
+			if got != tt.want {
+				t.Errorf("mediaChange() got = %q, want %q", got, tt.want)
+			}
+			if !slices.Equal(gotSet.ids, tt.wantSet.ids) {
+				t.Errorf("mediaChange() gotSet = %v, wantSet %v", gotSet, tt.wantSet)
 			}
 		})
 	}

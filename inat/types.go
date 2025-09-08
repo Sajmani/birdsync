@@ -1,6 +1,10 @@
 package inat
 
-import "github.com/google/uuid"
+import (
+	"fmt"
+
+	"github.com/google/uuid"
+)
 
 const (
 	// iNaturalist observation fields. Look up IDs using:
@@ -56,8 +60,20 @@ type Observation struct {
 	TaxonID                          float64                 `json:"taxon_id,omitempty"`
 	TaxonName                        float64                 `json:"taxon_name,omitempty"`
 	TimeZone                         string                  `json:"time_zone,omitempty"`
-	User                             User                    `json:"user,omitempty"`
+	User                             *User                   `json:"user,omitempty"`
 	UUID                             uuid.UUID               `json:"uuid,omitempty"`
+}
+
+func ObservationURL(u uuid.UUID) string {
+	return fmt.Sprintf("http://inaturalist.org/observations/%s", u)
+}
+
+func (o Observation) URL() string {
+	return ObservationURL(o.UUID)
+}
+
+func (o Observation) URLWithSpecies() string {
+	return fmt.Sprintf("%s [%s]", o.URL(), o.SpeciesGuess)
 }
 
 type User struct {
@@ -91,6 +107,14 @@ type Result struct {
 	Sounds               []Sound   `json:"sounds,omitempty"`
 	Taxon                Taxon     `json:"taxon,omitempty"`
 	UUID                 uuid.UUID `json:"uuid,omitempty"`
+}
+
+func (r Result) URL() string {
+	return ObservationURL(r.UUID)
+}
+
+func (r Result) URLWithSpecies() string {
+	return fmt.Sprintf("%s [%s] (%s)", r.URL(), r.Taxon.Name, r.PreferredCommonName)
 }
 
 // ObservationFieldValue returns the value of the observation field

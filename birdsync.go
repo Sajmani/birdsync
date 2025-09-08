@@ -4,17 +4,17 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
+	"fmt"
 	"log"
 	"os"
 	"slices"
 	"strconv"
-	"strings"
 
 	"github.com/Sajmani/birdsync/ebird"
 	"github.com/Sajmani/birdsync/inat"
 	"github.com/google/uuid"
-	"github.com/kr/pretty"
 )
 
 const UserAgent = "birdsync/0.1"
@@ -54,9 +54,18 @@ func debugf(format string, args ...any) {
 	}
 }
 
+func prettyPrintln(v any) {
+	b, err := json.MarshalIndent(v, "", "  ")
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(string(b))
+}
+
 type stats struct {
 	afterSkips, beforeSkips, verifiableSkips, previouslySkips, fuzzySkips int
-	totalRecords, createdObservations, uploadedPhotos, uploadedSounds     int
+	totalRecords, createdObservations, updatedObservations                int
+	uploadedPhotos, uploadedSounds                                        int
 }
 
 func main() {
@@ -100,6 +109,7 @@ func main() {
 		log.Printf("Skipped %d unverifiable eBird observations", stats.verifiableSkips)
 	}
 	log.Printf("Created %d new iNaturalist observations", stats.createdObservations)
+	log.Printf("Updated %d iNaturalist observations", stats.updatedObservations)
 	log.Printf("Uploaded %d photos to iNaturalist", stats.uploadedPhotos)
 	log.Printf("Uploaded %d sounds to iNaturalist", stats.uploadedSounds)
 }
@@ -161,16 +171,70 @@ func birdsync(eBirdCSVFilename string, ebirdClient ebirdClient, inatUserID strin
 			continue
 		}
 
+		// addMedia uploads the Maculay Library assets in assetIDs to iNaturalist
+		// then appends the asset URLs to the description of observation u.
+		addMedia := func(u uuid.UUID, desc string, assetIDs mlAssetSet) {
+			if assetIDs.Len() == 0 {
+				return
+			}
+			debugf("Adding %d media assets to %s\n",
+				assetIDs.Len(), inat.ObservationURL(u))
+
+			obs := inat.Observation{
+				UUID:        u,
+				Description: desc,
+			}
+			// Upload the media
+			for _, id := range assetIDs.ids {
+				obs.Description += "Macaulay Library Asset: " + mlAssetURL(id) + "\n"
+				if dryRun {
+					log.Printf("DRYRUN: Download ML Asset %s and upload to iNaturalist", id)
+					s.uploadedPhotos++
+				} else {
+					filename, isPhoto, err := ebirdClient.DownloadMLAsset(id)
+					if err != nil {
+						log.Fatalf("Couldn't download ML asset %s from eBird: %v", id, err)
+					}
+					err = inatClient.UploadMedia(filename, isPhoto, id, obs.UUID.String())
+					if err != nil {
+						log.Fatalf("Couldn't upload ML asset %s to iNaturalist: %v", id, err)
+					}
+					if isPhoto {
+						s.uploadedPhotos++
+					} else {
+						s.uploadedSounds++
+					}
+				}
+			}
+			// Update the description
+			if dryRun {
+				log.Printf("DRYRUN: Updating observation %s with %d added media assets\n",
+					obs.URLWithSpecies(), assetIDs.Len())
+				prettyPrintln(obs)
+			} else {
+				err = inatClient.UpdateObservation(obs)
+				if err != nil {
+					log.Fatalf("UpdateObservation %s: %v", obs.URLWithSpecies(), err)
+				}
+			}
+			s.updatedObservations++
+		}
+
 		// Skip records that have previously been uploaded by birdsync.
 		key := rec.ObservationID()
 		if r, ok := previouslySynced[key]; ok {
-			debugf("line %d: Already synced %s to iNaturalist as http://inaturalist.org/observations/%s\n",
-				rec.Line, key, r.UUID)
-			s.previouslySkips++
-			if summary := mediaChange(rec, r); summary != "" {
-				log.Printf("Media assets differ between eBird https://ebird.org/checklist/%s (%s) and iNaturalist http://inaturalist.org/observations/%s: %s",
-					rec.SubmissionID, rec.CommonName, r.UUID, summary)
+			debugf("line %d: Already synced %s to iNaturalist as %s\n",
+				rec.Line, key, r.URLWithSpecies())
+			addedMediaIDs, summary := mediaChange(rec, r)
+			if summary != "" {
+				log.Printf("Media assets differ between eBird %s and iNaturalist %s: %s",
+					rec.URLWithSpecies(), r.URLWithSpecies(), summary)
 			}
+			if addedMediaIDs.Len() == 0 {
+				s.previouslySkips++
+				continue
+			}
+			addMedia(r.UUID, r.Description, addedMediaIDs)
 			continue
 		}
 
@@ -233,59 +297,33 @@ func birdsync(eBirdCSVFilename string, ebirdClient ebirdClient, inatUserID strin
 			obs.Description += "eBird observation details:\n" +
 				rec.ObservationDetails + "\n"
 		}
-		obs.Description += "Checklist: https://ebird.org/checklist/" + rec.SubmissionID + "\n"
+		obs.Description += "Checklist: " + rec.URL() + "\n"
 		obs.Description += "Protocol: " + rec.Protocol + "\n"
 		if len(rec.ChecklistComments) > 0 {
 			obs.Description += "eBird checklist comments:\n" +
 				rec.ChecklistComments + "\n"
 		}
-		var assetIDs []string
-		if len(rec.MLCatalogNumbers) > 0 {
-			assetIDs = strings.Split(rec.MLCatalogNumbers, " ")
-			for _, id := range assetIDs {
-				obs.Description += "Macaulay Library Asset: https://macaulaylibrary.org/asset/" + id + "\n"
-			}
-		}
+		assetIDs := eBirdMLAssets(rec.MLCatalogNumbers)
 		// Skip records without media assets if --verifiable is set.
-		if verifiable && len(assetIDs) == 0 {
+		if verifiable && assetIDs.Len() == 0 {
 			debugf("line %d: SKIPPING record that has no photos or sounds (--verifiable=true)", rec.Line)
 			s.verifiableSkips++
 			continue
 		}
 		if dryRun {
 			log.Printf("DRYRUN: Syncing eBird observation %s to iNaturalist (%d media assets)\n",
-				key, len(assetIDs))
-			pretty.Println(obs)
+				key, assetIDs.Len())
+			prettyPrintln(obs)
 		} else {
 			debugf("Syncing eBird observation %s to iNaturalist (%d media assets)\n",
-				key, len(assetIDs))
+				key, assetIDs.Len())
 			err = inatClient.CreateObservation(obs)
 			if err != nil {
 				log.Fatalf("CreateObservation: %v", err)
 			}
 		}
 		s.createdObservations++
-
-		for _, id := range assetIDs {
-			if dryRun {
-				log.Printf("DRYRUN: Download ML Asset %s and upload to iNaturalist", id)
-				s.uploadedPhotos++
-			} else {
-				filename, isPhoto, err := ebirdClient.DownloadMLAsset(id)
-				if err != nil {
-					log.Fatalf("Couldn't download ML asset %s from eBird: %v", id, err)
-				}
-				err = inatClient.UploadMedia(filename, isPhoto, id, obs.UUID.String())
-				if err != nil {
-					log.Fatalf("Couldn't upload ML asset %s to iNaturalist: %v", id, err)
-				}
-				if isPhoto {
-					s.uploadedPhotos++
-				} else {
-					s.uploadedSounds++
-				}
-			}
-		}
+		addMedia(obs.UUID, obs.Description, assetIDs)
 	}
 	return s
 }

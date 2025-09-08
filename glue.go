@@ -55,6 +55,7 @@ type inatClient interface {
 	GetAPIToken() string
 	DownloadObservations(string, time.Time, time.Time, ...string) []inat.Result
 	CreateObservation(inat.Observation) error
+	UpdateObservation(inat.Observation) error
 	UploadMedia(string, bool, string, string) error
 }
 
@@ -76,6 +77,10 @@ func (c inatClientImpl) DownloadObservations(userID string, after, before time.T
 
 func (c inatClientImpl) CreateObservation(obs inat.Observation) error {
 	return c.client.CreateObservation(obs)
+}
+
+func (c inatClientImpl) UpdateObservation(obs inat.Observation) error {
+	return c.client.UpdateObservation(obs)
 }
 
 func (c inatClientImpl) UploadMedia(filename string, isPhoto bool, assetID, obsUUID string) error {

@@ -2,9 +2,6 @@ package main
 
 import (
 	"fmt"
-	"maps"
-	"slices"
-	"sort"
 	"strings"
 
 	"github.com/Sajmani/birdsync/ebird"
@@ -17,65 +14,90 @@ import (
 // the number of photos and sounds in the observation itself.
 //
 // TODO: Correct these differences by resyncing the media.
-func mediaChange(rec ebird.Record, r inat.Result) string {
+func mediaChange(rec ebird.Record, r inat.Result) (mlAssetSet, string) {
 	eSet := eBirdMLAssets(rec.MLCatalogNumbers)
 	iSet := iNatMLAssets(r)
 	var diffs []string
-	if diff := mlAssetDiff(eSet, iSet); len(diff) > 0 {
-		diffs = append(diffs, fmt.Sprintf("%d ML Asset IDs added to eBird: %s", len(diff), diff))
+	var addedMediaIDs mlAssetSet
+	if diff := mlAssetDiff(eSet, iSet); diff.Len() > 0 {
+		addedMediaIDs = diff
+		diffs = append(diffs, fmt.Sprintf("%d ML Asset IDs added to eBird: %s", diff.Len(), diff))
 	}
-	if diff := mlAssetDiff(iSet, eSet); len(diff) > 0 {
-		diffs = append(diffs, fmt.Sprintf("%d ML Asset IDs removed from eBird: %s", len(diff), diff))
+	if diff := mlAssetDiff(iSet, eSet); diff.Len() > 0 {
+		diffs = append(diffs, fmt.Sprintf("%d ML Asset IDs removed from eBird: %s", diff.Len(), diff))
 	}
 	photoCount := len(r.Photos)
 	soundCount := len(r.Sounds)
 	mediaCount := photoCount + soundCount
-	descCount := len(iSet)
+	descCount := iSet.Len()
 	if descCount != mediaCount {
 		diffs = append(diffs, fmt.Sprintf("iNat description lists %d ML Asset IDs, but observation has %d media files (%d photos + %d sounds)",
 			descCount, mediaCount, photoCount, soundCount))
 	}
 	if len(diffs) == 0 {
-		return ""
+		return mlAssetSet{}, ""
 	}
-	return strings.Join(diffs, "; ")
+	return addedMediaIDs, strings.Join(diffs, "; ")
 }
 
-type mlAssetSet map[string]bool
+type mlAssetSet struct {
+	ids []string // ordered
+}
+
+func (set mlAssetSet) Len() int {
+	return len(set.ids)
+}
 
 func (set mlAssetSet) String() string {
-	keys := slices.Collect(maps.Keys(set))
-	sort.Strings(keys)
-	return strings.Join(keys, " ")
+	return strings.Join(set.ids, " ")
+}
+
+func (set mlAssetSet) Has(id string) bool {
+	for _, x := range set.ids {
+		if x == id {
+			return true
+		}
+	}
+	return false
+}
+
+func (set *mlAssetSet) Add(id string) {
+	if !set.Has(id) {
+		set.ids = append(set.ids, id)
+	}
 }
 
 func eBirdMLAssets(mlAssets string) mlAssetSet {
-	set := mlAssetSet{}
+	var set mlAssetSet
 	if mlAssets == "" {
 		return set
 	}
 	for _, id := range strings.Split(mlAssets, " ") {
-		set[strings.TrimSpace(id)] = true
+		set.Add(strings.TrimSpace(id))
 	}
 	return set
 }
 
 func iNatMLAssets(r inat.Result) mlAssetSet {
-	set := mlAssetSet{}
+	var set mlAssetSet
 	for _, line := range strings.Split(r.Description, "\n") {
 		if i := strings.Index(line, "macaulaylibrary.org/asset/"); i >= 0 {
 			id := line[i+len("macaulaylibrary.org/asset/"):]
-			set[strings.TrimSpace(id)] = true
+			set.Add(strings.TrimSpace(id))
 		}
 	}
 	return set
 }
 
+func mlAssetURL(id string) string {
+	return "https://macaulaylibrary.org/asset/" + id
+}
+
 func mlAssetDiff(a, b mlAssetSet) mlAssetSet {
-	diff := mlAssetSet{}
-	for id := range a {
-		if !b[id] {
-			diff[id] = true
+	var diff mlAssetSet
+	for _, id := range a.ids {
+		if !b.Has(id) {
+			diff.Add(id)
 		}
 	}
 	return diff

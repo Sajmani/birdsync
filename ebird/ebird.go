@@ -46,6 +46,14 @@ type Record struct {
 	MLCatalogNumbers   string
 }
 
+func (r Record) URL() string {
+	return "https://ebird.org/checklist/" + r.SubmissionID
+}
+
+func (r Record) URLWithSpecies() string {
+	return fmt.Sprintf("%s [%s] (%s)", r.URL(), r.ScientificName, r.CommonName)
+}
+
 func (r Record) Observed() (time.Time, error) {
 	if r.Time == "" {
 		return time.Parse("2006-01-02", r.Date)

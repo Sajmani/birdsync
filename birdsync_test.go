@@ -25,7 +25,7 @@ func (m *mockEBirdClient) Records(path string) (iter.Seq[ebird.Record], error) {
 }
 
 func (m *mockEBirdClient) DownloadMLAsset(id string) (string, bool, error) {
-	return "", false, nil
+	return "", false, nil // isPhoto is false (media are sounds)
 }
 
 type mockINatClient struct {
@@ -33,6 +33,7 @@ type mockINatClient struct {
 	apitoken       string
 	observations   []inat.Result
 	createObsErr   error
+	updateObsErr   error
 	uploadMediaErr error
 }
 
@@ -52,11 +53,19 @@ func (m *mockINatClient) CreateObservation(obs inat.Observation) error {
 	return m.createObsErr
 }
 
+func (m *mockINatClient) UpdateObservation(obs inat.Observation) error {
+	return m.updateObsErr
+}
+
 func (m *mockINatClient) UploadMedia(filename string, isPhoto bool, assetID, obsUUID string) error {
 	return m.uploadMediaErr
 }
 
 func TestBirdsync(t *testing.T) {
+	origDebug := debug
+	debug = true
+	defer func() { debug = origDebug }()
+
 	// Mock eBird records
 	ebirdRecords := []ebird.Record{
 		{
@@ -105,17 +114,36 @@ func TestBirdsync(t *testing.T) {
 			Time:             "03:00 PM",
 			MLCatalogNumbers: "67890",
 		},
+		{
+			SubmissionID:     "S129", // previously uploaded with new media
+			ScientificName:   "Corvus brachyrhynchos",
+			CommonName:       "American Crow",
+			Date:             "2023-01-03",
+			Time:             "03:00 PM",
+			MLCatalogNumbers: "67891 67890",
+		},
 	}
 
 	// Mock iNaturalist observations
 	inatObservations := []inat.Result{
-		{ // previously uploaded
-			UUID:       uuid.New(),
-			ObservedOn: "2023-01-01",
-			Taxon:      inat.Taxon{PreferredCommonName: "Ring-billed Gull"},
+		{ // previously uploaded with media
+			UUID:        uuid.New(),
+			ObservedOn:  "2023-01-01",
+			Taxon:       inat.Taxon{PreferredCommonName: "Ring-billed Gull"},
+			Description: mlAssetURL("12345"),
 			Ofvs: []inat.Ofv{
 				{FieldID: inat.EBirdField, Value: "S123"},
 				{FieldID: inat.EBirdScientificNameField, Value: "Larus delawarensis"},
+			},
+		},
+		{ // previously uploaded, without media
+			UUID:        uuid.New(),
+			ObservedOn:  "2023-01-04",
+			Taxon:       inat.Taxon{PreferredCommonName: "American Crow"},
+			Description: mlAssetURL("67890"),
+			Ofvs: []inat.Ofv{
+				{FieldID: inat.EBirdField, Value: "S129"},
+				{FieldID: inat.EBirdScientificNameField, Value: "Corvus brachyrhynchos"},
 			},
 		},
 		{ // fuzzy match
@@ -136,8 +164,8 @@ func TestBirdsync(t *testing.T) {
 
 	stats := birdsync("MyEBirdData.csv", mockEbird, "myUserID", mockInat)
 
-	if stats.totalRecords != 6 {
-		t.Errorf("Expected 6 total records, got %d", stats.totalRecords)
+	if stats.totalRecords != 7 {
+		t.Errorf("Expected 7 total records, got %d", stats.totalRecords)
 	}
 	if stats.previouslySkips != 1 {
 		t.Errorf("Expected 1 previously skipped, got %d", stats.previouslySkips)
@@ -156,5 +184,14 @@ func TestBirdsync(t *testing.T) {
 	}
 	if stats.createdObservations != 1 {
 		t.Errorf("Expected 1 created observations, got %d", stats.createdObservations)
+	}
+	if stats.updatedObservations != 2 {
+		t.Errorf("Expected 2 updated observations, got %d", stats.updatedObservations)
+	}
+	if stats.uploadedPhotos != 0 {
+		t.Errorf("Expected 0 uploaded photos, got %d", stats.uploadedPhotos)
+	}
+	if stats.uploadedSounds != 2 {
+		t.Errorf("Expected 2 updated sounds, got %d", stats.uploadedSounds)
 	}
 }

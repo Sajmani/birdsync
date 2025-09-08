@@ -74,14 +74,15 @@ func (c *Client) CreateObservation(obs Observation) error {
 	if err != nil {
 		return fmt.Errorf("CreateObservation: %w", err)
 	}
-	log.Printf("Created http://inaturalist.org/observations/%s [%s]\n", obs.UUID, obs.SpeciesGuess)
+	log.Printf("Created %s\n", obs.URLWithSpecies())
 	return nil
 }
 
 func (c *Client) UpdateObservation(obs Observation) error {
 	buf := &bytes.Buffer{}
 	err := json.NewEncoder(buf).Encode(UpdateObservation{
-		Observation: obs,
+		IgnorePhotos: true, // don't clobber photos!
+		Observation:  obs,
 	})
 	if err != nil {
 		return fmt.Errorf("UpdateObservation: %w", err)
@@ -94,7 +95,7 @@ func (c *Client) UpdateObservation(obs Observation) error {
 	if err != nil {
 		return fmt.Errorf("UpdateObservation: %w", err)
 	}
-	log.Printf("Updated http://inaturalist.org/observations/%s\n", obs.UUID)
+	log.Printf("Updated %s\n", obs.URLWithSpecies())
 	return nil
 }
 
