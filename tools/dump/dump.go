@@ -2,11 +2,21 @@
 package main
 
 import (
+	"encoding/json"
+	"fmt"
+	"log"
 	"time"
 
 	"github.com/Sajmani/birdsync/inat"
-	"github.com/kr/pretty"
 )
+
+func prettyPrintln(v any) {
+	b, err := json.MarshalIndent(v, "", "  ")
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(string(b))
+}
 
 func main() {
 	inatUserID := inat.GetUserID()
@@ -14,6 +24,6 @@ func main() {
 		"description", "taxon.name", "ofvs.all")
 
 	for _, r := range results {
-		pretty.Println(r)
+		prettyPrintln(r)
 	}
 }
