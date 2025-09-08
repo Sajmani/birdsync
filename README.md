@@ -10,6 +10,8 @@ Save the zip file and unzip it to get the `MyEBirdData.csv` file.
 To run birdsync, you'll need the Go language toolchain.
 Download it from http://go.dev.
 
+Birdsync is a command line program.
+On Macs you can run commands using Terminal.
 
 # Install and run birdsync
 
@@ -72,6 +74,7 @@ Given (`iNaturalist user name`, `eBird CSV file`):
 - Index any non-birdsync observations by date and common name for fuzzy matching
 - For each eBird observation in `eBird CSV file`:
   - Skip any eBird observations that have already been uploaded
+    - If photos or sounds have been added to eBird since the last sync, upload them to iNaturalist
   - If `--after` is set, skip any eBird observations before that date
   - If `--before` is set, skip any eBird observations after that date
   - If `--verifiable` is set, skip any eBird observations lacking photos
