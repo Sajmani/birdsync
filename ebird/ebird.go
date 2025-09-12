@@ -10,6 +10,7 @@ import (
 	"mime"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -54,11 +55,22 @@ func (r Record) URLWithSpecies() string {
 	return fmt.Sprintf("%s [%s] (%s)", r.URL(), r.ScientificName, r.CommonName)
 }
 
+// Observed returns the observation time for this record.
+// The record always includes the date but might not include the time.
+// The date and time formats vary between users for reasons I don't understand.
 func (r Record) Observed() (time.Time, error) {
 	if r.Time == "" {
-		return time.Parse("2006-01-02", r.Date)
+		if strings.Contains(r.Date, "/") {
+			return time.Parse("1/2/2006", r.Date)
+		} else {
+			return time.Parse("2006-01-02", r.Date)
+		}
 	}
-	return time.Parse("2006-01-02 03:04 PM", r.Date+" "+r.Time)
+	if strings.Contains(r.Date, "/") {
+		return time.Parse("1/2/2006 3:04 PM", r.Date+" "+r.Time)
+	} else {
+		return time.Parse("2006-01-02 03:04 PM", r.Date+" "+r.Time)
+	}
 }
 
 func (r Record) ObservationID() ObservationID {
