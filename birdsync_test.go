@@ -118,8 +118,8 @@ func TestBirdsync(t *testing.T) {
 			SubmissionID:     "S129", // previously uploaded with new media
 			ScientificName:   "Corvus brachyrhynchos",
 			CommonName:       "American Crow",
-			Date:             "2023-01-03",
-			Time:             "03:00 PM",
+			Date:             "1/3/2023", // test alternate date format
+			Time:             "3:00 PM",  // test alternate time format
 			MLCatalogNumbers: "67891 67890",
 		},
 	}
