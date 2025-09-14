@@ -195,3 +195,65 @@ func TestBirdsync(t *testing.T) {
 		t.Errorf("Expected 2 updated sounds, got %d", stats.uploadedSounds)
 	}
 }
+
+func TestUpdateMedia(t *testing.T) {
+	origDebug := debug
+	debug = true
+	defer func() { debug = origDebug }()
+
+	// Mock eBird records
+	ebirdRecords := []ebird.Record{
+		{
+			SubmissionID:     "S129",
+			ScientificName:   "Corvus brachyrhynchos",
+			CommonName:       "American Crow",
+			Date:             "2023-01-03",
+			Time:             "03:00 PM",
+			MLCatalogNumbers: "67891 67890",
+		},
+	}
+
+	// Mock iNaturalist observations
+	inatObservations := []inat.Result{
+		{ // previously uploaded, without one of the media assets
+			UUID:        uuid.New(),
+			ObservedOn:  "2023-01-03",
+			Taxon:       inat.Taxon{PreferredCommonName: "American Crow"},
+			Description: mlAssetURL("67890"),
+			Ofvs: []inat.Ofv{
+				{FieldID: inat.EBirdField, Value: "S129"},
+				{FieldID: inat.EBirdScientificNameField, Value: "Corvus brachyrhynchos"},
+			},
+		},
+	}
+
+	mockEbird := &mockEBirdClient{records: ebirdRecords}
+	mockInat := &mockINatClient{userID: "testuser", observations: inatObservations}
+
+	// Reset flags to default
+	after.Set("")
+	before.Set("")
+	verifiable = false
+	fuzzy = false
+
+	stats := birdsync("MyEBirdData.csv", mockEbird, "myUserID", mockInat)
+
+	if stats.totalRecords != 1 {
+		t.Errorf("Expected 1 total records, got %d", stats.totalRecords)
+	}
+	if stats.previouslySkips != 0 {
+		t.Errorf("Expected 0 previously skipped, got %d", stats.previouslySkips)
+	}
+	if stats.createdObservations != 0 {
+		t.Errorf("Expected 0 created observations, got %d", stats.createdObservations)
+	}
+	if stats.updatedObservations != 1 {
+		t.Errorf("Expected 1 updated observations, got %d", stats.updatedObservations)
+	}
+	if stats.uploadedPhotos != 0 {
+		t.Errorf("Expected 0 uploaded photos, got %d", stats.uploadedPhotos)
+	}
+	if stats.uploadedSounds != 1 {
+		t.Errorf("Expected 1 uploaded sound, got %d", stats.uploadedSounds)
+	}
+}
