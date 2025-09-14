@@ -121,7 +121,7 @@ func birdsync(eBirdCSVFilename string, ebirdClient ebirdClient, inatUserID strin
 	previouslySynced := map[ebird.ObservationID]inat.Result{}
 	type fuzzyKey struct {
 		observedDate string // 2006-01-02
-		commonName   string
+		name         string
 	}
 	fuzzyMatch := map[fuzzyKey][]string{}
 	for _, r := range results {
@@ -134,13 +134,17 @@ func birdsync(eBirdCSVFilename string, ebirdClient ebirdClient, inatUserID strin
 		} else {
 			// This iNaturalist observation was not created by birdsync.
 			// Record its date and common name for fuzzy matching.
-			key := fuzzyKey{
-				observedDate: r.ObservedOn,
-				commonName:   r.Taxon.PreferredCommonName,
+			addFuzzy := func(name string) {
+				key := fuzzyKey{
+					observedDate: r.ObservedOn,
+					name:         name,
+				}
+				fuzzyMatch[key] = append(fuzzyMatch[key], r.UUID.String())
+				slices.Sort(fuzzyMatch[key])
+				debugf("fuzzy match: add %s to %+v", r.UUID, key)
 			}
-			fuzzyMatch[key] = append(fuzzyMatch[key], r.UUID.String())
-			slices.Sort(fuzzyMatch[key])
-			debugf("fuzzy match: add %s to %+v", r.UUID, key)
+			addFuzzy(r.Taxon.PreferredCommonName)
+			addFuzzy(r.Taxon.Name)
 		}
 	}
 	debugf("Previously synced %d observations\n", len(previouslySynced))
@@ -240,14 +244,20 @@ func birdsync(eBirdCSVFilename string, ebirdClient ebirdClient, inatUserID strin
 
 		if fuzzy {
 			// Skip records for the same bird and date as an existing non-birdsync observation.
-			key := fuzzyKey{
-				commonName:   rec.CommonName,
-				observedDate: rec.Date,
+			checkFuzzy := func(name string) bool {
+				key := fuzzyKey{
+					name:         name,
+					observedDate: rec.Date,
+				}
+				debugf("line %d: fuzzy match: check %+v", rec.Line, key)
+				if _, ok := fuzzyMatch[key]; ok {
+					log.Printf("line %d: SKIPPING fuzzy match: observation for same bird and date: %+v", rec.Line, key)
+					s.fuzzySkips++
+					return true
+				}
+				return false
 			}
-			debugf("line %d: fuzzy match: check %+v", rec.Line, key)
-			if _, ok := fuzzyMatch[key]; ok {
-				log.Printf("line %d: SKIPPING fuzzy match: observation for same bird and date: %+v", rec.Line, key)
-				s.fuzzySkips++
+			if checkFuzzy(rec.CommonName) || checkFuzzy(rec.ScientificName) {
 				continue
 			}
 		}

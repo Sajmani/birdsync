@@ -122,6 +122,14 @@ func TestBirdsync(t *testing.T) {
 			Time:             "3:00 PM",  // test alternate time format
 			MLCatalogNumbers: "67891 67890",
 		},
+		{
+			SubmissionID:     "S130",
+			ScientificName:   "Turdus migratorius", // Fuzzy match on scientific name
+			CommonName:       "Robin",
+			Date:             "2023-01-03",
+			Time:             "09:00 AM",
+			MLCatalogNumbers: "98765",
+		},
 	}
 
 	// Mock iNaturalist observations
@@ -151,6 +159,11 @@ func TestBirdsync(t *testing.T) {
 			ObservedOn: "2023-01-03",
 			Taxon:      inat.Taxon{PreferredCommonName: "Mourning Dove"},
 		},
+		{ // fuzzy match on scientific name
+			UUID:       uuid.New(),
+			ObservedOn: "2023-01-03",
+			Taxon:      inat.Taxon{Name: "Turdus migratorius", PreferredCommonName: "American Robin"},
+		},
 	}
 
 	mockEbird := &mockEBirdClient{records: ebirdRecords}
@@ -164,8 +177,8 @@ func TestBirdsync(t *testing.T) {
 
 	stats := birdsync("MyEBirdData.csv", mockEbird, "myUserID", mockInat)
 
-	if stats.totalRecords != 7 {
-		t.Errorf("Expected 7 total records, got %d", stats.totalRecords)
+	if stats.totalRecords != 8 {
+		t.Errorf("Expected 8 total records, got %d", stats.totalRecords)
 	}
 	if stats.previouslySkips != 1 {
 		t.Errorf("Expected 1 previously skipped, got %d", stats.previouslySkips)
@@ -179,8 +192,8 @@ func TestBirdsync(t *testing.T) {
 	if stats.beforeSkips != 1 {
 		t.Errorf("Expected 1 before skipped, got %d", stats.beforeSkips)
 	}
-	if stats.fuzzySkips != 1 {
-		t.Errorf("Expected 1 fuzzy skipped, got %d", stats.fuzzySkips)
+	if stats.fuzzySkips != 2 {
+		t.Errorf("Expected 2 fuzzy skips, got %d", stats.fuzzySkips)
 	}
 	if stats.createdObservations != 1 {
 		t.Errorf("Expected 1 created observations, got %d", stats.createdObservations)
