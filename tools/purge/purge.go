@@ -17,9 +17,9 @@ const debug = false
 func main() {
 	inatUserID := inat.GetUserID()
 	apiToken := inat.GetAPIToken()
-	client := inat.NewClient(apiToken, UserAgent)
+	client := inat.NewClient(inat.BaseURL, apiToken, UserAgent)
 
-	results := inat.DownloadObservations(inatUserID, time.Time{}, time.Time{},
+	results := inat.DownloadObservations(inat.BaseURL, inatUserID, time.Time{}, time.Time{},
 		"photos", "sounds", "quality_grade", "ofvs.all")
 
 	for _, r := range results {

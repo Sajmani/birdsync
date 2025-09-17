@@ -30,7 +30,7 @@ func main() {
 	eBirdCSVFilename := os.Args[1]
 	inatUserID := inat.GetUserID()
 	apiToken := inat.GetAPIToken()
-	client := inat.NewClient(apiToken, UserAgent)
+	client := inat.NewClient(inat.BaseURL, apiToken, UserAgent)
 
 	log.Println("Reading eBird observations from", eBirdCSVFilename)
 	records, err := ebird.Records(eBirdCSVFilename)
@@ -53,7 +53,7 @@ func main() {
 	}
 
 	log.Println("Downloading observations for", inatUserID)
-	results := inat.DownloadObservations(inatUserID, time.Time{}, time.Time{},
+	results := inat.DownloadObservations(inat.BaseURL, inatUserID, time.Time{}, time.Time{},
 		"taxon.name", "ofvs.all")
 
 	for _, r := range results {

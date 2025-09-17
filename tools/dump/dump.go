@@ -20,7 +20,7 @@ func prettyPrintln(v any) {
 
 func main() {
 	inatUserID := inat.GetUserID()
-	results := inat.DownloadObservations(inatUserID, time.Time{}, time.Time{},
+	results := inat.DownloadObservations(inat.BaseURL, inatUserID, time.Time{}, time.Time{},
 		"description", "taxon.name", "ofvs.all")
 
 	for _, r := range results {

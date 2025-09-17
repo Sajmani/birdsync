@@ -88,7 +88,7 @@ func main() {
 	}
 
 	inatAPIClient := inatClientImpl{
-		client: inat.NewClient(inat.GetAPIToken(), UserAgent),
+		client: inat.NewClient(inat.BaseURL, inat.GetAPIToken(), UserAgent),
 	}
 	ebirdAPIClient := ebirdClientImpl{}
 

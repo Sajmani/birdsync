@@ -16,7 +16,7 @@ import (
 // DownloadObservations downloads and returns all observations for inatUserID.
 // The dates d1 and d2 specify the start and end of the observation date range if nonzero.
 // The fields list specifies which fields are populated in the results.
-func DownloadObservations(inatUserID string, d1, d2 time.Time, fields ...string) []Result {
+func DownloadObservations(baseURL, inatUserID string, d1, d2 time.Time, fields ...string) []Result {
 	const dateFormat = "2006-01-02"
 	var d1str, d2str string
 	if !d1.IsZero() {
@@ -36,7 +36,7 @@ func DownloadObservations(inatUserID string, d1, d2 time.Time, fields ...string)
 	var results []Result
 	var totalResults int
 	for page := 1; ; page++ {
-		u, err := url.Parse("https://api.inaturalist.org/v2/observations")
+		u, err := url.Parse(baseURL + "/observations")
 		if err != nil {
 			log.Fatal(err)
 		}

@@ -72,7 +72,7 @@ func (c inatClientImpl) GetAPIToken() string {
 }
 
 func (c inatClientImpl) DownloadObservations(userID string, after, before time.Time, fields ...string) []inat.Result {
-	return inat.DownloadObservations(userID, after, before, fields...)
+	return inat.DownloadObservations(c.client.BaseURL(), userID, after, before, fields...)
 }
 
 func (c inatClientImpl) CreateObservation(obs inat.Observation) error {

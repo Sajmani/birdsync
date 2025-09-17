@@ -23,7 +23,7 @@ func main() {
 	if len(os.Args) < 2 {
 		usage()
 	}
-	c := inat.NewClient(inat.GetAPIToken(), UserAgent)
+	c := inat.NewClient(inat.BaseURL, inat.GetAPIToken(), UserAgent)
 	switch os.Args[1] {
 	case "create":
 		c.CreateObservation(inat.TestObservation())

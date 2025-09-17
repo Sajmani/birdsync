@@ -14,18 +14,28 @@ import (
 	"github.com/google/uuid"
 )
 
-const debug = false
+const (
+	debug = false
+	// BaseURL is the standard base URL for the iNaturalist API.
+	BaseURL = "https://api.inaturalist.org/v2"
+)
 
 type Client struct {
 	apiToken  string
 	userAgent string
+	baseURL   string
 }
 
-func NewClient(apiToken, userAgent string) *Client {
+func NewClient(baseURL, apiToken, userAgent string) *Client {
 	return &Client{
+		baseURL:   baseURL,
 		apiToken:  apiToken,
 		userAgent: userAgent,
 	}
+}
+
+func (c *Client) BaseURL() string {
+	return c.baseURL
 }
 
 func (c *Client) roundTrip(req *http.Request) (string, error) {
@@ -66,7 +76,7 @@ func (c *Client) CreateObservation(obs Observation) error {
 	if err != nil {
 		return fmt.Errorf("CreateObservation: %w", err)
 	}
-	req, err := http.NewRequest("POST", "https://api.inaturalist.org/v2/observations", buf)
+	req, err := http.NewRequest("POST", c.baseURL+"/observations", buf)
 	if err != nil {
 		return fmt.Errorf("CreateObservation: %w", err)
 	}
@@ -87,7 +97,7 @@ func (c *Client) UpdateObservation(obs Observation) error {
 	if err != nil {
 		return fmt.Errorf("UpdateObservation: %w", err)
 	}
-	req, err := http.NewRequest("PUT", fmt.Sprintf("https://api.inaturalist.org/v2/observations/%s", obs.UUID), buf)
+	req, err := http.NewRequest("PUT", fmt.Sprintf("%s/observations/%s", c.baseURL, obs.UUID), buf)
 	if err != nil {
 		return fmt.Errorf("UpdateObservation: %w", err)
 	}
@@ -100,7 +110,7 @@ func (c *Client) UpdateObservation(obs Observation) error {
 }
 
 func (c *Client) DeleteObservation(id uuid.UUID) error {
-	req, err := http.NewRequest("DELETE", fmt.Sprintf("https://api.inaturalist.org/v2/observations/%s", id), nil)
+	req, err := http.NewRequest("DELETE", fmt.Sprintf("%s/observations/%s", c.baseURL, id), nil)
 	if err != nil {
 		return fmt.Errorf("DeleteObservation: %w", err)
 	}
@@ -118,11 +128,11 @@ func (c *Client) UploadMedia(filename string, isPhoto bool, mlAssetID string, ob
 	var postURL string
 	if isPhoto {
 		fieldName = "observation_photo[observation_id]"
-		postURL = "https://api.inaturalist.org/v2/observation_photos"
+		postURL = c.baseURL + "/observation_photos"
 		log.Println("Uploading photo as", destFilename)
 	} else {
 		fieldName = "observation_sound[observation_id]"
-		postURL = "https://api.inaturalist.org/v2/observation_sounds"
+		postURL = c.baseURL + "/observation_sounds"
 		log.Println("Uploading sound as", destFilename)
 	}
 	var requestBody bytes.Buffer
