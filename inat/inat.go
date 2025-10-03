@@ -16,7 +16,7 @@ import (
 // DownloadObservations downloads and returns all observations for inatUserID.
 // The dates d1 and d2 specify the start and end of the observation date range if nonzero.
 // The fields list specifies which fields are populated in the results.
-func DownloadObservations(baseURL, inatUserID string, d1, d2 time.Time, fields ...string) []Result {
+func (c *Client) DownloadObservations(inatUserID string, d1, d2 time.Time, fields ...string) []Result {
 	const dateFormat = "2006-01-02"
 	var d1str, d2str string
 	if !d1.IsZero() {
@@ -36,7 +36,7 @@ func DownloadObservations(baseURL, inatUserID string, d1, d2 time.Time, fields .
 	var results []Result
 	var totalResults int
 	for page := 1; ; page++ {
-		u, err := url.Parse(baseURL + "/observations")
+		u, err := url.Parse(c.baseURL + "/observations")
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -54,16 +54,22 @@ func DownloadObservations(baseURL, inatUserID string, d1, d2 time.Time, fields .
 			q.Set("fields", strings.Join(fields, ","))
 		}
 		u.RawQuery = q.Encode()
-		resp, err := http.Get(u.String())
+
+		req, err := http.NewRequest("GET", u.String(), nil)
 		if err != nil {
 			log.Fatal(err)
 		}
+		body, err := c.roundTrip(req)
+		if err != nil {
+			log.Fatal(err)
+		}
+
 		var observations Observations
-		err = json.NewDecoder(resp.Body).Decode(&observations)
+		err = json.Unmarshal([]byte(body), &observations)
 		if err != nil {
 			log.Fatal(err)
 		}
-		resp.Body.Close()
+
 		if observations.TotalResults == 0 {
 			break
 		}

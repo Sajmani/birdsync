@@ -40,7 +40,8 @@ func TestDownloadObservations(t *testing.T) {
 	}))
 	defer server.Close()
 
-	results := DownloadObservations(server.URL, "testuser", time.Time{}, time.Time{})
+	client := NewClient(server.URL, "", "")
+	results := client.DownloadObservations("testuser", time.Time{}, time.Time{})
 	if len(results) != 2 {
 		t.Errorf("Expected 2 results, got %d", len(results))
 	}

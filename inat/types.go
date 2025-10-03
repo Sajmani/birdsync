@@ -137,17 +137,19 @@ type Ofv struct {
 }
 
 type Photo struct {
-	Attribution string `json:"attribution,omitempty"`
-	ID          int    `json:"id,omitempty"`
-	LicenseCode string `json:"license_code,omitempty"`
-	URL         string `json:"url,omitempty"`
+	Attribution      string `json:"attribution,omitempty"`
+	ID               int    `json:"id,omitempty"`
+	LicenseCode      string `json:"license_code,omitempty"`
+	URL              string `json:"url,omitempty"`
+	OriginalFilename string `json:"original_filename,omitempty"`
 }
 
 type Sound struct {
-	Attribution string `json:"attribution,omitempty"`
-	ID          int    `json:"id,omitempty"`
-	LicenseCode string `json:"license_code,omitempty"`
-	FileURL     string `json:"file_url,omitempty"`
+	Attribution      string `json:"attribution,omitempty"`
+	ID               int    `json:"id,omitempty"`
+	LicenseCode      string `json:"license_code,omitempty"`
+	FileURL          string `json:"file_url,omitempty"`
+	OriginalFilename string `json:"original_filename,omitempty"`
 }
 
 type Taxon struct {

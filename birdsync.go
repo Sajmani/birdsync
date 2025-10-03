@@ -116,7 +116,7 @@ func main() {
 
 func birdsync(eBirdCSVFilename string, ebirdClient ebirdClient, inatUserID string, inatClient inatClient) stats {
 	results := inatClient.DownloadObservations(inatUserID, after.Time(), before.Time(),
-		"description", "observed_on", "photos", "sounds", "taxon.all", "ofvs.all")
+		"description", "observed_on", "photos.all", "sounds.all", "taxon.all", "ofvs.all")
 
 	previouslySynced := map[ebird.ObservationID]inat.Result{}
 	type fuzzyKey struct {

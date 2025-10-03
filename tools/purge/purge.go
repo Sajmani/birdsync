@@ -19,7 +19,7 @@ func main() {
 	apiToken := inat.GetAPIToken()
 	client := inat.NewClient(inat.BaseURL, apiToken, UserAgent)
 
-	results := inat.DownloadObservations(inat.BaseURL, inatUserID, time.Time{}, time.Time{},
+	results := client.DownloadObservations(inatUserID, time.Time{}, time.Time{},
 		"photos", "sounds", "quality_grade", "ofvs.all")
 
 	for _, r := range results {

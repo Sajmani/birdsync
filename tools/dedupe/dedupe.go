@@ -20,7 +20,7 @@ func main() {
 	apiToken := inat.GetAPIToken()
 	client := inat.NewClient(inat.BaseURL, apiToken, UserAgent)
 
-	results := inat.DownloadObservations(inat.BaseURL, inatUserID, time.Time{}, time.Time{},
+	results := client.DownloadObservations(inatUserID, time.Time{}, time.Time{},
 		"created_at", "identifications_count", "ofvs.all")
 
 	m := map[ebird.ObservationID][]inat.Result{}

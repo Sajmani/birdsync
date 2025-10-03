@@ -18,10 +18,15 @@ func prettyPrintln(v any) {
 	fmt.Println(string(b))
 }
 
+const UserAgent = "birdsync-dump/0.1"
+
 func main() {
 	inatUserID := inat.GetUserID()
-	results := inat.DownloadObservations(inat.BaseURL, inatUserID, time.Time{}, time.Time{},
-		"description", "taxon.name", "ofvs.all")
+	apiToken := inat.GetAPIToken()
+	client := inat.NewClient(inat.BaseURL, apiToken, UserAgent)
+
+	results := client.DownloadObservations(inatUserID, time.Time{}, time.Time{},
+		"description", "photos.all", "sounds.all", "taxon.name", "ofvs.all")
 
 	for _, r := range results {
 		prettyPrintln(r)

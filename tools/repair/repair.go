@@ -53,7 +53,7 @@ func main() {
 	}
 
 	log.Println("Downloading observations for", inatUserID)
-	results := inat.DownloadObservations(inat.BaseURL, inatUserID, time.Time{}, time.Time{},
+	results := client.DownloadObservations(inatUserID, time.Time{}, time.Time{},
 		"taxon.name", "ofvs.all")
 
 	for _, r := range results {
