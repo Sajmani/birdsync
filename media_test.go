@@ -28,8 +28,7 @@ func TestMediaChange(t *testing.T) {
 				MLCatalogNumbers: "12345",
 			},
 			r: inat.Result{
-				Description: "macaulaylibrary.org/asset/12345",
-				Photos:      []inat.Photo{{}},
+				Photos: []inat.Photo{{OriginalFilename: "ML12345.jpg"}},
 			},
 			want: "",
 		},
@@ -39,8 +38,7 @@ func TestMediaChange(t *testing.T) {
 				MLCatalogNumbers: "12345 67890",
 			},
 			r: inat.Result{
-				Description: "macaulaylibrary.org/asset/12345",
-				Photos:      []inat.Photo{{}},
+				Photos: []inat.Photo{{OriginalFilename: "ML12345.jpg"}},
 			},
 			wantSet: mlAssetSet{ids: []string{"67890"}},
 			want:    "1 ML Asset IDs added to eBird: 67890",
@@ -51,8 +49,10 @@ func TestMediaChange(t *testing.T) {
 				MLCatalogNumbers: "12345",
 			},
 			r: inat.Result{
-				Description: "macaulaylibrary.org/asset/12345\nmacaulaylibrary.org/asset/67890",
-				Photos:      []inat.Photo{{}, {}},
+				Photos: []inat.Photo{
+					{OriginalFilename: "ML12345.jpg"},
+					{OriginalFilename: "ML67890.jpg"},
+				},
 			},
 			want: "1 ML Asset IDs removed from eBird: 67890",
 		},
@@ -62,8 +62,10 @@ func TestMediaChange(t *testing.T) {
 				MLCatalogNumbers: "12345",
 			},
 			r: inat.Result{
-				Description: "macaulaylibrary.org/asset/12345",
-				Photos:      []inat.Photo{{}, {}},
+				Photos: []inat.Photo{
+					{OriginalFilename: "ML12345.jpg"},
+					{},
+				},
 			},
 			want: "iNat description lists 1 ML Asset IDs, but observation has 2 media files (2 photos + 0 sounds)",
 		},
@@ -73,9 +75,8 @@ func TestMediaChange(t *testing.T) {
 				MLCatalogNumbers: "12345 99999",
 			},
 			r: inat.Result{
-				Description: "macaulaylibrary.org/asset/12345\nmacaulaylibrary.org/asset/67890",
-				Photos:      []inat.Photo{{}},
-				Sounds:      []inat.Sound{{}},
+				Photos: []inat.Photo{{OriginalFilename: "ML12345.jpg"}},
+				Sounds: []inat.Sound{{OriginalFilename: "ML67890.wav"}},
 			},
 			wantSet: mlAssetSet{ids: []string{"99999"}},
 			want:    "1 ML Asset IDs added to eBird: 99999; 1 ML Asset IDs removed from eBird: 67890",
@@ -90,6 +91,27 @@ func TestMediaChange(t *testing.T) {
 			}
 			if !slices.Equal(gotSet.ids, tt.wantSet.ids) {
 				t.Errorf("mediaChange() gotSet = %v, wantSet %v", gotSet, tt.wantSet)
+			}
+		})
+	}
+}
+
+func TestMLAssetID(t *testing.T) {
+	tests := []struct {
+		filename string
+		want     string
+	}{
+		{"", ""},
+		{"foo.jpg", ""},
+		{"ML.jpg", ""},
+		{"ML12345.jpg", "12345"},
+		{"ML12345", "12345"},
+		{"ML12345.foo.bar", "12345.foo"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.filename, func(t *testing.T) {
+			if got := mlAssetID(tt.filename); got != tt.want {
+				t.Errorf("mlAssetID(%q) = %q, want %q", tt.filename, got, tt.want)
 			}
 		})
 	}
