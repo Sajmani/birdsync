@@ -80,13 +80,34 @@ func eBirdMLAssets(mlAssets string) mlAssetSet {
 
 func iNatMLAssets(r inat.Result) mlAssetSet {
 	var set mlAssetSet
-	for _, line := range strings.Split(r.Description, "\n") {
-		if i := strings.Index(line, "macaulaylibrary.org/asset/"); i >= 0 {
-			id := line[i+len("macaulaylibrary.org/asset/"):]
-			set.Add(strings.TrimSpace(id))
+	for _, photo := range r.Photos {
+		if id := mlAssetID(photo.OriginalFilename); id != "" {
+			set.Add(id)
+		}
+	}
+	for _, sound := range r.Sounds {
+		if id := mlAssetID(sound.OriginalFilename); id != "" {
+			set.Add(id)
 		}
 	}
 	return set
+}
+
+// mlAssetID returns the Macaulay Library asset ID from a filename, or "" if
+// the filename does not appear to be a Macaulay Library asset.
+//
+// Example filenames:
+//   - ML12345.jpg
+//   - ML67890.wav
+func mlAssetID(filename string) string {
+	if !strings.HasPrefix(filename, "ML") {
+		return ""
+	}
+	filename = strings.TrimPrefix(filename, "ML")
+	if i := strings.LastIndex(filename, "."); i >= 0 {
+		return filename[:i]
+	}
+	return filename
 }
 
 func mlAssetURL(id string) string {
