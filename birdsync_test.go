@@ -135,10 +135,11 @@ func TestBirdsync(t *testing.T) {
 	// Mock iNaturalist observations
 	inatObservations := []inat.Result{
 		{ // previously uploaded with media
-			UUID:       uuid.New(),
-			ObservedOn: "2023-01-01",
-			Taxon:      inat.Taxon{PreferredCommonName: "Ring-billed Gull"},
-			Sounds:     []inat.Sound{{OriginalFilename: "ML12345.wav"}},
+			UUID:        uuid.New(),
+			ObservedOn:  "2023-01-01",
+			Taxon:       inat.Taxon{PreferredCommonName: "Ring-billed Gull"},
+			Description: mlAssetURL("12345"),
+			Sounds:      []inat.Sound{{OriginalFilename: "ML12345.wav"}},
 			Ofvs: []inat.Ofv{
 				{FieldID: inat.EBirdField, Value: "S123"},
 				{FieldID: inat.EBirdScientificNameField, Value: "Larus delawarensis"},
@@ -198,8 +199,8 @@ func TestBirdsync(t *testing.T) {
 	if stats.createdObservations != 1 {
 		t.Errorf("Expected 1 created observations, got %d", stats.createdObservations)
 	}
-	if stats.updatedObservations != 2 {
-		t.Errorf("Expected 2 updated observations, got %d", stats.updatedObservations)
+	if stats.updatedObservations != 3 {
+		t.Errorf("Expected 3 updated observations, got %d", stats.updatedObservations)
 	}
 	if stats.uploadedPhotos != 0 {
 		t.Errorf("Expected 0 uploaded photos, got %d", stats.uploadedPhotos)
@@ -229,10 +230,11 @@ func TestUpdateMedia(t *testing.T) {
 	// Mock iNaturalist observations
 	inatObservations := []inat.Result{
 		{ // previously uploaded, without one of the media assets
-			UUID:       uuid.New(),
-			ObservedOn: "2023-01-03",
-			Taxon:      inat.Taxon{PreferredCommonName: "American Crow"},
-			Sounds:     []inat.Sound{{OriginalFilename: "ML67890.wav"}},
+			UUID:        uuid.New(),
+			ObservedOn:  "2023-01-03",
+			Taxon:       inat.Taxon{PreferredCommonName: "American Crow"},
+			Description: "description",
+			Sounds:      []inat.Sound{{OriginalFilename: "ML67890.wav"}},
 			Ofvs: []inat.Ofv{
 				{FieldID: inat.EBirdField, Value: "S129"},
 				{FieldID: inat.EBirdScientificNameField, Value: "Corvus brachyrhynchos"},
@@ -260,8 +262,8 @@ func TestUpdateMedia(t *testing.T) {
 	if stats.createdObservations != 0 {
 		t.Errorf("Expected 0 created observations, got %d", stats.createdObservations)
 	}
-	if stats.updatedObservations != 1 {
-		t.Errorf("Expected 1 updated observations, got %d", stats.updatedObservations)
+	if stats.updatedObservations != 2 {
+		t.Errorf("Expected 2 updated observations, got %d", stats.updatedObservations)
 	}
 	if stats.uploadedPhotos != 0 {
 		t.Errorf("Expected 0 uploaded photos, got %d", stats.uploadedPhotos)
