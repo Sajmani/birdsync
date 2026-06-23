@@ -169,6 +169,9 @@ func (o ObservationID) String() string {
 	return fmt.Sprintf("%s[%s]", o.SubmissionID, o.ScientificName)
 }
 
+// macaulayBaseURL is the base URL for the Macaulay Library CDN.
+const macaulayBaseURL = "https://cdn.download.ams.birds.cornell.edu/api/v2"
+
 // DownloadMLAsset downloads the photo or sound with the provided ML asset ID
 // (numbers only) and returns the local filename and whether it's a photo.
 // This file is temporary and may be deleted at any time.
@@ -177,8 +180,14 @@ func (o ObservationID) String() string {
 // we try downloading the photo file first, and if it's not there,
 // we try downloading the sound file.
 func DownloadMLAsset(mlAssetID string) (string, bool, error) {
+	return downloadMLAsset(macaulayBaseURL, mlAssetID)
+}
+
+// downloadMLAsset is the implementation of DownloadMLAsset, accepting a base
+// URL so it can be tested against a local HTTP server.
+func downloadMLAsset(baseURL, mlAssetID string) (string, bool, error) {
 	// Try fetching this ML asset as a photo
-	url := fmt.Sprintf("https://cdn.download.ams.birds.cornell.edu/api/v2/asset/%s/2400", mlAssetID)
+	url := fmt.Sprintf("%s/asset/%s/2400", baseURL, mlAssetID)
 	resp, err := http.Get(url)
 	if err != nil {
 		return "", false, fmt.Errorf("DownloadMLAsset(%s): %s: %w", mlAssetID, url, err)
@@ -187,7 +196,7 @@ func DownloadMLAsset(mlAssetID string) (string, bool, error) {
 	isPhoto := resp.StatusCode == http.StatusOK
 	if resp.StatusCode == http.StatusNotFound {
 		// Photo not found; try fetching it as a sound
-		url = fmt.Sprintf("https://cdn.download.ams.birds.cornell.edu/api/v2/asset/%s/mp3", mlAssetID)
+		url = fmt.Sprintf("%s/asset/%s/mp3", baseURL, mlAssetID)
 		resp, err = http.Get(url)
 		if err != nil {
 			return "", isPhoto, fmt.Errorf("DownloadMLAsset(%s): %s: %w", mlAssetID, url, err)
@@ -207,28 +216,14 @@ func DownloadMLAsset(mlAssetID string) (string, bool, error) {
 		return "", isPhoto, fmt.Errorf("DownloadMLAsset(%s): failed to copy asset data to file: %w", mlAssetID, err)
 	}
 
-	ext := ".mp3"
-	if isPhoto {
-		// For photos only: re-open the file to detect content type
-		_, err = tmpFile.Seek(0, 0)
-		if err != nil {
-			return "", isPhoto, fmt.Errorf("DownloadMLAsset(%s): failed to seek to beginning of temp file: %w", mlAssetID, err)
-		}
-
-		buf := make([]byte, 512) // 512 bytes is the required size for DetectContentType
-		n, err := tmpFile.Read(buf)
-		if err != nil && err != io.EOF {
-			return "", isPhoto, fmt.Errorf("DownloadMLAsset(%s): failed to read from temp file for content type detection: %w", mlAssetID, err)
-		}
-		buf = buf[:n]
-
-		mimeType := http.DetectContentType(buf)
-		extensions, err := mime.ExtensionsByType(mimeType)
-		if err != nil || len(extensions) == 0 {
-			return "", isPhoto, fmt.Errorf("DownloadMLAsset(%s): failed to find file extension for mime type %s: %w", mlAssetID, mimeType, err)
-		}
-		ext = extensions[0]
+	// Detect the file extension from the Content-Type response header.
+	// The Macaulay Library CDN sets this reliably for both photos and sounds.
+	contentType := resp.Header.Get("Content-Type")
+	extensions, err := mime.ExtensionsByType(contentType)
+	if err != nil || len(extensions) == 0 {
+		return "", isPhoto, fmt.Errorf("DownloadMLAsset(%s): failed to find file extension for mime type %q: %w", mlAssetID, contentType, err)
 	}
+	ext := extensions[0]
 	tmpFile.Close() // Close the file before renaming it.
 
 	newPath := tmpFile.Name() + ext
