@@ -66,6 +66,7 @@ type stats struct {
 	afterSkips, beforeSkips, verifiableSkips, previouslySkips, fuzzySkips int
 	totalRecords, createdObservations, updatedObservations                int
 	uploadedPhotos, uploadedSounds                                        int
+	errors                                                                int
 }
 
 func main() {
@@ -112,6 +113,9 @@ func main() {
 	log.Printf("Updated %d iNaturalist observations", stats.updatedObservations)
 	log.Printf("Uploaded %d photos to iNaturalist", stats.uploadedPhotos)
 	log.Printf("Uploaded %d sounds to iNaturalist", stats.uploadedSounds)
+	if stats.errors > 0 {
+		log.Printf("Failed to upload %d media assets", stats.errors)
+	}
 }
 
 func birdsync(eBirdCSVFilename string, ebirdClient ebirdClient, inatUserID string, inatClient inatClient) stats {
@@ -197,11 +201,15 @@ func birdsync(eBirdCSVFilename string, ebirdClient ebirdClient, inatUserID strin
 				} else {
 					filename, isPhoto, err := ebirdClient.DownloadMLAsset(id)
 					if err != nil {
-						log.Fatalf("Couldn't download ML asset %s from eBird: %v", id, err)
+						log.Printf("Couldn't download ML asset %s from eBird: %v", id, err)
+						s.errors++
+						continue
 					}
 					err = inatClient.UploadMedia(filename, isPhoto, id, obs.UUID.String())
 					if err != nil {
-						log.Fatalf("Couldn't upload ML asset %s to iNaturalist: %v", id, err)
+						log.Printf("Couldn't upload ML asset %s to iNaturalist: %v", id, err)
+						s.errors++
+						continue
 					}
 					if isPhoto {
 						s.uploadedPhotos++

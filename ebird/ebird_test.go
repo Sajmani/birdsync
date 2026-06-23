@@ -1,10 +1,80 @@
 package ebird
 
 import (
+	"net/http"
+	"net/http/httptest"
 	"os"
+	"path/filepath"
 	"testing"
 	"time"
 )
+
+func TestDownloadMLAsset_Sound(t *testing.T) {
+	const assetID = "12345"
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/asset/" + assetID + "/2400":
+			// Photo not found; this is a sound asset.
+			http.NotFound(w, r)
+		case "/asset/" + assetID + "/mp3":
+			w.Header().Set("Content-Type", "audio/mpeg")
+			w.WriteHeader(http.StatusOK)
+			w.Write([]byte("fake mp3 data"))
+		default:
+			t.Errorf("Unexpected request path: %s", r.URL.Path)
+			http.NotFound(w, r)
+		}
+	}))
+	defer server.Close()
+
+	filename, isPhoto, err := downloadMLAsset(server.URL, assetID)
+	if err != nil {
+		t.Fatalf("downloadMLAsset() error = %v", err)
+	}
+	defer os.Remove(filename)
+
+	if isPhoto {
+		t.Errorf("Expected isPhoto=false for a sound asset, got true")
+	}
+	// The extension must be a valid one for audio/mpeg (e.g. .mp3 or .m2a).
+	ext := filepath.Ext(filename)
+	validSoundExts := map[string]bool{".mp3": true, ".m2a": true, ".mp2": true, ".mpga": true}
+	if !validSoundExts[ext] {
+		t.Errorf("Expected a valid audio/mpeg extension, got %q", ext)
+	}
+}
+
+func TestDownloadMLAsset_Photo(t *testing.T) {
+	const assetID = "67890"
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/asset/" + assetID + "/2400":
+			w.Header().Set("Content-Type", "image/jpeg")
+			w.WriteHeader(http.StatusOK)
+			w.Write([]byte("fake jpeg data"))
+		default:
+			t.Errorf("Unexpected request path: %s", r.URL.Path)
+			http.NotFound(w, r)
+		}
+	}))
+	defer server.Close()
+
+	filename, isPhoto, err := downloadMLAsset(server.URL, assetID)
+	if err != nil {
+		t.Fatalf("downloadMLAsset() error = %v", err)
+	}
+	defer os.Remove(filename)
+
+	if !isPhoto {
+		t.Errorf("Expected isPhoto=true for a photo asset, got false")
+	}
+	// The extension must be a valid one for image/jpeg (e.g. .jpeg or .jpe or .jpg).
+	ext := filepath.Ext(filename)
+	validPhotoExts := map[string]bool{".jpeg": true, ".jpe": true, ".jpg": true}
+	if !validPhotoExts[ext] {
+		t.Errorf("Expected a valid image/jpeg extension, got %q", ext)
+	}
+}
 
 func TestRecord_Observed(t *testing.T) {
 	testCases := []struct {
