@@ -44,6 +44,7 @@ func (c *Client) DownloadObservations(inatUserID string, d1, d2 time.Time, field
 		q.Set("user_id", inatUserID)
 		q.Set("page", strconv.Itoa(page))
 		q.Set("per_page", strconv.Itoa(perPage))
+		q.Set("iconic_taxa[]", "Aves")
 		if !d1.IsZero() {
 			q.Set("d1", d1.Format(dateFormat))
 		}
