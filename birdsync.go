@@ -232,21 +232,50 @@ func birdsync(eBirdCSVFilename string, ebirdClient ebirdClient, inatUserID strin
 			s.updatedObservations++
 		}
 
-		// Skip records that have previously been uploaded by birdsync.
+		// Records that have previously been uploaded by birdsync may need to be updated.
 		key := rec.ObservationID()
 		if r, ok := previouslySynced[key]; ok {
 			debugf("line %d: Already synced %s to iNaturalist as %s\n",
 				rec.Line, key, r.URLWithSpecies())
-			addedMediaIDs, summary := mediaChange(rec, r)
-			if summary != "" {
-				log.Printf("Media assets differ between eBird %s and iNaturalist %s: %s",
-					rec.URLWithSpecies(), r.URLWithSpecies(), summary)
-			}
-			if addedMediaIDs.Len() == 0 {
+			addedMediaIDs, summary, needsUpdate := mediaChange(rec, r)
+			if !needsUpdate {
 				s.previouslySkips++
 				continue
 			}
+			log.Printf("Media assets differ between eBird %s and iNaturalist %s: %s",
+				rec.URLWithSpecies(), r.URLWithSpecies(), summary)
 			addMedia(r.UUID, r.Description, addedMediaIDs)
+			if addedMediaIDs.Len() > 0 {
+				// We need to re-download the observation to get the latest media.
+				// This is inefficient, but it's the easiest way to ensure that
+				// the description is correct.
+				//
+				// TODO: Add the newly uploaded media to the observation in memory
+				// instead of re-downloading.
+				results := inatClient.DownloadObservations(inatUserID, after.Time(), before.Time(),
+					"description", "observed_on", "photos.all", "sounds.all", "taxon.all", "ofvs.all")
+				for _, r_new := range results {
+					if r_new.UUID == r.UUID {
+						r = r_new
+						break
+					}
+				}
+			}
+			obs := inat.Observation{
+				UUID:        r.UUID,
+				Description: rebuildDescription(r.Description, iNatMLAssets(r)),
+			}
+			if dryRun {
+				log.Printf("DRYRUN: Updating observation %s with corrected media description\n",
+					r.URLWithSpecies())
+				prettyPrintln(obs)
+			} else {
+				err = inatClient.UpdateObservation(obs)
+				if err != nil {
+					log.Fatalf("UpdateObservation %s: %v", r.URLWithSpecies(), err)
+				}
+			}
+			s.updatedObservations++
 			continue
 		}
 

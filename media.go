@@ -12,13 +12,11 @@ import (
 // in the eBird record vs. the iNaturalist observation. It also reports
 // whether the number of assets in the iNaturalist description matches
 // the number of photos and sounds in the observation itself.
-//
-// TODO: Correct these differences by resyncing the media.
-func mediaChange(rec ebird.Record, r inat.Result) (mlAssetSet, string) {
+func mediaChange(rec ebird.Record, r inat.Result) (addedMediaIDs mlAssetSet, desc string, needsUpdate bool) {
 	eSet := eBirdMLAssets(rec.MLCatalogNumbers)
 	iSet := iNatMLAssets(r)
+
 	var diffs []string
-	var addedMediaIDs mlAssetSet
 	if diff := mlAssetDiff(eSet, iSet); diff.Len() > 0 {
 		addedMediaIDs = diff
 		diffs = append(diffs, fmt.Sprintf("%d ML Asset IDs added to eBird: %s", diff.Len(), diff))
@@ -26,18 +24,19 @@ func mediaChange(rec ebird.Record, r inat.Result) (mlAssetSet, string) {
 	if diff := mlAssetDiff(iSet, eSet); diff.Len() > 0 {
 		diffs = append(diffs, fmt.Sprintf("%d ML Asset IDs removed from eBird: %s", diff.Len(), diff))
 	}
-	photoCount := len(r.Photos)
-	soundCount := len(r.Sounds)
-	mediaCount := photoCount + soundCount
-	descCount := iSet.Len()
-	if descCount != mediaCount {
-		diffs = append(diffs, fmt.Sprintf("iNat description lists %d ML Asset IDs, but observation has %d media files (%d photos + %d sounds)",
-			descCount, mediaCount, photoCount, soundCount))
+
+	iSetDesc := iNatMLAssetsFromDescription(r.Description)
+	if diff := mlAssetDiff(iSet, iSetDesc); diff.Len() > 0 {
+		diffs = append(diffs, fmt.Sprintf("%d ML Asset IDs in description need to be added: %s", diff.Len(), diff))
 	}
+	if diff := mlAssetDiff(iSetDesc, iSet); diff.Len() > 0 {
+		diffs = append(diffs, fmt.Sprintf("%d ML Asset IDs in description need to be removed: %s", diff.Len(), diff))
+	}
+
 	if len(diffs) == 0 {
-		return mlAssetSet{}, ""
+		return mlAssetSet{}, "", false
 	}
-	return addedMediaIDs, strings.Join(diffs, "; ")
+	return addedMediaIDs, strings.Join(diffs, "; "), true
 }
 
 type mlAssetSet struct {
@@ -78,15 +77,60 @@ func eBirdMLAssets(mlAssets string) mlAssetSet {
 	return set
 }
 
-func iNatMLAssets(r inat.Result) mlAssetSet {
+func iNatMLAssetsFromDescription(desc string) mlAssetSet {
 	var set mlAssetSet
-	for _, line := range strings.Split(r.Description, "\n") {
+	for _, line := range strings.Split(desc, "\n") {
 		if i := strings.Index(line, "macaulaylibrary.org/asset/"); i >= 0 {
 			id := line[i+len("macaulaylibrary.org/asset/"):]
 			set.Add(strings.TrimSpace(id))
 		}
 	}
 	return set
+}
+
+func rebuildDescription(desc string, assets mlAssetSet) string {
+	var newDesc []string
+	for _, line := range strings.Split(desc, "\n") {
+		if !strings.Contains(line, "macaulaylibrary.org/asset/") {
+			newDesc = append(newDesc, line)
+		}
+	}
+	for _, id := range assets.ids {
+		newDesc = append(newDesc, mlAssetURL(id))
+	}
+	return strings.Join(newDesc, "\n")
+}
+
+func iNatMLAssets(r inat.Result) mlAssetSet {
+	var set mlAssetSet
+	for _, photo := range r.Photos {
+		if id := mlAssetID(photo.OriginalFilename); id != "" {
+			set.Add(id)
+		}
+	}
+	for _, sound := range r.Sounds {
+		if id := mlAssetID(sound.OriginalFilename); id != "" {
+			set.Add(id)
+		}
+	}
+	return set
+}
+
+// mlAssetID returns the Macaulay Library asset ID from a filename, or "" if
+// the filename does not appear to be a Macaulay Library asset.
+//
+// Example filenames:
+//   - ML12345.jpg
+//   - ML67890.wav
+func mlAssetID(filename string) string {
+	if !strings.HasPrefix(filename, "ML") {
+		return ""
+	}
+	filename = strings.TrimPrefix(filename, "ML")
+	if i := strings.LastIndex(filename, "."); i >= 0 {
+		return filename[:i]
+	}
+	return filename
 }
 
 func mlAssetURL(id string) string {
