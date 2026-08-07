@@ -11,6 +11,7 @@ import (
 	"os"
 	"slices"
 	"strconv"
+	"time"
 
 	"github.com/Sajmani/birdsync/ebird"
 	"github.com/Sajmani/birdsync/inat"
@@ -66,7 +67,12 @@ type stats struct {
 	afterSkips, beforeSkips, verifiableSkips, previouslySkips, fuzzySkips int
 	totalRecords, createdObservations, updatedObservations                int
 	uploadedPhotos, uploadedSounds                                        int
-	errors                                                                int
+	// pendingMedia counts the media assets a --dryrun would have uploaded.
+	// A Macaulay Library asset ID doesn't say whether it's a photo or a sound,
+	// and a dry run doesn't download it to find out, so these can't be split
+	// into uploadedPhotos and uploadedSounds.
+	pendingMedia int
+	errors       int
 }
 
 func main() {
@@ -111,8 +117,13 @@ func main() {
 	}
 	log.Printf("Created %d new iNaturalist observations", stats.createdObservations)
 	log.Printf("Updated %d iNaturalist observations", stats.updatedObservations)
-	log.Printf("Uploaded %d photos to iNaturalist", stats.uploadedPhotos)
-	log.Printf("Uploaded %d sounds to iNaturalist", stats.uploadedSounds)
+	if dryRun {
+		// A dry run doesn't download the assets, so it can't tell photos from sounds.
+		log.Printf("Would upload %d media assets to iNaturalist", stats.pendingMedia)
+	} else {
+		log.Printf("Uploaded %d photos to iNaturalist", stats.uploadedPhotos)
+		log.Printf("Uploaded %d sounds to iNaturalist", stats.uploadedSounds)
+	}
 	if stats.errors > 0 {
 		log.Printf("Failed to upload %d media assets", stats.errors)
 	}
@@ -139,8 +150,11 @@ func birdsync(eBirdCSVFilename string, ebirdClient ebirdClient, inatUserID strin
 			// This iNaturalist observation was not created by birdsync.
 			// Record its date and common name for fuzzy matching.
 			addFuzzy := func(name string) {
+				if name == "" {
+					return // an empty name would match every unnamed eBird record
+				}
 				key := fuzzyKey{
-					observedDate: r.ObservedOn,
+					observedDate: r.ObservedOn, // iNaturalist always uses format 2006-01-02
 					name:         name,
 				}
 				fuzzyMatch[key] = append(fuzzyMatch[key], r.UUID.String())
@@ -197,7 +211,7 @@ func birdsync(eBirdCSVFilename string, ebirdClient ebirdClient, inatUserID strin
 				obs.Description += "Macaulay Library Asset: " + mlAssetURL(id) + "\n"
 				if dryRun {
 					log.Printf("DRYRUN: Download ML Asset %s and upload to iNaturalist", id)
-					s.uploadedPhotos++
+					s.pendingMedia++
 				} else {
 					filename, isPhoto, err := ebirdClient.DownloadMLAsset(id)
 					if err != nil {
@@ -252,10 +266,15 @@ func birdsync(eBirdCSVFilename string, ebirdClient ebirdClient, inatUserID strin
 
 		if fuzzy {
 			// Skip records for the same bird and date as an existing non-birdsync observation.
+			// eBird writes dates in several formats, so compare against the parsed
+			// observation date rather than the raw CSV field, which may be "1/2/2006".
 			checkFuzzy := func(name string) bool {
+				if name == "" {
+					return false // an empty name would match every unnamed taxon
+				}
 				key := fuzzyKey{
 					name:         name,
-					observedDate: rec.Date,
+					observedDate: observed.Format(time.DateOnly),
 				}
 				debugf("line %d: fuzzy match: check %+v", rec.Line, key)
 				if _, ok := fuzzyMatch[key]; ok {

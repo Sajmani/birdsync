@@ -61,6 +61,19 @@ func (m *mockINatClient) UploadMedia(filename string, isPhoto bool, assetID, obs
 	return m.uploadMediaErr
 }
 
+// resetFlags restores the package-level flag variables to their defaults, so a
+// test doesn't inherit state from whichever test ran before it. The date flags
+// must be zeroed directly: dateTimeFlag.Set rejects the empty string, so
+// after.Set("") silently leaves the previous value in place.
+func resetFlags() {
+	dryRun = false
+	verifiable = true
+	fuzzy = false
+	after = dateTimeFlag{}
+	before = dateTimeFlag{}
+	positionalAccuracy = ebird.PositionalAccuracy
+}
+
 func TestBirdsync(t *testing.T) {
 	origDebug := debug
 	debug = true
@@ -268,5 +281,130 @@ func TestUpdateMedia(t *testing.T) {
 	}
 	if stats.uploadedSounds != 1 {
 		t.Errorf("Expected 1 uploaded sound, got %d", stats.uploadedSounds)
+	}
+}
+
+// TestFuzzyMatchDateFormats checks that fuzzy matching works regardless of which
+// date format the user's eBird export uses. iNaturalist always reports
+// observed_on as 2006-01-02, but eBird writes either 2006-01-02 or 1/2/2006,
+// so the raw CSV field can't be compared directly.
+func TestFuzzyMatchDateFormats(t *testing.T) {
+	origDebug := debug
+	debug = true
+	defer func() { debug = origDebug }()
+
+	for _, tc := range []struct {
+		name string
+		date string
+		time string
+	}{
+		{"ISO date", "2023-01-03", "02:00 PM"},
+		{"slash date", "1/3/2023", "2:00 PM"},
+		{"ISO date, no time", "2023-01-03", ""},
+		{"slash date, no time", "1/3/2023", ""},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			mockEbird := &mockEBirdClient{records: []ebird.Record{{
+				SubmissionID:     "S200",
+				ScientificName:   "Zenaida macroura",
+				CommonName:       "Mourning Dove",
+				Date:             tc.date,
+				Time:             tc.time,
+				MLCatalogNumbers: "11111",
+			}}}
+			// A non-birdsync observation of the same bird on the same day:
+			// it has no eBird observation fields, so it's a fuzzy-match candidate.
+			mockInat := &mockINatClient{observations: []inat.Result{{
+				UUID:       uuid.New(),
+				ObservedOn: "2023-01-03",
+				Taxon:      inat.Taxon{PreferredCommonName: "Mourning Dove"},
+			}}}
+
+			resetFlags()
+			fuzzy = true
+
+			stats := birdsync("MyEBirdData.csv", mockEbird, "myUserID", mockInat)
+
+			if stats.fuzzySkips != 1 {
+				t.Errorf("Expected 1 fuzzy skip for date %q, got %d", tc.date, stats.fuzzySkips)
+			}
+			if stats.createdObservations != 0 {
+				t.Errorf("Expected 0 created observations for date %q, got %d", tc.date, stats.createdObservations)
+			}
+		})
+	}
+}
+
+// TestFuzzyMatchIgnoresEmptyNames checks that an iNaturalist observation with no
+// taxon name doesn't fuzzy-match every eBird record that happens to be missing a
+// name on the same date, which would silently drop legitimate observations.
+func TestFuzzyMatchIgnoresEmptyNames(t *testing.T) {
+	origDebug := debug
+	debug = true
+	defer func() { debug = origDebug }()
+
+	mockEbird := &mockEBirdClient{records: []ebird.Record{{
+		SubmissionID:     "S201",
+		ScientificName:   "Corvus brachyrhynchos",
+		CommonName:       "", // no common name in this export
+		Date:             "2023-01-03",
+		Time:             "03:00 PM",
+		MLCatalogNumbers: "22222",
+	}}}
+	// An unidentified observation: iNaturalist returns an empty taxon.
+	mockInat := &mockINatClient{observations: []inat.Result{{
+		UUID:       uuid.New(),
+		ObservedOn: "2023-01-03",
+		Taxon:      inat.Taxon{},
+	}}}
+
+	resetFlags()
+	fuzzy = true
+
+	stats := birdsync("MyEBirdData.csv", mockEbird, "myUserID", mockInat)
+
+	if stats.fuzzySkips != 0 {
+		t.Errorf("Expected 0 fuzzy skips, got %d", stats.fuzzySkips)
+	}
+	if stats.createdObservations != 1 {
+		t.Errorf("Expected 1 created observation, got %d", stats.createdObservations)
+	}
+}
+
+// TestDryRunMediaCount checks that a dry run reports media assets as an
+// unclassified count. It can't report photos and sounds separately, because it
+// never downloads the asset and the Macaulay Library ID doesn't reveal its type.
+func TestDryRunMediaCount(t *testing.T) {
+	origDebug := debug
+	debug = true
+	defer func() { debug = origDebug }()
+
+	mockEbird := &mockEBirdClient{records: []ebird.Record{{
+		SubmissionID:     "S202",
+		ScientificName:   "Corvus brachyrhynchos",
+		CommonName:       "American Crow",
+		Date:             "2023-01-03",
+		Time:             "03:00 PM",
+		MLCatalogNumbers: "33333 44444",
+	}}}
+	mockInat := &mockINatClient{}
+
+	resetFlags()
+	dryRun = true
+	defer func() { dryRun = false }()
+
+	stats := birdsync("MyEBirdData.csv", mockEbird, "myUserID", mockInat)
+
+	if stats.pendingMedia != 2 {
+		t.Errorf("Expected 2 pending media assets, got %d", stats.pendingMedia)
+	}
+	if stats.uploadedPhotos != 0 {
+		t.Errorf("Expected 0 uploaded photos in a dry run, got %d", stats.uploadedPhotos)
+	}
+	if stats.uploadedSounds != 0 {
+		t.Errorf("Expected 0 uploaded sounds in a dry run, got %d", stats.uploadedSounds)
+	}
+	if stats.createdObservations != 1 {
+		t.Errorf("Expected 1 created observation, got %d", stats.createdObservations)
 	}
 }
