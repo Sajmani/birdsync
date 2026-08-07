@@ -180,9 +180,10 @@ observations inside that date window.
 # Tools
 
 The `tools` directory contains small standalone programs for maintaining observations that
-birdsync has already created. They are separate `main` packages, so `go install` of birdsync
-does not install them; run them with `go run ./tools/<name>`. They read `INAT_USER_ID` and
-`INAT_API_TOKEN` (or prompt) the same way birdsync does.
+birdsync has already created. They are separate `main` packages, so
+`go install github.com/Sajmani/birdsync@latest` does not install them; run them from a clone
+with `go run ./tools/<name>`. They read `INAT_USER_ID` and `INAT_API_TOKEN` (or prompt) the
+same way birdsync does.
 
 - `dump` — download your observations and print them as JSON. Read-only; useful for debugging.
 - `poke` — create a single test observation, or upload one Macaulay Library asset to an

@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  # Builds and tests with the toolchain declared in go.mod, which is what
+  # contributors and `go install` users actually get.
+  test:
+    name: test (go.mod)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: go build
+        run: go build ./...
+
+      - name: go vet
+        run: go vet ./...
+
+      - name: gofmt
+        run: |
+          unformatted=$(gofmt -l .)
+          if [ -n "$unformatted" ]; then
+            echo "These files are not gofmt'd:"
+            echo "$unformatted"
+            gofmt -d .
+            exit 1
+          fi
+
+      # -race catches data races; the suite is small, so this costs little.
+      - name: go test
+        run: go test -race ./...
+
+  # Early warning for breakage in the next Go release. Allowed to fail without
+  # blocking a pull request.
+  test-stable:
+    name: test (latest stable)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: stable
+          check-latest: true
+
+      - run: go build ./...
+      - run: go vet ./...
+      - run: go test -race ./...
