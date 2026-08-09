@@ -165,7 +165,7 @@ Observers (2527), Submission ID (6033), Scientific Name (20215).
 **P-040** — The description contains: a line attributing the observation to birdsync, the
 eBird observation details when present, the checklist URL, the protocol, the checklist
 comments when present, one `Macaulay Library Asset:` line per uploaded asset, and one
-`Macaulay Library Asset (upload failed permanently; delete this from the description to
+`Macaulay Library Asset (upload failed permanently; delete this line from the description to
 retry):` line per asset the service permanently refused (P-063).
 *The note spells out the remedy because the person who finds the line is reading an
 observation, not the source, and the retry mechanism is otherwise undiscoverable.*

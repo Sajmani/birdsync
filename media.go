@@ -103,7 +103,7 @@ const failedMarker = "(upload failed"
 // failedNote is the full parenthetical written into the description. It
 // explains itself because the person who finds it is reading an observation,
 // not this source file, and the retry mechanism is otherwise undiscoverable.
-const failedNote = "(upload failed permanently; delete this from the description to retry)"
+const failedNote = "(upload failed permanently; delete this line from the description to retry)"
 
 // iNatMLAssets parses the Macaulay Library assets recorded in an observation's
 // description, separating those birdsync uploaded from those the service
