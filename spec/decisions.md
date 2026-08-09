@@ -301,6 +301,58 @@ Note the fallback case cannot assert a specific extension — `text/plain` resol
 on macOS — so it asserts only that some extension is returned. Pinning a value there would
 rebuild the fragility the mapping removes.
 
+## CR-007 — A failed media upload leaves its URL in the description
+
+- **Kind:** requirement violated by implementation, with an emergent second-order effect
+- **Subject:** `observation.description.assets`
+- **Involves:** P-040, P-046, P-047, P-050
+- **Found:** 2026-08-09, in the output of a `--dryrun` against the maintainer's real account
+
+`addMedia` appends the asset URL to the description at the top of the loop body, before the
+download and upload are attempted, and never removes it when either fails:
+
+```go
+for _, id := range assetIDs.ids {
+    obs.Description += "Macaulay Library Asset: " + mlAssetURL(id) + "\n"   // unconditional
+    filename, isPhoto, err := ebirdClient.DownloadMLAsset(id)
+    if err != nil { log; s.errors++; continue }                              // already written
+    err = inatClient.UploadMedia(...)
+    if err != nil { log; s.errors++; continue }                              // still written
+}
+inatClient.UpdateObservation(obs)
+```
+
+Two consequences, both demonstrable from the source:
+
+1. **The description misreports what is attached.** P-040 requires one line "per uploaded
+   asset"; the code writes one per *attempted* asset. A direct violation.
+2. **The failure becomes permanent.** On the next run `iNatMLAssets` parses the asset ID back
+   out of the description, so `mediaChange` computes no difference and never retries the
+   upload. P-047's additive re-sync — the mechanism that exists to catch up on missing media —
+   is defeated by the record of the failure itself. Neither requirement is wrong alone.
+
+The observation stays unverifiable ("Casual") until the user notices and fixes it by hand,
+which is the outcome the README warns about without explaining the cause.
+
+**Evidence:** the dry run reported `iNat description lists 1 ML Asset IDs, but observation has
+0 media files` for one observation. The mechanism above is certain; that this specific
+observation arose from it is inference — a photo deleted in iNaturalist by hand would look the
+same. P-049's mismatch report is what surfaced it, so the detection works even though the
+repair doesn't.
+
+| Option | Effect |
+| --- | --- |
+| **A. Build the description from assets that actually uploaded** | Satisfies P-040; a failed asset stays absent from the description, so P-047 retries it next run |
+| B. Keep writing all URLs, but re-attempt anything the observation is missing | Needs the attached-media list, which the update path doesn't currently fetch |
+| C. Leave the description alone and report louder | No lie in the data, but the failure is still permanent |
+
+**Recommendation: A.** It is the smaller change and it turns a permanent failure into a
+transient one: the next run sees the asset missing from the description and uploads it.
+
+**Status: recorded 2026-08-09, fix deferred until the narrow real-account run has validated
+the changes already committed** — the fix touches `addMedia`, the same function that run is
+meant to exercise.
+
 ## Work arising
 
 Phase-3 changes owed by the resolutions above. None may be implemented before

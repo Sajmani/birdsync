@@ -200,6 +200,8 @@ attached is reported, not corrected.
 
 **P-050** — A failed media download or upload is logged and counted, and does not stop
 the run.
+*The description must not then claim the asset was attached; see
+[CR-007](decisions.md#cr-007--a-failed-media-upload-leaves-its-url-in-the-description), open.*
 
 ## Dry run
 
