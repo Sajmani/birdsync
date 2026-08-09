@@ -2,6 +2,18 @@
 
 Thanks for your interest in improving birdsync. Bug reports and pull requests are welcome.
 
+This file covers the mechanics: setup, the checks to run, and how to test safely. What
+birdsync must do, and the constraints the code has to satisfy, are written down in
+[spec/](spec/) — those are normative, and where this file disagrees with them, they win.
+
+| If you want to know | Read |
+| --- | --- |
+| How to run the tool | [README.md](README.md) |
+| How the code is put together | [spec/arch.md](spec/arch.md) |
+| What it must do, and why | [spec/product.md](spec/product.md) |
+| Constraints on the implementation | [spec/tech.md](spec/tech.md) |
+| How a change travels from requirement to code | [spec/process.md](spec/process.md) |
+
 ## Getting set up
 
 You need the [Go toolchain](https://go.dev/dl/). `go.mod` declares `go 1.23.0` as the language
@@ -27,17 +39,22 @@ Run all four of these and make sure they're clean:
 go build ./...
 go vet ./...
 gofmt -l .          # must print nothing
-go test ./...
+go test -race ./...
 ```
 
-CI runs these same checks on every pull request, except that it runs the tests with the race
-detector (`go test -race ./...`). Running that locally too will save you a round trip.
+CI runs the same four on every pull request, plus a non-blocking job against the latest
+stable Go as an early warning.
+
+If your change alters behavior, it also needs a matching edit to
+[spec/product.md](spec/product.md), and to [README.md](README.md) when it changes what gets
+written to iNaturalist or which observations are skipped. The README documents flag defaults
+and skip order, and has drifted from the code before.
 
 ## Testing
 
-**Tests must never make live API calls.** They must not contact `api.inaturalist.org` or the
-Macaulay Library, and they must not depend on anyone's real observations. There are two
-mechanisms for this, and one of them will fit whatever you're testing:
+**Tests must never make live API calls** (`spec/tech.md` T-010). They must not contact
+`api.inaturalist.org` or the Macaulay Library, and they must not depend on anyone's real
+observations. Two seams exist for this, and one of them will fit whatever you're testing:
 
 - **Fake clients.** `birdsync()` takes `ebirdClient` and `inatClient` interfaces (defined in
   `glue.go`). `birdsync_test.go` has `mockEBirdClient` and `mockINatClient` implementations.
@@ -61,8 +78,8 @@ put it back.
 ## Every mutating operation must honor `--dryrun`
 
 `--dryrun` is the safety net users rely on before letting this tool loose on their iNaturalist
-account, and it only works if it's airtight. If you add anything that creates, updates,
-deletes, or uploads, it must sit behind the flag:
+account, and it only works if it's airtight. Anything that creates, updates, deletes, or
+uploads sits behind the flag:
 
 ```go
 if dryRun {
@@ -73,46 +90,29 @@ if dryRun {
 }
 ```
 
-Three rules for getting this right:
-
-- **Gate at the call site**, inside `birdsync()`. The `inat.Client` methods mutate
-  unconditionally and don't know the flag exists; that's deliberate, since `tools/` uses the
-  same client without it. The existing gates are at birdsync.go:212, :236, and :350.
-- **Prefix the log line with `DRYRUN:`.** The README tells users to grep for it.
-- **Don't let the counters lie.** A dry run must not report work it didn't do. When it can't
-  know something — a Macaulay Library asset ID doesn't reveal whether it's a photo or a sound
-  without downloading it — count it as unknown rather than guessing. That's what
-  `stats.pendingMedia` is for.
-
-A `--dryrun` run may issue reads, but it must issue no writes at all.
+The rules are `spec/tech.md` T-005 through T-008; in short, gate at the call site inside
+`birdsync()` rather than in the client (`tools/` shares it), prefix the log line with
+`DRYRUN:` because the README tells users to grep for it, and don't let the counters report
+work that didn't happen. Existing gates are at birdsync.go:212, :236, and :350.
 
 Note that the programs in `tools/` predate this and have no `--dryrun`; they use a `debug`
 constant instead. If you add a tool, a real flag is preferable.
 
 ## Code style
 
-Standard Go. `gofmt` decides formatting; beyond that:
+Standard Go, written out as T-024 through T-029 in [spec/tech.md](spec/tech.md). The short
+version: `gofmt` decides formatting; wrap errors with the calling function's name
+(`fmt.Errorf("DownloadMLAsset(%s): %w", id, err)`); keep `log.Fatal` out of `ebird` and
+`inat`; send progress to `log.Printf` and detail to `debugf`.
 
-- Wrap errors with the calling function's name: `fmt.Errorf("DownloadMLAsset(%s): %w", id, err)`.
-- `log.Fatal` is fine in `main` and in `tools/`, but the `ebird` and `inat` packages should
-  return errors to their caller instead. Two existing functions break this rule —
-  `ebird.Records` and `inat.DownloadObservations` — so don't take them as the example to follow.
-- User-facing progress goes through `log.Printf`; verbose detail goes through `debugf`, which
-  only prints under `--debug`.
-- Comments should explain *why*. Much of this code works around undocumented quirks in the
-  eBird export format and the iNaturalist API, and those explanations are the most valuable
-  comments in the repository. Please don't strip them.
+Comments should explain *why*. Much of this code works around undocumented quirks in the
+eBird export format and the iNaturalist API, and those explanations are the most valuable
+comments in the repository. Please don't strip them.
 
-Please ask before adding a dependency — the single-dependency footprint is deliberate.
-
-Please also raise the `go` directive in `go.mod` only as a deliberate, standalone change rather
-than as a side effect of something else. Most users are on the default `GOTOOLCHAIN=auto` and
-will download a newer toolchain without noticing, but anyone pinned to `GOTOOLCHAIN=local` on
-an older Go will be blocked outright.
-
-If your change affects what gets written to iNaturalist, or which observations are skipped,
-update [README.md](README.md) in the same pull request. It documents the flag defaults and the
-order in which skip rules are applied, and it has drifted from the code before.
+Please ask before adding a dependency — the single-dependency footprint is deliberate — and
+raise the `go` directive in `go.mod` only as a deliberate, standalone change. Most users are
+on the default `GOTOOLCHAIN=auto` and will download a newer toolchain without noticing, but
+anyone pinned to `GOTOOLCHAIN=local` on an older Go will be blocked outright.
 
 ## Testing against a real account
 

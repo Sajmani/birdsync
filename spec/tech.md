@@ -1,0 +1,180 @@
+# Technical requirements — birdsync
+
+Constraints the implementation must satisfy, independent of what the tool does for a
+user. Written per [process.md](process.md).
+
+**Status: approved at Gate 1 on 2026-08-09.** Retrofitted from the code,
+[AGENTS.md](../AGENTS.md), and [CONTRIBUTING.md](../CONTRIBUTING.md). Those two files now
+keep only a terse summary of the hard safety rules, with citations back to the `T-###`
+requirements here.
+
+Five requirements below are **not yet satisfied by the code**. They are the work arising
+from Gate 1, listed in [decisions.md](decisions.md#work-arising), and they are phase-3
+changes: none may be implemented until `acceptance.md` exists and passes Gate 2.
+
+## Module and dependencies
+
+**T-001** — birdsync is a single Go module, `github.com/Sajmani/birdsync`, with no build
+system, no code generation, and no linter configuration beyond `gofmt` and `go vet`.
+
+**T-002** — The module has exactly one external dependency,
+`github.com/google/uuid`. Adding another requires the owner's approval.
+Subject: `build.external_dependencies.count` · Value: `1`
+*Rationale: the small footprint is deliberate; it keeps `go install` fast and the
+supply-chain surface near zero.*
+
+**T-003** — The `go` and `toolchain` directives are raised only as a deliberate,
+standalone change, never as a side effect of other work.
+Subject: `build.go_directive` · Value: `1.23.0`
+*Rationale: users on the default `GOTOOLCHAIN=auto` silently download a newer toolchain,
+but anyone pinned to `GOTOOLCHAIN=local` on an older Go is blocked outright.*
+
+**T-004** — The tool must build and run on any platform the Go toolchain supports, using
+only the standard library plus T-002. No platform-specific code.
+
+## Safety invariants
+
+These are the rules whose violation costs a user real data. They outrank convenience.
+
+**T-005** — Every operation that creates, updates, deletes, or uploads is gated on
+`--dryrun` **at the call site in `birdsync()`**, not inside the client.
+*Rationale: `inat.Client` is shared with `tools/`, which has no such flag.*
+
+**T-006** — A skipped mutation is logged with a `DRYRUN:` prefix (implements P-052).
+
+**T-007** — A dry run's counters must not report work that did not happen. Where a dry
+run cannot know something, it counts it as unknown rather than guessing.
+*Status: **not yet satisfied** — the created and updated counters are labelled as though
+the work happened. [CR-001](decisions.md#cr-001--a-dry-run-reports-observations-it-did-not-create) resolved this
+in favour of relabelling; implements P-060.*
+
+**T-008** — `inat.Client`'s methods mutate unconditionally and know nothing about
+`--dryrun`. This is deliberate, not an oversight.
+
+**T-009** — `UpdateObservation` always sets `ignore_photos`.
+*Rationale: without it, updating a description detaches the observation's photos.*
+
+**T-010** — Tests never contact `api.inaturalist.org`, the Macaulay Library CDN, or any
+other live service, and never depend on a real account's contents.
+
+**T-011** — Nothing in the build, test, or development workflow runs a program in
+`tools/`. They create, update, and delete observations in whatever account the
+environment's credentials point at, and `purge` is checked in with its guard off.
+
+**T-012** — Credentials are never logged, echoed, or written to a file.
+
+## Testability seams
+
+**T-013** — `birdsync()` takes its two clients as the `ebirdClient` and `inatClient`
+interfaces, so the sync loop can be driven without a network.
+
+**T-014** — `inat.NewClient` takes a base URL, and `ebird.DownloadMLAsset` delegates to
+an unexported `downloadMLAsset(baseURL, id)`, so an `httptest` server can stand in for
+either service. Neither seam may be removed.
+
+**T-015** — Flags are package-level variables, so tests share global state. A test calls
+`resetFlags()` first.
+*Gotcha: `dateTimeFlag.Set("")` returns an error and leaves the previous value in place,
+so date flags are zeroed by assignment, not through `Set`.*
+
+## External service etiquette
+
+**T-016** — Every request to the iNaturalist API carries a `User-Agent` identifying
+birdsync and its version.
+Subject: `http.user_agent` · Value: `birdsync/0.1`
+
+**T-017** — Observation downloads request the maximum supported page size.
+Subject: `inat.page_size` · Value: `200`
+*Rationale: required by `inat/api-recommended-practices` (see
+[sources.md](sources.md)).*
+
+## Data format handling
+
+**T-018** — The eBird CSV is read by header name, never by column position, with
+`FieldsPerRecord = -1`.
+*Rationale: the export has a variable number of columns between users.*
+
+**T-019** — Any comparison of an eBird observation date goes through `Record.Observed()`,
+never `Record.Date` directly.
+*Rationale: eBird writes `2006-01-02` or `1/2/2006`, with an optional time. Keying on the
+raw field was a real bug; regression test at `birdsync_test.go:291`.*
+
+**T-020** — An empty taxon name never enters the fuzzy-match index (implements P-032).
+
+**T-021** — Code that needs to know whether a Macaulay Library asset is a photo or a
+sound must download it first; the ID does not encode it.
+
+## Resource use
+
+**T-022** — Memory scales with the export: the CSV is read whole with `ReadAll`, and all
+downloaded iNaturalist observations are held in memory. This is accepted at the current
+scale (tens of thousands of records) and is a known ceiling, not a design goal.
+
+**T-023** — Temporary files created while downloading media are deleted before the run
+ends.
+*Status: **not yet satisfied** — `ebird.downloadMLAsset` creates one temp file per asset
+and nothing removes it (`ebird/ebird.go:210-234`). Confirmed as a defect at Gate 1.*
+
+## Code conventions
+
+**T-024** — `gofmt -l .` prints nothing.
+
+**T-025** — `go vet ./...` is clean.
+
+**T-026** — Errors are wrapped with the calling function's name:
+`fmt.Errorf("DownloadMLAsset(%s): %w", id, err)`. `inat.Client.roundTrip` is the
+exception, wrapping with a phrase describing the step.
+
+**T-027** — `log.Fatal` is acceptable in `main` and in `tools/`; the `ebird` and `inat`
+packages return errors to their caller.
+*Status: **not yet satisfied** — `ebird.Records` and `inat.DownloadObservations` call
+`log.Fatal`. [CR-002](decisions.md#cr-002--logfatal-in-packages-required-to-return-errors) resolved this in
+favour of fixing both, which changes `DownloadObservations`'s signature and its callers
+in `tools/`.*
+
+**T-028** — User-visible progress goes through `log.Printf`; verbose detail goes through
+`debugf`, gated on `--debug`.
+
+**T-029** — Comments explain *why*. The explanations of eBird and iNaturalist quirks are
+the most valuable comments in the repository and are preserved through refactors.
+
+## Continuous integration
+
+**T-030** — CI runs build, vet, gofmt, and the test suite under the race detector, on
+every push to `main` and every pull request, using the toolchain declared in `go.mod`.
+
+**T-031** — CI additionally runs against the latest stable Go as an early warning, and
+that job may fail without blocking a pull request.
+
+## Project bindings
+
+Per [process.md](process.md#project-bindings):
+
+| Binding | Value |
+| --- | --- |
+| Standing checks | `go build ./...`, `go vet ./...`, `gofmt -l .` (must print nothing), `go test -race ./...` |
+| ID citation syntax | Go line comment: `// Verifies: P-020.` |
+| Artifact locations | `spec/`; vendored sources in `spec/sources/<name>-<pin>/` |
+| Subject vocabulary | Dotted paths rooted at `build`, `cli`, `http`, `inat`, `log`, `media`, `observation`, `sync`. The owner adds roots. |
+| Hard safety constraints | T-005, T-010, T-011, T-012 |
+| External systems | `api.inaturalist.org` and `cdn.download.ams.birds.cornell.edu` are never contacted from a test; use `httptest` via T-014 |
+| Approval authority | The repository owner (Sajmani) for every gate, waiver, amendment, and risk acceptance |
+| Source refresh cadence | Reviewed when a `spec/` change is made, and at minimum annually |
+| Existing docs | `README.md` owns usage; `CONTRIBUTING.md` owns workflow mechanics; `AGENTS.md` owns agent-specific operating notes; `spec/` owns requirements, criteria, and design |
+
+## Open questions
+
+Resolved at Gate 1: temp-file cleanup is a defect (T-023), and the agent and contributor
+guides keep a terse summary with citations rather than being reduced to bare links.
+Still open:
+
+1. **`inat.Client.UploadMedia` has no test.** The multipart request it builds
+   (`inat/client.go:125`) is only exercised through a mock. It is the largest untested
+   surface, and it is also the one that writes binary data to a user's account. Phase 2
+   should decide whether to cover it against an `httptest` server.
+2. **T-022's memory ceiling grows** now that P-061 downloads every observation rather
+   than birds only. Nobody has measured what a large account costs. Worth a benchmark
+   criterion in phase 2 rather than a guess here.
+3. **Rate limiting is unexpressed.** `inat-api` is adopted as governing, but only its
+   `User-Agent` and page-size guidance became requirements (T-016, T-017). Its request-rate
+   guidance has no `T-###` and no check. See [sources.md](sources.md#adopted).

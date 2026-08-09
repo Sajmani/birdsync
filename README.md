@@ -52,7 +52,7 @@ Birdsync provides command-line flags to customize its behavior:
         This is on by default, so by default birdsync will _not_ sync observations
         that have no photos or sounds. To sync those observations too, pass `--verifiable=false`.
 * `-fuzzy`
-        Don't create a birdsync observation if a non-birdsync observation already exists for the same bird on the same date. This fuzzy matching is useful when you've entered the same observation manually into both eBird and iNaturalist, but it may skip legitimate uploads if you saw the same bird twice on the same day.
+        Don't create a birdsync observation if an observation without a complete birdsync sync key already exists for the same bird on the same date. This fuzzy matching is useful when you've entered the same observation manually into both eBird and iNaturalist, but it may skip legitimate uploads if you saw the same bird twice on the same day.
 * `-positional_accuracy_meters` (default `1000`)
         Positional accuracy in meters of the iNaturalist observations created by birdsync.
         Since the latitude and longitude of birdsync observations is set to the checklist location,
@@ -166,7 +166,9 @@ Birdsync cannot detect whether iNaturalist observations that you've created manu
 
 `--fuzzy` only compares against bird (`Aves`) observations, since those are the only ones
 birdsync downloads. It also ignores iNaturalist observations that have no taxon name, so an
-unidentified observation won't suppress your eBird records for that day.
+unidentified observation won't suppress your eBird records for that day. It compares against
+any observation lacking a complete birdsync sync key, which includes observations created by
+older versions of birdsync that set the checklist ID but not the scientific name.
 
 Media re-syncing is one-way and additive. If you add photos or sounds to an eBird checklist
 after a sync, the next run uploads them. If you remove media from eBird, or if the assets listed
@@ -210,3 +212,8 @@ go test ./...
 ```
 The tests use fake eBird and iNaturalist clients and local HTTP test servers, so they don't
 touch the network or your real observations.
+
+[CONTRIBUTING.md](CONTRIBUTING.md) covers the contributor workflow, and [spec/](spec/) holds the
+design: [spec/arch.md](spec/arch.md) describes how the code is put together, and
+[spec/process.md](spec/process.md) describes how changes are meant to be specified, checked, and
+implemented.

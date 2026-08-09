@@ -1,7 +1,7 @@
 # Architecture of birdsync
 
 This document describes how the `birdsync` command-line tool is put together, for people
-working on the code. For instructions on running it, see [README.md](README.md).
+working on the code. For instructions on running it, see [README.md](../README.md).
 
 ## Overview
 
