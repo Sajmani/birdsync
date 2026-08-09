@@ -61,6 +61,7 @@ All are level `code` unless stated otherwise. "Command" is the `-run` pattern un
 | AC-022 | `.github/workflows/ci.yml` runs AC-001–AC-004 on push and PR | CI configuration | T-030, T-031 | verified |
 | AC-028 | `TestToolsAreReadOnly` | Static analysis (AST) over `tools/` | T-032 | verified |
 | AC-029 | `TestFileExtension`, `TestDownloadMLAsset_Photo`, `_Sound` | Unit + integration | P-045, T-004 | verified |
+| AC-030 | `TestFailedUploadIsRetriedNextRun`, `TestAllUploadsFailingLeavesNoUpdate` | Integration, two-run round trip with injected upload failures | P-040, P-047, P-050 | verified |
 
 ### Criteria that do not bite
 
@@ -175,17 +176,17 @@ effect: implementing a fix well means checking it.
 | P-037 species guess | AC-007 | verified |
 | P-038 observed date/time | AC-007 | verified |
 | P-039 observation-field mapping | AC-007 | verified |
-| P-040 description contents | AC-007 | verified |
+| P-040 description contents | AC-007, AC-030 | verified |
 | P-041 observations are public | — | gap (property of iNaturalist) |
 | P-042 create before attaching media | AC-007 | verified |
 | P-043 2400px photos, MP3 sounds | AC-018 | verified |
 | P-044 photo-then-sound fallback | AC-018 | verified |
 | P-045 `ML<id>` filename and extension | AC-007, AC-029 | verified |
 | P-046 description updated, media kept | AC-007, AC-008 | verified |
-| P-047 additive media re-sync | AC-013 | verified |
+| P-047 additive media re-sync | AC-013, AC-030 | verified |
 | P-048 removals reported, not applied | AC-017 | verified |
 | P-049 count mismatch reported | AC-017 | verified |
-| P-050 media failures tolerated | — | **gap — error paths untested** |
+| P-050 media failures tolerated | AC-030 | verified |
 | P-051 dry run issues no writes | AC-006 | verified |
 | P-052 `DRYRUN:` prefix | — | gap (log output unasserted) |
 | P-053 unclassified media count | AC-016 | verified |
@@ -240,9 +241,9 @@ rather than a requirement that simply isn't mechanically checkable:
 1. **P-018 and T-012 — credentials never logged.** A security-relevant invariant with no
    check at all. A static scan for the token variable reaching a logging call is
    feasible, and cheaper than the incident.
-2. **P-050 — media failures tolerated.** The error paths are entirely untested: the mock
-   fields `createObsErr`, `updateObsErr`, and `uploadMediaErr` exist but no test sets
-   them. A run that dies on the first failed upload would pass the whole suite.
+2. **Error paths are only partly tested.** AC-030 injects upload failures via the mock's
+   `failUploads`, which closed P-050. `createObsErr` and `updateObsErr` are still set by no
+   test, so the create and update failure paths remain unexercised.
 3. **T-015 — `resetFlags`.** `TestBirdsync` and `TestUpdateMedia` did not call it.
    `TestUpdateMedia` used `after.Set("")`, which fails silently, so it was passing only
    because the previous test happened to leave a window containing its record's date.

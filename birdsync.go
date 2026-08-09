@@ -252,12 +252,21 @@ func birdsync(eBirdCSVFilename string, ebirdClient ebirdClient, inatUserID strin
 				UUID:        u,
 				Description: desc,
 			}
+			// uploaded collects the assets that actually made it, so the
+			// description can be built from those alone. The description is
+			// how birdsync remembers what it has uploaded — iNatMLAssets reads
+			// the URLs back out of it on the next run — so listing an asset
+			// that failed makes the failure permanent as well as untrue
+			// (P-040, CR-007).
+			var uploaded mlAssetSet
 			// Upload the media
 			for _, id := range assetIDs.ids {
-				obs.Description += "Macaulay Library Asset: " + mlAssetURL(id) + "\n"
 				if dryRun {
 					log.Printf("DRYRUN: Download ML Asset %s and upload to iNaturalist", id)
 					s.pendingMedia++
+					// A dry run reports what a successful run would do, so the
+					// printed description shows the asset as listed.
+					uploaded.Add(id)
 				} else {
 					filename, isPhoto, err := ebirdClient.DownloadMLAsset(id)
 					if err != nil {
@@ -284,12 +293,22 @@ func birdsync(eBirdCSVFilename string, ebirdClient ebirdClient, inatUserID strin
 					} else {
 						s.uploadedSounds++
 					}
+					uploaded.Add(id)
 				}
+			}
+			if uploaded.Len() == 0 {
+				// Every asset failed. There is nothing to add, so don't write
+				// an unchanged description back and don't count an update that
+				// didn't happen (T-007). The next run will try again.
+				return
+			}
+			for _, id := range uploaded.ids {
+				obs.Description += "Macaulay Library Asset: " + mlAssetURL(id) + "\n"
 			}
 			// Update the description
 			if dryRun {
 				log.Printf("DRYRUN: Updating observation %s with %d added media assets\n",
-					obs.URLWithSpecies(), assetIDs.Len())
+					obs.URLWithSpecies(), uploaded.Len())
 				prettyPrintln(obs)
 			} else {
 				err = inatClient.UpdateObservation(obs)

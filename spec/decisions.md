@@ -361,9 +361,26 @@ repair doesn't.
 **Recommendation: A.** It is the smaller change and it turns a permanent failure into a
 transient one: the next run sees the asset missing from the description and uploads it.
 
-**Status: recorded 2026-08-09, fix deferred until the narrow real-account run has validated
-the changes already committed** — the fix touches `addMedia`, the same function that run is
-meant to exercise.
+**Origin, checked 2026-08-09.** The append has always been at the top of the loop, added in
+`06c72c0`. It was unreachable as a defect until `0c7b6d2`, because a failed download or
+upload called `log.Fatalf` and the process died before `UpdateObservation` ran — the
+description could not be written with a failed asset in it. `0c7b6d2` ("Fix crash when
+uploading sound files") replaced those calls with `log.Printf` and `continue`, which is the
+right behavior, but left the append where it was. Making the error path survivable turned a
+latent ordering bug into a live one.
+
+That is the second defect from `0c7b6d2`; [CR-006](#cr-006--uploaded-file-extensions-varied-by-machine)
+is the first. Both needed either a real failure or a non-macOS machine to become visible.
+
+**Resolved 2026-08-09: option A.** `addMedia` collects the assets that uploaded and builds
+the description from those. If none uploaded, the observation is not updated at all and
+`updatedObservations` is not incremented — the previous code wrote back an unchanged
+description and counted it (T-007).
+
+Verified by `TestFailedUploadIsRetriedNextRun`, which runs the sync twice and feeds the first
+run's own output back in as the second run's starting state, since the round trip through the
+description is where the defect lived. Asserting only that the description omits the failed
+asset would have tested the symptom.
 
 ## Work arising
 

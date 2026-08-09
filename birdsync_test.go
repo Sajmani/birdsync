@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"iter"
 	"os"
 	"strings"
@@ -67,6 +68,11 @@ type mockINatClient struct {
 	updateObsErr   error
 	uploadMediaErr error
 
+	// failUploads makes UploadMedia fail for particular Macaulay Library asset
+	// IDs, so a test can exercise a partial failure rather than an all-or-
+	// nothing one. Until this existed no test set any of the error fields.
+	failUploads map[string]bool
+
 	// Every mutating call is recorded, so a test can assert both what birdsync
 	// sent and — for --dryrun — that it sent nothing at all. Without this the
 	// dry-run guarantee (T-005, P-051) can only be checked indirectly through
@@ -99,6 +105,9 @@ func (m *mockINatClient) UpdateObservation(obs inat.Observation) error {
 }
 
 func (m *mockINatClient) UploadMedia(filename string, isPhoto bool, assetID, obsUUID string) error {
+	if m.failUploads[assetID] {
+		return errors.New("upload failed")
+	}
 	m.uploaded = append(m.uploaded, uploadedMedia{filename, isPhoto, assetID, obsUUID})
 	return m.uploadMediaErr
 }
@@ -896,5 +905,124 @@ func TestSummaryConditionalLines(t *testing.T) {
 		if !strings.Contains(loud, want) {
 			t.Errorf("Summary missing %q when the rule was in effect (P-055, P-056):\n%s", want, loud)
 		}
+	}
+}
+
+// TestFailedUploadIsRetriedNextRun is the end-to-end statement of CR-007: a
+// media upload that fails must be retried on the next run, not recorded as
+// done.
+//
+// The description is how birdsync remembers which assets it has uploaded, so
+// writing an asset's URL there before the upload is attempted makes a failure
+// permanent -- the next run parses that URL back out, concludes the asset is
+// already synced, and never tries again. The observation stays unverifiable
+// until someone notices by hand.
+//
+// The test runs the sync twice, feeding the first run's own output back in as
+// the second run's starting state, because that round trip is where the defect
+// lives. Asserting only that the description omits the failed asset would test
+// the symptom.
+//
+// Verifies: P-040, P-047, P-050.
+func TestFailedUploadIsRetriedNextRun(t *testing.T) {
+	origDebug := debug
+	debug = true
+	defer func() { debug = origDebug }()
+
+	const good, bad = "80001", "80002"
+	rec := ebird.Record{
+		SubmissionID:     "S800",
+		ScientificName:   "Corvus brachyrhynchos",
+		CommonName:       "American Crow",
+		Date:             "2023-01-03",
+		Time:             "03:00 PM",
+		MLCatalogNumbers: good + " " + bad,
+	}
+
+	// Run 1: the second asset fails to upload.
+	firstEbird := &mockEBirdClient{records: []ebird.Record{rec}}
+	firstInat := &mockINatClient{failUploads: map[string]bool{bad: true}}
+
+	resetFlags()
+	first := birdsync("MyEBirdData.csv", firstEbird, "myUserID", firstInat)
+
+	if first.errors != 1 {
+		t.Errorf("First run: errors = %d, want 1", first.errors)
+	}
+	if len(firstInat.updated) != 1 {
+		t.Fatalf("First run: %d updates, want 1", len(firstInat.updated))
+	}
+	desc := firstInat.updated[0].Description
+	if !strings.Contains(desc, mlAssetURL(good)) {
+		t.Errorf("First run: description omits the asset that uploaded:\n%s", desc)
+	}
+	if strings.Contains(desc, mlAssetURL(bad)) {
+		t.Errorf("First run: description claims asset %s, which failed to upload (P-040):\n%s", bad, desc)
+	}
+
+	// Run 2: the same record, against the observation run 1 produced, with the
+	// upload now succeeding. The failed asset must be picked up.
+	created := firstInat.created[0]
+	secondEbird := &mockEBirdClient{records: []ebird.Record{rec}}
+	secondInat := &mockINatClient{observations: []inat.Result{{
+		UUID:        created.UUID,
+		ObservedOn:  "2023-01-03",
+		Taxon:       inat.Taxon{Name: "Corvus brachyrhynchos"},
+		Description: desc,
+		Photos:      []inat.Photo{{}}, // the one asset that made it
+		Ofvs: []inat.Ofv{
+			{FieldID: inat.EBirdField, Value: "S800"},
+			{FieldID: inat.EBirdScientificNameField, Value: "Corvus brachyrhynchos"},
+		},
+	}}}
+
+	resetFlags()
+	second := birdsync("MyEBirdData.csv", secondEbird, "myUserID", secondInat)
+
+	if second.errors != 0 {
+		t.Errorf("Second run: errors = %d, want 0", second.errors)
+	}
+	if len(secondInat.created) != 0 {
+		t.Errorf("Second run: created %d observations, want 0 (the observation already exists)", len(secondInat.created))
+	}
+	if len(secondInat.uploaded) != 1 {
+		t.Fatalf("Second run: uploaded %d assets, want 1 (the one that failed before)", len(secondInat.uploaded))
+	}
+	if got := secondInat.uploaded[0].assetID; got != bad {
+		t.Errorf("Second run: retried asset %s, want %s", got, bad)
+	}
+}
+
+// TestAllUploadsFailingLeavesNoUpdate checks the degenerate case: if nothing
+// uploaded, there is nothing to say, so the observation is not updated and the
+// counter doesn't claim it was.
+//
+// Verifies: P-040, T-007.
+func TestAllUploadsFailingLeavesNoUpdate(t *testing.T) {
+	origDebug := debug
+	debug = true
+	defer func() { debug = origDebug }()
+
+	mockEbird := &mockEBirdClient{records: []ebird.Record{{
+		SubmissionID:     "S801",
+		ScientificName:   "Corvus brachyrhynchos",
+		CommonName:       "American Crow",
+		Date:             "2023-01-03",
+		Time:             "03:00 PM",
+		MLCatalogNumbers: "80003 80004",
+	}}}
+	mockInat := &mockINatClient{failUploads: map[string]bool{"80003": true, "80004": true}}
+
+	resetFlags()
+	stats := birdsync("MyEBirdData.csv", mockEbird, "myUserID", mockInat)
+
+	if stats.errors != 2 {
+		t.Errorf("errors = %d, want 2", stats.errors)
+	}
+	if len(mockInat.updated) != 0 {
+		t.Errorf("Updated the observation with nothing to add: %+v", mockInat.updated)
+	}
+	if stats.updatedObservations != 0 {
+		t.Errorf("updatedObservations = %d, want 0: no update was made (T-007)", stats.updatedObservations)
 	}
 }
