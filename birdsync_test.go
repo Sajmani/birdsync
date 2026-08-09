@@ -2,6 +2,7 @@ package main
 
 import (
 	"iter"
+	"strings"
 	"testing"
 	"time"
 
@@ -28,6 +29,14 @@ func (m *mockEBirdClient) DownloadMLAsset(id string) (string, bool, error) {
 	return "", false, nil // isPhoto is false (media are sounds)
 }
 
+// uploadedMedia records one call to mockINatClient.UploadMedia.
+type uploadedMedia struct {
+	filename string
+	isPhoto  bool
+	assetID  string
+	obsUUID  string
+}
+
 type mockINatClient struct {
 	userID         string
 	apitoken       string
@@ -35,6 +44,14 @@ type mockINatClient struct {
 	createObsErr   error
 	updateObsErr   error
 	uploadMediaErr error
+
+	// Every mutating call is recorded, so a test can assert both what birdsync
+	// sent and — for --dryrun — that it sent nothing at all. Without this the
+	// dry-run guarantee (T-005, P-051) can only be checked indirectly through
+	// the counters, which is exactly the mistake CR-001 records.
+	created  []inat.Observation
+	updated  []inat.Observation
+	uploaded []uploadedMedia
 }
 
 func (m *mockINatClient) GetUserID() string {
@@ -50,14 +67,17 @@ func (m *mockINatClient) DownloadObservations(userID string, after, before time.
 }
 
 func (m *mockINatClient) CreateObservation(obs inat.Observation) error {
+	m.created = append(m.created, obs)
 	return m.createObsErr
 }
 
 func (m *mockINatClient) UpdateObservation(obs inat.Observation) error {
+	m.updated = append(m.updated, obs)
 	return m.updateObsErr
 }
 
 func (m *mockINatClient) UploadMedia(filename string, isPhoto bool, assetID, obsUUID string) error {
+	m.uploaded = append(m.uploaded, uploadedMedia{filename, isPhoto, assetID, obsUUID})
 	return m.uploadMediaErr
 }
 
@@ -74,6 +94,10 @@ func resetFlags() {
 	positionalAccuracy = ebird.PositionalAccuracy
 }
 
+// TestBirdsync exercises the full skip order against one set of records:
+// every rule fires exactly once.
+//
+// Verifies: P-020, P-026, P-027, P-028, P-030, P-031.
 func TestBirdsync(t *testing.T) {
 	origDebug := debug
 	debug = true
@@ -183,6 +207,7 @@ func TestBirdsync(t *testing.T) {
 	mockInat := &mockINatClient{userID: "testuser", observations: inatObservations}
 
 	// Set flags
+	resetFlags()
 	after.Set("2023-01-01")
 	before.Set("2023-01-04")
 	verifiable = true
@@ -222,6 +247,7 @@ func TestBirdsync(t *testing.T) {
 	}
 }
 
+// Verifies: P-047.
 func TestUpdateMedia(t *testing.T) {
 	origDebug := debug
 	debug = true
@@ -256,11 +282,12 @@ func TestUpdateMedia(t *testing.T) {
 	mockEbird := &mockEBirdClient{records: ebirdRecords}
 	mockInat := &mockINatClient{userID: "testuser", observations: inatObservations}
 
-	// Reset flags to default
-	after.Set("")
-	before.Set("")
+	// Reset flags to default. This must go through resetFlags: after.Set("")
+	// returns an error and leaves the previous test's date window in place, so
+	// this test used to pass only because 2023-01-03 happened to fall inside
+	// the window TestBirdsync left behind (T-015).
+	resetFlags()
 	verifiable = false
-	fuzzy = false
 
 	stats := birdsync("MyEBirdData.csv", mockEbird, "myUserID", mockInat)
 
@@ -406,5 +433,186 @@ func TestDryRunMediaCount(t *testing.T) {
 	}
 	if stats.createdObservations != 1 {
 		t.Errorf("Expected 1 created observation, got %d", stats.createdObservations)
+	}
+}
+
+// TestDryRunIssuesNoWrites is the direct check on the guarantee the whole tool
+// rests on: a dry run may read, but must not create, update, or upload
+// anything. The counters are deliberately not consulted here — they are a
+// separate claim, and CR-001 records what happens when the two are conflated.
+//
+// Verifies: P-051, T-005.
+func TestDryRunIssuesNoWrites(t *testing.T) {
+	origDebug := debug
+	debug = true
+	defer func() { debug = origDebug }()
+
+	mockEbird := &mockEBirdClient{records: []ebird.Record{
+		{
+			// A new record: would be created, and its media uploaded.
+			SubmissionID:     "S300",
+			ScientificName:   "Corvus brachyrhynchos",
+			CommonName:       "American Crow",
+			Date:             "2023-01-03",
+			Time:             "03:00 PM",
+			MLCatalogNumbers: "33333 44444",
+		},
+		{
+			// A previously synced record with an asset added since: would be
+			// updated. This exercises the second write path, which a test
+			// using only new records would miss.
+			SubmissionID:     "S301",
+			ScientificName:   "Turdus migratorius",
+			CommonName:       "American Robin",
+			Date:             "2023-01-03",
+			Time:             "09:00 AM",
+			MLCatalogNumbers: "55555 66666",
+		},
+	}}
+	mockInat := &mockINatClient{observations: []inat.Result{{
+		UUID:        uuid.New(),
+		ObservedOn:  "2023-01-03",
+		Taxon:       inat.Taxon{PreferredCommonName: "American Robin"},
+		Description: mlAssetURL("55555"),
+		Ofvs: []inat.Ofv{
+			{FieldID: inat.EBirdField, Value: "S301"},
+			{FieldID: inat.EBirdScientificNameField, Value: "Turdus migratorius"},
+		},
+	}}}
+
+	resetFlags()
+	dryRun = true
+	defer func() { dryRun = false }()
+
+	birdsync("MyEBirdData.csv", mockEbird, "myUserID", mockInat)
+
+	if len(mockInat.created) != 0 {
+		t.Errorf("--dryrun created %d observations, want 0: %+v", len(mockInat.created), mockInat.created)
+	}
+	if len(mockInat.updated) != 0 {
+		t.Errorf("--dryrun updated %d observations, want 0: %+v", len(mockInat.updated), mockInat.updated)
+	}
+	if len(mockInat.uploaded) != 0 {
+		t.Errorf("--dryrun uploaded %d media assets, want 0: %+v", len(mockInat.uploaded), mockInat.uploaded)
+	}
+}
+
+// TestCreatedObservationContent pins down what birdsync actually sends to
+// iNaturalist. Until the mock recorded its arguments, every requirement in
+// "What birdsync writes" was unverified: the tests could only see counters.
+//
+// Verifies: P-019, P-035, P-036, P-037, P-038, P-039, P-040.
+func TestCreatedObservationContent(t *testing.T) {
+	origDebug := debug
+	debug = true
+	defer func() { debug = origDebug }()
+
+	rec := ebird.Record{
+		SubmissionID:       "S400",
+		CommonName:         "American Crow",
+		ScientificName:     "Corvus brachyrhynchos",
+		Count:              "3",
+		StateProvince:      "US-CA",
+		County:             "Santa Clara",
+		Location:           "Shoreline Lake",
+		Latitude:           "37.4321",
+		Longitude:          "-122.0789",
+		Date:               "2023-01-03",
+		Time:               "03:00 PM",
+		Protocol:           "Stationary",
+		NumberOfObservers:  "2",
+		ObservationDetails: "perched on a snag",
+		ChecklistComments:  "windy morning",
+		MLCatalogNumbers:   "33333",
+	}
+	mockEbird := &mockEBirdClient{records: []ebird.Record{rec}}
+	mockInat := &mockINatClient{}
+
+	resetFlags()
+
+	birdsync("MyEBirdData.csv", mockEbird, "myUserID", mockInat)
+
+	if len(mockInat.created) != 1 {
+		t.Fatalf("Expected 1 created observation, got %d", len(mockInat.created))
+	}
+	obs := mockInat.created[0]
+
+	if obs.CaptiveFlag {
+		t.Error("CaptiveFlag = true, want false: eBird checklists record wild birds (P-035)")
+	}
+	if obs.LocationIsExact {
+		t.Error("LocationIsExact = true, want false: the checklist location is not the bird's (P-036)")
+	}
+	if obs.Latitude != 37.4321 || obs.Longitude != -122.0789 {
+		t.Errorf("Coordinates = (%v, %v), want (37.4321, -122.0789) (P-036)", obs.Latitude, obs.Longitude)
+	}
+	if obs.PositionalAccuracy != float64(ebird.PositionalAccuracy) {
+		t.Errorf("PositionalAccuracy = %v, want %v (P-036)", obs.PositionalAccuracy, ebird.PositionalAccuracy)
+	}
+	if obs.SpeciesGuess != rec.ScientificName {
+		t.Errorf("SpeciesGuess = %q, want %q (P-037)", obs.SpeciesGuess, rec.ScientificName)
+	}
+	if want := "2023-01-03 03:00 PM"; obs.ObservedOnString != want {
+		t.Errorf("ObservedOnString = %q, want %q (P-038)", obs.ObservedOnString, want)
+	}
+
+	// P-039: the eBird columns copied into observation fields. The two eBird
+	// fields are also the sync key (P-019), so their absence would silently
+	// break idempotence rather than producing a visible error.
+	wantFields := map[int]string{
+		inat.CountField:               "3",
+		inat.CommonNameField:          "American Crow",
+		inat.LocationField:            "Shoreline Lake",
+		inat.CountyField:              "Santa Clara",
+		inat.StateOrProvinceField:     "US-CA",
+		inat.NumObserversField:        "2",
+		inat.EBirdField:               "S400",
+		inat.EBirdScientificNameField: "Corvus brachyrhynchos",
+	}
+	gotFields := map[int]string{}
+	for _, ofv := range obs.ObservationFieldValuesAttributes {
+		s, ok := ofv.Value.(string)
+		if !ok {
+			t.Errorf("Observation field %d has non-string value %v", ofv.ObservationFieldID, ofv.Value)
+			continue
+		}
+		gotFields[ofv.ObservationFieldID] = s
+	}
+	for id, want := range wantFields {
+		if got := gotFields[id]; got != want {
+			t.Errorf("Observation field %d = %q, want %q (P-039)", id, got, want)
+		}
+	}
+
+	// P-040: the description. Asset lines are deliberately absent here — they
+	// are appended by the later update, not at creation (P-042, P-046).
+	for _, want := range []string{
+		"github.com/Sajmani/birdsync",
+		"perched on a snag",
+		"https://ebird.org/checklist/S400",
+		"Protocol: Stationary",
+		"windy morning",
+	} {
+		if !strings.Contains(obs.Description, want) {
+			t.Errorf("Description missing %q (P-040):\n%s", want, obs.Description)
+		}
+	}
+	if strings.Contains(obs.Description, "Macaulay Library Asset:") {
+		t.Errorf("Created description should not list assets yet (P-042, P-046):\n%s", obs.Description)
+	}
+
+	// The update that follows carries them (P-046), and the upload is keyed by
+	// the Macaulay Library asset ID (P-045).
+	if len(mockInat.updated) != 1 {
+		t.Fatalf("Expected 1 update after media upload, got %d", len(mockInat.updated))
+	}
+	if !strings.Contains(mockInat.updated[0].Description, mlAssetURL("33333")) {
+		t.Errorf("Updated description missing the asset URL (P-046):\n%s", mockInat.updated[0].Description)
+	}
+	if len(mockInat.uploaded) != 1 {
+		t.Fatalf("Expected 1 media upload, got %d", len(mockInat.uploaded))
+	}
+	if got := mockInat.uploaded[0].assetID; got != "33333" {
+		t.Errorf("Uploaded asset ID = %q, want %q (P-045)", got, "33333")
 	}
 }

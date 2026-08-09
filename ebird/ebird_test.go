@@ -9,6 +9,7 @@ import (
 	"time"
 )
 
+// Verifies: P-043, P-044.
 func TestDownloadMLAsset_Sound(t *testing.T) {
 	const assetID = "12345"
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -44,6 +45,7 @@ func TestDownloadMLAsset_Sound(t *testing.T) {
 	}
 }
 
+// Verifies: P-043, P-044.
 func TestDownloadMLAsset_Photo(t *testing.T) {
 	const assetID = "67890"
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -76,6 +78,7 @@ func TestDownloadMLAsset_Photo(t *testing.T) {
 	}
 }
 
+// Verifies: T-019.
 func TestRecord_Observed(t *testing.T) {
 	testCases := []struct {
 		name     string
@@ -145,6 +148,7 @@ func TestRecord_Observed(t *testing.T) {
 	}
 }
 
+// Verifies: T-018.
 func TestRecords(t *testing.T) {
 	csvData := `Submission ID,Common Name,Scientific Name,Taxonomic Order,Count,State/Province,County,Location ID,Location,Latitude,Longitude,Date,Time,Protocol,Duration (Min),All Obs Reported,Distance Traveled (km),Area Covered (ha),Number of Observers,Breeding Code,Observation Details,Checklist Comments,ML Catalog Numbers
 S123,American Robin,Turdus migratorius,1,1,CA,Santa Clara,L123,Some Park,37.123,-122.123,2023-01-02,03:04 PM,Stationary,60,1,0,0,1,,,
@@ -212,6 +216,7 @@ S123,American Robin,Turdus migratorius,1,1,CA,Santa Clara,L123,Some Park,37.123,
 	}
 }
 
+// Verifies: P-019, P-022.
 func TestObservationID_Valid(t *testing.T) {
 	testCases := []struct {
 		name string
