@@ -10,6 +10,7 @@ import (
 	"mime"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 )
@@ -78,6 +79,22 @@ func (r Record) ObservationID() ObservationID {
 }
 
 func Records(filename string) (iter.Seq[Record], error) {
+	// Check the path before opening it. eBird's download arrives as a zip that
+	// extracts to a folder, and users pass the folder or the zip by mistake
+	// (issue #1). Letting that reach the CSV reader produces the operating
+	// system's message — "is a directory" on Unix, "Incorrect function." on
+	// Windows — which tells nobody what to do (P-066).
+	info, err := os.Stat(filename)
+	if err != nil {
+		return nil, fmt.Errorf("Records(%s): %w", filename, err)
+	}
+	if info.IsDir() {
+		return nil, fmt.Errorf("Records(%s): that is a folder, not a file; pass the MyEBirdData.csv inside it", filename)
+	}
+	if strings.EqualFold(filepath.Ext(filename), ".zip") {
+		return nil, fmt.Errorf("Records(%s): that is a zip archive. Extract it and pass the MyEBirdData.csv inside", filename)
+	}
+
 	f, err := os.Open(filename)
 	if err != nil {
 		return nil, fmt.Errorf("Records(%s): %w", filename, err)
@@ -99,6 +116,13 @@ func Records(filename string) (iter.Seq[Record], error) {
 	field := make(map[string]int)
 	for i, f := range recs[0] {
 		field[f] = i
+	}
+	// Without this the file parses happily and produces nonsense: a lookup of
+	// an absent column returns index 0, so every record would take its
+	// submission ID from whatever the first column holds (P-066).
+	if _, ok := field["Submission ID"]; !ok {
+		return nil, fmt.Errorf("Records(%s): no %q column; this does not look like an eBird MyEBirdData.csv export",
+			filename, "Submission ID")
 	}
 	recs = recs[1:]
 	log.Printf("Read %d eBird observations", len(recs))

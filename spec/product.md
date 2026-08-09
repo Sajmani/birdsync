@@ -251,11 +251,18 @@ by [CR-011](decisions.md#cr-011--the-download-cannot-page-past-10000-results): t
 pages by observation id, which has no ceiling, rather than by page number, which the API caps
 at 10,000 results.*
 
-**P-066** — Given a path that is not a readable CSV — a directory, an unextracted zip — birdsync
-says so in terms the user can act on.
+**P-066** — Before parsing, birdsync checks the input and names what is wrong, distinguishing
+three cases: the path is a directory, the path is a zip archive, and the file has no
+`Submission ID` column and so is not an eBird export.
 *Rationale: [issue #1](https://github.com/Sajmani/birdsync/issues/1), where a user passed the
-extracted download folder and got `Error reading CSV records from ...: Incorrect function.`, an
-operating-system message that explains nothing. Status: **not satisfied**.*
+extracted download folder and got `Error reading CSV records from ...: Incorrect function.` —
+an operating-system message that explains nothing.*
+*The check is on the path and the header, never on the text of an operating-system error: that
+symptom is what Windows returns for reading a directory, where Unix says "is a directory", so a
+fix written against one would not work on the other (T-004).*
+*The header case is worse than an unhelpful message. Field lookup is `field[key]`, which yields
+0 for an absent column, so a CSV without a `Submission ID` column did not fail — every record
+silently took its submission ID from whatever the first column happened to be.*
 
 **P-063** — An upload that fails permanently — the service rejected the file itself, rather
 than the attempt — is recorded in the description as failed and is not attempted again. A

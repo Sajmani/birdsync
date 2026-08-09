@@ -11,6 +11,8 @@ import (
 	"os"
 	"path"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -25,13 +27,21 @@ type Client struct {
 	apiToken  string
 	userAgent string
 	baseURL   string
+
+	// mu guards the pacing state. birdsync is single-threaded today, but a
+	// client that silently stopped pacing under concurrency would be a nasty
+	// way to earn an IP block.
+	mu                 sync.Mutex
+	minRequestInterval time.Duration
+	lastRequest        time.Time
 }
 
 func NewClient(baseURL, apiToken, userAgent string) *Client {
 	return &Client{
-		baseURL:   baseURL,
-		apiToken:  apiToken,
-		userAgent: userAgent,
+		baseURL:            baseURL,
+		apiToken:           apiToken,
+		userAgent:          userAgent,
+		minRequestInterval: DefaultMinRequestInterval,
 	}
 }
 
@@ -39,7 +49,45 @@ func (c *Client) BaseURL() string {
 	return c.baseURL
 }
 
+// DefaultMinRequestInterval paces requests to the rate iNaturalist asks for:
+//
+//	Please keep requests to about 1 per second, and around 10k API requests a
+//	day... Requests exceeding this limit might be throttled, and will return an
+//	HTTP 429 exception "Too Many Requests"... We may block IPs that
+//	consistently exceed these limits.
+//
+// A first sync of a media-heavy account runs to thousands of requests, and
+// nothing else in birdsync limits how fast it issues them. Media uploads
+// already take seconds each, so this costs little there; it matters for runs
+// that create many observations without media, which would otherwise go as
+// fast as the server answers (T-035).
+const DefaultMinRequestInterval = time.Second
+
+// SetMinRequestInterval overrides the pacing. Tests set it to zero; nothing
+// else should raise the rate above the default without a reason to think
+// iNaturalist has changed its guidance.
+func (c *Client) SetMinRequestInterval(d time.Duration) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.minRequestInterval = d
+}
+
+// pace blocks until enough time has passed since the previous request.
+func (c *Client) pace() {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	if !c.lastRequest.IsZero() {
+		if wait := c.minRequestInterval - time.Since(c.lastRequest); wait > 0 {
+			time.Sleep(wait)
+		}
+	}
+	c.lastRequest = time.Now()
+}
+
 func (c *Client) roundTrip(req *http.Request) (string, error) {
+	// Every request in this package goes through here, which is the only
+	// reason one pacing call is enough.
+	c.pace()
 	req.Header.Set("User-Agent", c.userAgent)
 	req.Header.Set("Authorization", c.apiToken)
 

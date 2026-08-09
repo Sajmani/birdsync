@@ -114,9 +114,11 @@ a 413 arrives as a seven-line nginx page. A message that is kept is collapsed on
 ask for: about one per second, and about 10,000 per day.
 Subject: `inat.request_rate` · Value: `1/second, 10000/day`
 *Rationale: `inat-api/R1`, a governing source. Exceeding it returns HTTP 429, and the page
-warns that persistent offenders may be IP-blocked. Status: **not satisfied** — birdsync issues
-requests as fast as they complete. A first sync of a media-heavy account is thousands of
-writes: reads are not the exposure.*
+warns that persistent offenders may be IP-blocked. A first sync of a media-heavy account is
+thousands of writes: reads are not the exposure.*
+*Enforced in `Client.roundTrip`, which every request in the package passes through — the only
+reason a single choke point suffices. The daily cap is not enforced: birdsync keeps no state
+between runs, so it cannot know how many requests today has already seen.*
 
 **T-036** — The observation download pages with `id_above` and an ascending id sort, never
 with page numbers, and stops when a page comes back short.

@@ -66,6 +66,8 @@ All are level `code` unless stated otherwise. "Command" is the `-run` pattern un
 | AC-032 | `TestStatusErrorIncludesBody`, `TestStatusErrorDropsHTMLBody`, `TestStatusErrorCollapsesWhitespace` | Integration, `httptest` | T-034 | verified |
 | AC-033 | `TestMediaChange` — the three failed-asset cases | Unit, table-driven | P-064 | verified |
 | AC-034 | `TestDownloadObservationsPagesByID`, `TestDownloadObservationsCursorMustAdvance` | Integration, `httptest` fake honouring `per_page` | P-065, T-036 | verified |
+| AC-035 | `TestClientPacesRequests`, `TestDefaultMinRequestIntervalMatchesGuidance` | Integration + unit | T-035 | verified — the per-day cap is not checked |
+| AC-036 | `TestRecordsRejectsBadInput` | Unit, temp files | P-066 | verified |
 
 ### Criteria that do not bite
 
@@ -206,6 +208,8 @@ effect: implementing a fix well means checking it.
 | P-061 no taxon filter | AC-024 | verified |
 | P-062 bad records skipped and counted | AC-025 | verified |
 | P-063 permanent vs transient upload failure | AC-031 | verified |
+| P-065 accounts over 10,000 observations | AC-034 | verified |
+| P-066 unusable input reported clearly | AC-036 | verified |
 | P-064 permanent failures reported each run | AC-031, AC-033 | verified |
 | T-001 single module | AC-001 | verified |
 | T-002 one dependency | — | **gap — see [Recommended additions](#recommended-additions)** |
@@ -237,6 +241,8 @@ effect: implementing a fix well means checking it.
 | T-026 error wrapping | — | gap (human review) |
 | T-027 `log.Fatal` placement | AC-027 | verified |
 | T-034 errors include the response body | AC-032 | verified |
+| T-035 request pacing | AC-035 | partial — the per-second rate is enforced and checked; the per-day cap is not |
+| T-036 `id_above` paging | AC-034 | verified |
 | T-028 `log.Printf` vs `debugf` | — | gap (human review) |
 | T-029 comments explain why | — | gap (human review) |
 | T-030 CI runs the standing checks | AC-022 | verified |

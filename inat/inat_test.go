@@ -36,7 +36,7 @@ func TestDownloadObservations(t *testing.T) {
 	}))
 	defer server.Close()
 
-	client := NewClient(server.URL, "", "")
+	client := newTestClient(server.URL, "", "")
 	results, err := client.DownloadObservations("testuser", time.Time{}, time.Time{})
 	if err != nil {
 		t.Fatalf("DownloadObservations() error = %v", err)
@@ -63,7 +63,7 @@ func TestDownloadObservationsNoTaxonFilter(t *testing.T) {
 	}))
 	defer server.Close()
 
-	client := NewClient(server.URL, "", "")
+	client := newTestClient(server.URL, "", "")
 	if _, err := client.DownloadObservations("testuser", time.Time{}, time.Time{}); err != nil {
 		t.Fatalf("DownloadObservations() error = %v", err)
 	}
@@ -92,7 +92,7 @@ func TestDownloadObservationsDateWindow(t *testing.T) {
 
 	d1 := time.Date(2023, 1, 2, 15, 4, 5, 0, time.UTC)
 	d2 := time.Date(2023, 3, 4, 6, 7, 8, 0, time.UTC)
-	client := NewClient(server.URL, "", "")
+	client := newTestClient(server.URL, "", "")
 	if _, err := client.DownloadObservations("testuser", d1, d2); err != nil {
 		t.Fatalf("DownloadObservations() error = %v", err)
 	}
@@ -123,7 +123,7 @@ func TestDownloadObservationsNoDateWindow(t *testing.T) {
 	}))
 	defer server.Close()
 
-	client := NewClient(server.URL, "", "")
+	client := newTestClient(server.URL, "", "")
 	if _, err := client.DownloadObservations("testuser", time.Time{}, time.Time{}); err != nil {
 		t.Fatalf("DownloadObservations() error = %v", err)
 	}
@@ -145,7 +145,7 @@ func TestDownloadObservationsError(t *testing.T) {
 	}))
 	defer server.Close()
 
-	client := NewClient(server.URL, "", "")
+	client := newTestClient(server.URL, "", "")
 	results, err := client.DownloadObservations("testuser", time.Time{}, time.Time{})
 	if err == nil {
 		t.Fatal("DownloadObservations() with a failing server returned no error")
@@ -217,7 +217,7 @@ func TestDownloadObservationsPagesByID(t *testing.T) {
 	}))
 	defer server.Close()
 
-	client := NewClient(server.URL, "", "")
+	client := newTestClient(server.URL, "", "")
 	got, err := client.DownloadObservations("testuser", time.Time{}, time.Time{}, "description")
 	if err != nil {
 		t.Fatalf("DownloadObservations() error = %v", err)
@@ -273,7 +273,7 @@ func TestDownloadObservationsCursorMustAdvance(t *testing.T) {
 	}))
 	defer server.Close()
 
-	client := NewClient(server.URL, "", "")
+	client := newTestClient(server.URL, "", "")
 	_, err := client.DownloadObservations("testuser", time.Time{}, time.Time{})
 	if err == nil {
 		t.Fatal("Expected an error when the cursor doesn't advance, got nil")

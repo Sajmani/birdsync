@@ -8,9 +8,19 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 )
+
+// newTestClient returns a client with pacing switched off. Only the pacing
+// tests want a real delay between requests; everywhere else it would add
+// minutes to the suite and cover nothing.
+func newTestClient(baseURL, apiToken, userAgent string) *Client {
+	c := NewClient(baseURL, apiToken, userAgent)
+	c.SetMinRequestInterval(0)
+	return c
+}
 
 // Verifies: T-016.
 func TestClient_CreateObservation(t *testing.T) {
@@ -33,7 +43,7 @@ func TestClient_CreateObservation(t *testing.T) {
 	}))
 	defer server.Close()
 
-	client := NewClient(server.URL, "test-token", "test-user-agent")
+	client := newTestClient(server.URL, "test-token", "test-user-agent")
 
 	obs := Observation{UUID: uuid.New()}
 	if err := client.CreateObservation(obs); err != nil {
@@ -66,7 +76,7 @@ func TestClient_UpdateObservation(t *testing.T) {
 	}))
 	defer server.Close()
 
-	client := NewClient(server.URL, "test-token", "test-user-agent")
+	client := newTestClient(server.URL, "test-token", "test-user-agent")
 
 	obs := Observation{UUID: obsUUID, Description: "updated"}
 	if err := client.UpdateObservation(obs); err != nil {
@@ -94,7 +104,7 @@ func TestClient_DeleteObservation(t *testing.T) {
 	}))
 	defer server.Close()
 
-	client := NewClient(server.URL, "test-token", "test-user-agent")
+	client := newTestClient(server.URL, "test-token", "test-user-agent")
 
 	if err := client.DeleteObservation(obsUUID); err != nil {
 		t.Errorf("DeleteObservation() error = %v", err)
@@ -113,7 +123,7 @@ func TestStatusErrorIncludesBody(t *testing.T) {
 	}))
 	defer server.Close()
 
-	client := NewClient(server.URL, "test-token", "test-user-agent")
+	client := newTestClient(server.URL, "test-token", "test-user-agent")
 	err := client.CreateObservation(Observation{})
 	if err == nil {
 		t.Fatal("CreateObservation() against a refusing server returned no error")
@@ -178,7 +188,7 @@ func TestStatusErrorDropsHTMLBody(t *testing.T) {
 	}))
 	defer server.Close()
 
-	client := NewClient(server.URL, "test-token", "test-user-agent")
+	client := newTestClient(server.URL, "test-token", "test-user-agent")
 	err := client.CreateObservation(Observation{})
 	if err == nil {
 		t.Fatal("CreateObservation() against a refusing server returned no error")
@@ -202,7 +212,7 @@ func TestStatusErrorCollapsesWhitespace(t *testing.T) {
 	}))
 	defer server.Close()
 
-	client := NewClient(server.URL, "test-token", "test-user-agent")
+	client := newTestClient(server.URL, "test-token", "test-user-agent")
 	err := client.CreateObservation(Observation{})
 	if err == nil {
 		t.Fatal("Expected an error")
@@ -212,5 +222,56 @@ func TestStatusErrorCollapsesWhitespace(t *testing.T) {
 	}
 	if !strings.Contains(err.Error(), "File is too large") {
 		t.Errorf("Error %q lost the explanation", err)
+	}
+}
+
+// TestClientPacesRequests checks that requests are spaced out. iNaturalist asks
+// for about one per second and warns that it may block IPs that persistently
+// exceed that; a first sync of a media-heavy account is thousands of requests,
+// and nothing else in birdsync slows them down.
+//
+// Verifies: T-035.
+func TestClientPacesRequests(t *testing.T) {
+	var requests int
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requests++
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer server.Close()
+
+	// A real second per request would make this test unbearable, so pace at a
+	// scaled-down interval and check the spacing rather than the constant.
+	const interval = 40 * time.Millisecond
+	client := NewClient(server.URL, "", "")
+	client.SetMinRequestInterval(interval)
+
+	start := time.Now()
+	for range 3 {
+		if err := client.CreateObservation(Observation{}); err != nil {
+			t.Fatalf("CreateObservation() error = %v", err)
+		}
+	}
+	elapsed := time.Since(start)
+
+	if requests != 3 {
+		t.Fatalf("Server saw %d requests, want 3", requests)
+	}
+	// Three requests means two gaps; the first goes out immediately.
+	if min := 2 * interval; elapsed < min {
+		t.Errorf("3 requests took %v, want at least %v: they are not being paced (T-035)", elapsed, min)
+	}
+}
+
+// TestDefaultMinRequestIntervalMatchesGuidance pins the constant to the rate
+// the governing source asks for, so a future change to it has to be deliberate.
+//
+// Verifies: T-035.
+func TestDefaultMinRequestIntervalMatchesGuidance(t *testing.T) {
+	if DefaultMinRequestInterval != time.Second {
+		t.Errorf("DefaultMinRequestInterval = %v, want 1s: iNaturalist asks for about one request per second",
+			DefaultMinRequestInterval)
+	}
+	if NewClient("http://example.invalid", "", "").minRequestInterval != DefaultMinRequestInterval {
+		t.Error("NewClient does not pace by default; a caller that forgets to set it would run unthrottled")
 	}
 }

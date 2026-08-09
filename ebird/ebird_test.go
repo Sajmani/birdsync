@@ -315,3 +315,54 @@ func TestFileExtension(t *testing.T) {
 		})
 	}
 }
+
+// TestRecordsRejectsBadInput covers the three ways the input path goes wrong,
+// each of which used to produce either an operating-system message that
+// explains nothing or, worse, no error at all.
+//
+// The checks are on the path and the header rather than on error text: issue #1
+// reported "Incorrect function.", which is what Windows returns for reading a
+// directory, where Unix says "is a directory" (T-004).
+//
+// Verifies: P-066.
+func TestRecordsRejectsBadInput(t *testing.T) {
+	dir := t.TempDir()
+
+	zipPath := filepath.Join(dir, "ebird_1757602033437.zip")
+	if err := os.WriteFile(zipPath, []byte("PK\x03\x04 not really a zip"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	// A CSV that parses fine but isn't an eBird export. Without a header check
+	// this is the dangerous case: every lookup of a missing column returns
+	// index 0, so each record takes its submission ID from the first column.
+	foreign := filepath.Join(dir, "something-else.csv")
+	if err := os.WriteFile(foreign, []byte("Name,Date\nAmerican Robin,2023-01-02\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	for _, tt := range []struct {
+		name string
+		path string
+		want string
+	}{
+		// The expected text is birdsync's own remedy, not a word that might
+		// appear in the operating system's message by luck. Matching
+		// "directory" alone passes on Unix, whose error says "is a directory",
+		// and fails on Windows, whose error says "Incorrect function." — which
+		// is the bug being fixed.
+		{"directory", dir, "MyEBirdData.csv"},
+		{"zip archive", zipPath, "Extract"},
+		{"not an eBird export", foreign, "Submission ID"},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := Records(tt.path)
+			if err == nil {
+				t.Fatalf("Records(%s) returned no error", tt.path)
+			}
+			if !strings.Contains(err.Error(), tt.want) {
+				t.Errorf("Error %q doesn't mention %q, so it doesn't tell the user what to fix (P-066)",
+					err, tt.want)
+			}
+		})
+	}
+}
