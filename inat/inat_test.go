@@ -64,6 +64,28 @@ func TestDownloadObservations(t *testing.T) {
 	}
 }
 
+// TestDownloadObservationsNoTaxonFilter checks that the download is not
+// restricted by taxon. Filtering on iconic_taxa[]=Aves hid any observation
+// without an iconic taxon — the state an unresolvable eBird name produces — so
+// birdsync couldn't see its own work and created it again on the next run.
+//
+// Verifies: P-061.
+func TestDownloadObservationsNoTaxonFilter(t *testing.T) {
+	var hasIconic bool
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, hasIconic = r.URL.Query()["iconic_taxa[]"]
+		json.NewEncoder(w).Encode(Observations{TotalResults: 0})
+	}))
+	defer server.Close()
+
+	client := NewClient(server.URL, "", "")
+	client.DownloadObservations("testuser", time.Time{}, time.Time{})
+
+	if hasIconic {
+		t.Error("Download sent iconic_taxa[]; it must not filter by taxon (P-061)")
+	}
+}
+
 // TestDownloadObservationsDateWindow checks that --after and --before narrow
 // the download itself, not just the local comparison. This is what makes a
 // date-limited run cheap, and it is also why duplicate detection only

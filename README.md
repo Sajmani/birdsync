@@ -103,9 +103,11 @@ Once birdsync has finished running, you should check the observations it created
 # How birdsync works
 
 Given (`iNaturalist user name`, `eBird CSV file`):
-- Download that user's existing iNaturalist bird observations into memory.
-  Only observations in the `Aves` iconic taxon are downloaded, and if `--after` or `--before`
-  are set, only observations in that date range are downloaded.
+- Download that user's existing iNaturalist observations into memory.
+  If `--after` or `--before` are set, only observations in that date range are downloaded.
+  The download is not restricted by taxon: an observation whose eBird name iNaturalist
+  couldn't resolve has no taxon, and filtering those out made birdsync unable to see
+  observations it had created, so it created them again.
 - Index these iNaturalist observations by ([eBird submission ID](https://www.inaturalist.org/observation_fields/6033), [eBird scientific name](https://www.inaturalist.org/observation_fields/20215))
 - Index any non-birdsync observations by date for fuzzy matching, under both their
   common name and their scientific name
@@ -164,11 +166,12 @@ Birdsync only works in the eBird → iNaturalist direction because (as far as I 
 
 Birdsync cannot detect whether iNaturalist observations that you've created manually are duplicates of those in your eBird checklists unless you mark your existing iNaturalist observations with the [eBird submission ID](https://www.inaturalist.org/observation_fields/6033) and [eBird scientific name](https://www.inaturalist.org/observation_fields/20215) observation fields. The `--fuzzy` matching feature provides a convenient way to avoid creating duplicates, but it may also suppress creating legitimate observations if you happened to see the same bird twice on the same day and entered it once into each tool.
 
-`--fuzzy` only compares against bird (`Aves`) observations, since those are the only ones
-birdsync downloads. It also ignores iNaturalist observations that have no taxon name, so an
-unidentified observation won't suppress your eBird records for that day. It compares against
-any observation lacking a complete birdsync sync key, which includes observations created by
-older versions of birdsync that set the checklist ID but not the scientific name.
+`--fuzzy` compares against every observation in your account, not only birds, since
+birdsync downloads them all. It ignores iNaturalist observations that have no taxon name, so
+an unidentified observation won't suppress your eBird records for that day. It compares
+against any observation lacking a complete birdsync sync key, which includes observations
+created by older versions of birdsync that set the checklist ID but not the scientific
+name.
 
 Media re-syncing is one-way and additive. If you add photos or sounds to an eBird checklist
 after a sync, the next run uploads them. If you remove media from eBird, or if the assets listed

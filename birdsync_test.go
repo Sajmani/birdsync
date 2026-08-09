@@ -497,6 +497,53 @@ func TestDryRunIssuesNoWrites(t *testing.T) {
 	}
 }
 
+// TestUntaxonedObservationIsRecognized checks that a previously synced
+// observation is matched by its sync key whatever its taxon — including no
+// taxon at all, which is what iNaturalist leaves behind when it can't resolve
+// an eBird name like "Aythya marila/affinis".
+//
+// This states the requirement rather than the mechanism, so it passes against
+// the code that had the CR-003 bug too: that bug was in the download query, not
+// in the matching. It is here to stop the next optimization of the download
+// from quietly reintroducing the same failure.
+//
+// Verifies: P-020, P-061.
+func TestUntaxonedObservationIsRecognized(t *testing.T) {
+	origDebug := debug
+	debug = true
+	defer func() { debug = origDebug }()
+
+	mockEbird := &mockEBirdClient{records: []ebird.Record{{
+		SubmissionID:     "S500",
+		ScientificName:   "Aythya marila/affinis",
+		CommonName:       "Greater/Lesser Scaup",
+		Date:             "2023-01-03",
+		Time:             "03:00 PM",
+		MLCatalogNumbers: "77777",
+	}}}
+	mockInat := &mockINatClient{observations: []inat.Result{{
+		UUID:        uuid.New(),
+		ObservedOn:  "2023-01-03",
+		Taxon:       inat.Taxon{}, // unresolvable name: no taxon, no iconic taxon
+		Description: mlAssetURL("77777"),
+		Ofvs: []inat.Ofv{
+			{FieldID: inat.EBirdField, Value: "S500"},
+			{FieldID: inat.EBirdScientificNameField, Value: "Aythya marila/affinis"},
+		},
+	}}}
+
+	resetFlags()
+
+	stats := birdsync("MyEBirdData.csv", mockEbird, "myUserID", mockInat)
+
+	if stats.previouslySkips != 1 {
+		t.Errorf("Expected the untaxoned observation to be recognized as already synced, got %d skips", stats.previouslySkips)
+	}
+	if len(mockInat.created) != 0 {
+		t.Errorf("Re-created %d observations that already existed, want 0 (P-020)", len(mockInat.created))
+	}
+}
+
 // TestCreatedObservationContent pins down what birdsync actually sends to
 // iNaturalist. Until the mock recorded its arguments, every requirement in
 // "What birdsync writes" was unverified: the tests could only see counters.

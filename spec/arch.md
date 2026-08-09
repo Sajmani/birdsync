@@ -19,8 +19,9 @@ One run does the following:
 1. **Authenticate.** Read the iNaturalist user ID and API token from `INAT_USER_ID` and
    `INAT_API_TOKEN`, prompting interactively if they're unset (`inat/vars.go`).
 2. **Download existing observations.** Fetch the user's iNaturalist observations into memory,
-   200 per page, restricted to the `Aves` iconic taxon and to the `--after`/`--before` date
-   window when set (`inat.Client.DownloadObservations`, inat/inat.go:19).
+   200 per page, restricted only to the `--after`/`--before` date window when set
+   (`inat.Client.DownloadObservations`, inat/inat.go:19). Deliberately not filtered by taxon:
+   see CR-003 in [decisions.md](decisions.md).
 3. **Build two indexes** over those observations (birdsync.go:136-167):
    - `previouslySynced`, keyed by `ebird.ObservationID` — the pair of eBird observation-field
      values that identifies a birdsync-created observation.

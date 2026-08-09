@@ -44,7 +44,13 @@ func (c *Client) DownloadObservations(inatUserID string, d1, d2 time.Time, field
 		q.Set("user_id", inatUserID)
 		q.Set("page", strconv.Itoa(page))
 		q.Set("per_page", strconv.Itoa(perPage))
-		q.Set("iconic_taxa[]", "Aves")
+		// Deliberately unfiltered by taxon. Restricting to iconic_taxa[]=Aves
+		// downloaded fewer observations, but hid any observation without an
+		// iconic taxon — the state iNaturalist leaves an observation in when it
+		// can't resolve the eBird name birdsync gave it. Those became invisible
+		// to duplicate detection and were re-created on every run. The saving
+		// was two HTTP requests on a 1478-observation account; see CR-003 in
+		// spec/decisions.md.
 		if !d1.IsZero() {
 			q.Set("d1", d1.Format(dateFormat))
 		}
