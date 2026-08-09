@@ -482,6 +482,12 @@ are usually best expressed as them.
   no check, because it is believed.
 - **Test the requirement, not the implementation.** A check that asserts today's internals will
   block tomorrow's refactor while catching none of the violations that matter.
+- **Derive the assertion from the requirement, not from a run.** Writing a check by executing
+  the code and recording what came back produces something that passes by construction and
+  certifies whatever the code does, bugs included. It is the standard way a retrofit goes
+  wrong, because the behavior is right there and the requirement has to be thought about. The
+  tell is an assertion shaped like the output — a set of accepted values, a golden file nobody
+  read, a tolerance wide enough to fit the observed answer.
 - **Cover imported requirements too.** An adopted mandatory or governing requirement without a
   criterion is a compliance claim nobody is checking.
 - **Coverage is tracked, not assumed.** `acceptance.md` carries a traceability table mapping every
@@ -627,6 +633,9 @@ process; this document never grants an exception to a project's own safety const
   future refactor into a spec negotiation.
 - **Unfalsifiable coverage claims.** A traceability table where every row says "verified" and
   nobody has checked that the checks bite.
+- **Characterization sold as specification.** A check whose expected value was copied from a
+  run, so it can only ever confirm that the code still does what it did. It will even fail
+  honestly when the code changes — which is what makes it look like a real check.
 
 ## Revising this process
 
@@ -639,5 +648,6 @@ project's copy diverge.
 | --- | --- |
 | 2026-08-09 | Initial version. Three phases; `P-###`/`T-###`/`AC-###` IDs cited in code comments; criteria in a separate `acceptance.md`; human gates after context2spec and spec2test; per-project details isolated as bindings. |
 | 2026-08-09 | Added composition and conflict resolution: source provenance and qualified IDs; four precedence tiers; `sources.md` manifest with pinned, vendored imports; `decisions.md` conflict-resolution log; optional subject/value structure on value-setting requirements; spec-level acceptance criteria for emergent conflicts; the rule that spec2code never resolves a conflict; blocking treatment of unsatisfiable mandatory requirements. |
+| 2026-08-09 | Warned against deriving a check's expected value from a run rather than from the requirement, after a two-month-old defect survived a test whose allowlist had been built from the buggy output. Distinct from "a criterion must be able to fail": that test would have failed if the code broke, but could never report that the code was already wrong. |
 | 2026-08-09 | Required decision records to separate checked evidence from inference, after a retrofit cited a cleanup tool's existence as support for a bug the tool predated by five months. Version control would have settled it in one command. |
 | 2026-08-09 | Collected the bundle under `spec/`, leaving the repository root for entry-point docs. Motivated by vendored sources needing a directory regardless, by CODEOWNERS on one directory being a mechanical enforcement of Gate 1, and by making `process.md` sit at an identical path in every project so it can be propagated. |
