@@ -282,10 +282,10 @@ end a sync halfway through.*
 Resolved at Gate 1: partial-failure policy (CR-005), dry-run counter labels (CR-001),
 unknown-taxon re-runs (CR-003), and the `--fuzzy` documentation (CR-004). Still open:
 
-1. **Media ownership.** birdsync re-uploads Macaulay Library assets into iNaturalist
-   under the user's account. This is presumed to be the user's own media, since it comes
-   from their own export. Is that assumption safe for shared checklists, and does the
-   Macaulay Library's licensing need to be an adopted source? Blocked on vendoring
-   `ml-terms`; see [sources.md](sources.md#vendoring-status).
+1. **Media ownership.** Partly answered by vendoring `ml-terms`: a contributor keeps
+   copyright in their own media and may download it freely, so re-publishing one's own
+   photo to iNaturalist is permitted. What remains is whether a user's export can ever
+   list *another* contributor's asset, which birdsync would copy without knowing. See
+   [CR-010](decisions.md#cr-010--birdsync-cannot-tell-whose-media-it-is-downloading).
 2. **Sound files over 50 MB** are rejected by iNaturalist. Currently this surfaces as a
    generic upload failure. Should it be detected and reported specifically?

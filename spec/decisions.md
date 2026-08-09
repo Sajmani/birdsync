@@ -485,6 +485,54 @@ logged `Uploading sound as ML637691397.mp3` — the first sound birdsync has dow
 `0c7b6d2`. The upload then failed on size, which is a separate matter (below), but the
 download and naming worked.
 
+## CR-010 — birdsync cannot tell whose media it is downloading
+
+- **Kind:** conflict between an adopted mandatory source and the implementation
+- **Subject:** `media.download.ownership`
+- **Involves:** `ml-terms/R2`, `ml-terms/R3`, `ml-terms/R4`, P-042, P-043
+- **Found:** 2026-08-09, on vendoring `ml-terms`
+
+`ml-terms/R2` permits a user to download their own Macaulay Library media — the archive is
+described as their own backup — and `ml-terms/R1` confirms they keep copyright in it. That is
+birdsync's intended case and it is squarely allowed.
+
+`ml-terms/R3` says another contributor's media "may not be downloaded... without permission
+from the author". birdsync has no way to honour that distinction: it fetches
+`cdn.download.ams.birds.cornell.edu/api/v2/asset/<id>/2400` unauthenticated, and **the CDN
+serves any asset to anyone** — verified 2026-08-09 with HEAD requests for two assets belonging
+to other contributors, both HTTP 200. Nothing in the pipeline checks, or can check, that an
+asset ID belongs to the person running the tool.
+
+So compliance rests entirely on one unverified assumption: that `MyEBirdData.csv` never lists
+an asset ID the user didn't upload. If that assumption fails, birdsync copies someone else's
+copyrighted photo into the user's iNaturalist account under the user's name.
+
+**Evidence for the assumption.** eBird states that "photos are associated with the eBird
+account they are uploaded under" (`ml-terms/R4`), and the export is per-account. Four assets
+birdsync has handled for the maintainer were checked against
+`search.macaulaylibrary.org/api/v2/search?assetId=`, and all four report
+`userDisplayName: "Sameer Ajmani"`; a control asset belonging to another contributor reports
+their name, so the field discriminates.
+
+**Evidence against it, or rather the gap.** A shared checklist displays both contributors'
+media (`ml-terms/R4`). No page vendored here states whether the recipient's export lists the
+other contributor's catalog numbers. A search summary claimed it does not; that claim was not
+corroborated by any primary source and is not relied on here.
+
+| Option | Effect |
+| --- | --- |
+| A. Confirm the export's behavior for shared checklists, then record the assumption as verified | Cheapest if the maintainer or eBird can answer; no code change |
+| B. Check ownership before downloading, via the Macaulay search API's `userDisplayName` | Closes the gap mechanically; needs the user's contributor name, and depends on an undocumented API |
+| C. Warn in the README and leave it to the user | Honest, but a user cannot audit thousands of asset IDs either |
+
+**Recommendation: A, with B held in reserve.** The whole question disappears if a recipient's
+export omits the sender's assets, and B adds a dependency on an unpublished endpoint to guard
+against a case that may not exist. B is cheap to add later precisely because the API returns
+the contributor.
+
+**Status: escalated — awaiting the maintainer**, who is likely to know from experience whether
+shared checklists ever put another birder's media in their export.
+
 ## Work arising
 
 Phase-3 changes owed by the resolutions above. None may be implemented before

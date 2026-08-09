@@ -41,22 +41,30 @@ Governs what may be uploaded and under whose authority. Relevant to
 [product.md open question 4](product.md#open-questions): birdsync uploads media
 originating in the Macaulay Library into a user's iNaturalist account.
 
-### `ml-terms` — Macaulay Library / eBird terms of use
+### `ml-terms` — Macaulay Library / eBird media terms
 
 | Field | Value |
 | --- | --- |
-| Origin | <https://www.birds.cornell.edu/home/terms-of-use/>, eBird data-access policy |
-| Version | Not yet pinned |
+| Origin | Three eBird Help Center pages; see [PROVENANCE.md](sources/ml-terms-2026-08-09/PROVENANCE.md) |
+| Version | Retrieved 2026-08-09; SHA-256 of each page recorded in PROVENANCE.md |
 | Tier | **Mandatory** |
-| Import style | By reference |
+| Import style | By reference, vendored at `sources/ml-terms-2026-08-09/` |
 | Scope | Downloading assets from the Macaulay Library CDN and re-uploading them |
-| Adopted parts | Permitted use of downloaded assets; attribution |
+| Adopted parts | `ml-terms/R1`–`R5`, in [requirements.md](sources/ml-terms-2026-08-09/requirements.md) |
+| Exclusions | The media request and licensing process: birdsync never requests assets it lacks IDs for, and makes no commercial use |
 | Owner | Cornell Lab of Ornithology |
 
-The working assumption is that a user's own export references their own assets, making
-the copy a personal data transfer. That assumption has not been checked against the
-actual terms, and it is the one place where birdsync could put a user in the wrong. This
-is the highest-value source to vendor first.
+**Vendored and transcribed 2026-08-09.** The working assumption — that a user's export
+references only their own assets, making the copy a personal data transfer — turns out to be
+half confirmed. A contributor keeps copyright in their own media (`ml-terms/R1`) and may
+download it freely (`R2`), so birdsync's intended case is squarely permitted, which answers
+[product.md](product.md#open-questions)'s first open question. But another contributor's media
+may not be downloaded without permission (`R3`), and birdsync cannot tell the difference: it
+fetches by asset ID from an unauthenticated CDN that serves anyone's asset. See
+[CR-010](decisions.md#cr-010--birdsync-cannot-tell-whose-media-it-is-downloading).
+
+The transcription is an interpretation by an AI agent, unreviewed by counsel, and says so at
+the top of the file.
 
 ### `go-practice` — Go language and toolchain best practices
 
@@ -90,7 +98,7 @@ will otherwise be re-asked every year.
 
 ## Vendoring status
 
-**No source is vendored.** Every by-reference source above is declared but unpinned,
+`ml-terms` is vendored and pinned. The other by-reference sources are declared but unpinned,
 which does not satisfy [process.md](process.md#import-style)'s requirement that a
 by-reference source be vendored and pinned.
 
@@ -101,7 +109,7 @@ produce exactly the kind of unreviewed authority the process is meant to prevent
 
 Proposed order, highest risk first:
 
-1. `ml-terms` — the only source that could put a user in the wrong.
+1. ~~`ml-terms`~~ — done 2026-08-09.
 2. `inat-terms` — same category, lower exposure.
 3. `inat-api` — mostly already implemented; vendoring mainly adds the rate limits.
 
