@@ -98,7 +98,7 @@ would break AC-004 for everyone.
 
 | ID | Check | Verifies | From |
 | --- | --- | --- | --- |
-| AC-023 | A `--dryrun` run's summary says `Would create` / `Would update`, never `Created` / `Updated` | P-060, T-007 | CR-001 |
+| ~~AC-023~~ | *landed* — `TestSummaryDryRunLabels`, `TestSummaryRealRunLabels`, `TestSummaryConditionalLines` | P-060, T-007 | CR-001 |
 | ~~AC-024~~ | *landed* — `TestDownloadObservationsNoTaxonFilter`, `TestUntaxonedObservationIsRecognized` | P-061, P-020 | CR-003 |
 | ~~AC-025~~ | *landed* — `TestInvalidRecordsAreSkipped` | P-062 | CR-005 |
 | ~~AC-026~~ | *landed* — `TestTempFilesAreCleanedUp` | T-023 | Gate 1 |
@@ -183,13 +183,13 @@ requirements have an automated check.
 | P-051 dry run issues no writes | AC-006 | verified |
 | P-052 `DRYRUN:` prefix | — | gap (log output unasserted) |
 | P-053 unclassified media count | AC-016 | verified |
-| P-054 end-of-run summary | — | gap (`main`, untested) |
-| P-055 conditional counters | — | gap (`main`, untested) |
-| P-056 failure count printed | — | gap (`main`, untested) |
+| P-054 end-of-run summary | AC-023 | verified |
+| P-055 conditional counters | AC-023 | verified |
+| P-056 failure count printed | AC-023 | verified |
 | P-057 *withdrawn (CR-005)* | — | n/a |
 | P-058 create/update failure aborts | — | gap |
 | P-059 no rollback | — | gap (consequence of P-058) |
-| P-060 dry-run labels | AC-023 | pending |
+| P-060 dry-run labels | AC-023 | verified |
 | P-061 no taxon filter | AC-024 | verified |
 | P-062 bad records skipped and counted | AC-025 | verified |
 | T-001 single module | AC-001 | verified |
@@ -198,7 +198,7 @@ requirements have an automated check.
 | T-004 platform independence | AC-001 | partial (one OS in CI) |
 | T-005 `--dryrun` gates at the call site | AC-006 | verified |
 | T-006 `DRYRUN:` prefix | — | gap |
-| T-007 honest counters | AC-023 | pending |
+| T-007 honest counters | AC-023 | verified |
 | T-008 client mutates unconditionally | — | gap (design note; human review) |
 | T-009 `ignore_photos` always set | AC-008 | verified |
 | T-010 no live API calls in tests | AC-005 | verified |
@@ -241,9 +241,11 @@ rather than a requirement that simply isn't mechanically checkable:
    `TestUpdateMedia` used `after.Set("")`, which fails silently, so it was passing only
    because the previous test happened to leave a window containing its record's date.
    Fixed in this phase; the underlying hazard — order-dependent tests — has no check.
-4. **`main` is untested.** P-008 through P-013 and P-054 through P-056 all live in
-   `main`, which no test exercises. Flag parsing, the argument check, the
-   `--after`/`--before` sanity check, and the entire summary block are unverified.
+4. **`main` is still mostly untested.** P-008 through P-013 live there and no test
+   exercises them: flag parsing, the argument count check, and the `--after`/`--before`
+   sanity check. The summary block was extracted into `stats.summary()` while implementing
+   AC-023, which closed P-054 through P-056 — one of the two deferred Gate 2 questions,
+   answered by necessity rather than by decision.
 5. **`inat.Client.UploadMedia` has no test.** The multipart request it builds is the one
    place binary data is written to a user's account, and it is exercised only through a
    mock that ignores its arguments.

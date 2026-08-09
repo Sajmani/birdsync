@@ -91,10 +91,10 @@ appears if any rows had a date, time, or coordinate birdsync couldn't read; thos
 skipped and the rest of the run continues. A final "Failed to upload N media assets" line appears if any
 media downloads or uploads failed; those failures are logged but don't stop the run.
 
-Under `--dryrun`, the last two lines are replaced by a single
-"Would upload N media assets to iNaturalist". A dry run doesn't download anything, and a
-Macaulay Library asset ID doesn't say whether it refers to a photo or a sound, so a dry run
-can't split the count into photos and sounds.
+Under `--dryrun` every line that would report work says "Would" instead: "Would create N",
+"Would update N", and a single "Would upload N media assets to iNaturalist". A dry run
+doesn't download anything, and a Macaulay Library asset ID doesn't say whether it refers to
+a photo or a sound, so a dry run can't split that count into photos and sounds.
 
 ## Checking the results
 

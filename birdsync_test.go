@@ -808,3 +808,92 @@ func TestTempFilesAreCleanedUp(t *testing.T) {
 		t.Errorf("Uploaded %d assets, want 2", len(mockInat.uploaded))
 	}
 }
+
+// TestSummaryDryRunLabels checks that a dry run doesn't claim credit for work
+// it didn't do. The counters were incremented outside the --dryrun branch, so
+// a run that touched nothing still ended with "Created 57 new iNaturalist
+// observations". The count is worth reporting; the claim is not.
+//
+// Verifies: P-060, T-007.
+func TestSummaryDryRunLabels(t *testing.T) {
+	resetFlags()
+	dryRun = true
+	defer func() { dryRun = false }()
+
+	s := stats{totalRecords: 9, createdObservations: 3, updatedObservations: 2, pendingMedia: 7}
+	got := strings.Join(s.summary(), "\n")
+
+	for _, want := range []string{
+		"Would create 3 new iNaturalist observations",
+		"Would update 2 iNaturalist observations",
+		"Would upload 7 media assets",
+	} {
+		if !strings.Contains(got, want) {
+			t.Errorf("Dry-run summary missing %q (P-060):\n%s", want, got)
+		}
+	}
+	for _, forbidden := range []string{"Created 3", "Updated 2", "Uploaded "} {
+		if strings.Contains(got, forbidden) {
+			t.Errorf("Dry-run summary claims %q, but a dry run writes nothing (T-007):\n%s", forbidden, got)
+		}
+	}
+}
+
+// TestSummaryRealRunLabels is the other half: a real run must still report
+// plainly, so the fix for the dry-run wording can't just hedge everything.
+//
+// Verifies: P-054.
+func TestSummaryRealRunLabels(t *testing.T) {
+	resetFlags()
+
+	s := stats{totalRecords: 9, createdObservations: 3, updatedObservations: 2,
+		uploadedPhotos: 4, uploadedSounds: 1}
+	got := strings.Join(s.summary(), "\n")
+
+	for _, want := range []string{
+		"Created 3 new iNaturalist observations",
+		"Updated 2 iNaturalist observations",
+		"Uploaded 4 photos",
+		"Uploaded 1 sounds",
+	} {
+		if !strings.Contains(got, want) {
+			t.Errorf("Summary missing %q (P-054):\n%s", want, got)
+		}
+	}
+	if strings.Contains(got, "Would ") {
+		t.Errorf("Real run summary hedges with \"Would\":\n%s", got)
+	}
+}
+
+// TestSummaryConditionalLines checks that a skip counter appears only when the
+// rule that produces it was in effect, and the media-failure line only when
+// something failed. Otherwise every run reports a wall of zeroes and people
+// stop reading it.
+//
+// Verifies: P-055, P-056.
+func TestSummaryConditionalLines(t *testing.T) {
+	resetFlags()
+	verifiable = false
+
+	quiet := strings.Join(stats{}.summary(), "\n")
+	for _, forbidden := range []string{"--fuzzy", "--after", "--before", "unverifiable", "unparseable", "Failed to upload"} {
+		if strings.Contains(quiet, forbidden) {
+			t.Errorf("Summary mentions %q when the rule wasn't in effect (P-055, P-056):\n%s", forbidden, quiet)
+		}
+	}
+
+	resetFlags()
+	fuzzy = true
+	if err := after.Set("2023-01-01"); err != nil {
+		t.Fatal(err)
+	}
+	if err := before.Set("2023-12-31"); err != nil {
+		t.Fatal(err)
+	}
+	loud := strings.Join(stats{invalidSkips: 1, errors: 2}.summary(), "\n")
+	for _, want := range []string{"--fuzzy", "--after", "--before", "unverifiable", "unparseable", "Failed to upload 2"} {
+		if !strings.Contains(loud, want) {
+			t.Errorf("Summary missing %q when the rule was in effect (P-055, P-056):\n%s", want, loud)
+		}
+	}
+}

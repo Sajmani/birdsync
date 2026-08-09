@@ -105,35 +105,63 @@ func main() {
 
 	stats := birdsync(eBirdCSVFilename, ebirdAPIClient, inat.GetUserID(), inatAPIClient)
 
-	log.Printf("Finished processing %d eBird observations", stats.totalRecords)
-	log.Printf("Skipped %d previously uploaded by birdsync", stats.previouslySkips)
+	for _, line := range stats.summary() {
+		log.Print(line)
+	}
+}
+
+// summary returns the end-of-run report, one line per entry.
+//
+// It lives outside main so it can be tested. A summary is the only account of
+// the run most users read, and it is the one place where saying something
+// untrue is both easy and invisible: the counters and their labels are written
+// in different places, so nothing stops them drifting apart.
+func (s stats) summary() []string {
+	var lines []string
+	add := func(format string, args ...any) {
+		lines = append(lines, fmt.Sprintf(format, args...))
+	}
+
+	add("Finished processing %d eBird observations", s.totalRecords)
+	add("Skipped %d previously uploaded by birdsync", s.previouslySkips)
+	// A skip counter is only meaningful when the rule producing it was in
+	// effect, so those lines are conditional (P-055).
 	if fuzzy {
-		log.Printf("Skipped %d eBird observations with --fuzzy matching", stats.fuzzySkips)
+		add("Skipped %d eBird observations with --fuzzy matching", s.fuzzySkips)
 	}
 	if !after.Time().IsZero() {
-		log.Printf("Skipped %d eBird observations before --after", stats.afterSkips)
+		add("Skipped %d eBird observations before --after", s.afterSkips)
 	}
 	if !before.Time().IsZero() {
-		log.Printf("Skipped %d eBird observations after --before", stats.beforeSkips)
+		add("Skipped %d eBird observations after --before", s.beforeSkips)
 	}
 	if verifiable {
-		log.Printf("Skipped %d unverifiable eBird observations", stats.verifiableSkips)
+		add("Skipped %d unverifiable eBird observations", s.verifiableSkips)
 	}
-	if stats.invalidSkips > 0 {
-		log.Printf("Skipped %d eBird observations with unparseable fields", stats.invalidSkips)
+	if s.invalidSkips > 0 {
+		add("Skipped %d eBird observations with unparseable fields", s.invalidSkips)
 	}
-	log.Printf("Created %d new iNaturalist observations", stats.createdObservations)
-	log.Printf("Updated %d iNaturalist observations", stats.updatedObservations)
+
 	if dryRun {
+		// The counters are incremented outside the --dryrun gates, so they
+		// count what a real run would have done. That number is worth
+		// reporting, but reporting it as "Created" would be a lie, and
+		// --dryrun is the one feature whose whole value is being trusted
+		// (P-060, T-007).
+		add("Would create %d new iNaturalist observations", s.createdObservations)
+		add("Would update %d iNaturalist observations", s.updatedObservations)
 		// A dry run doesn't download the assets, so it can't tell photos from sounds.
-		log.Printf("Would upload %d media assets to iNaturalist", stats.pendingMedia)
+		add("Would upload %d media assets to iNaturalist", s.pendingMedia)
 	} else {
-		log.Printf("Uploaded %d photos to iNaturalist", stats.uploadedPhotos)
-		log.Printf("Uploaded %d sounds to iNaturalist", stats.uploadedSounds)
+		add("Created %d new iNaturalist observations", s.createdObservations)
+		add("Updated %d iNaturalist observations", s.updatedObservations)
+		add("Uploaded %d photos to iNaturalist", s.uploadedPhotos)
+		add("Uploaded %d sounds to iNaturalist", s.uploadedSounds)
 	}
-	if stats.errors > 0 {
-		log.Printf("Failed to upload %d media assets", stats.errors)
+	if s.errors > 0 {
+		add("Failed to upload %d media assets", s.errors)
 	}
+	return lines
 }
 
 func birdsync(eBirdCSVFilename string, ebirdClient ebirdClient, inatUserID string, inatClient inatClient) stats {
