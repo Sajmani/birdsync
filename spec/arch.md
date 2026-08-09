@@ -114,11 +114,23 @@ returns); they are not the same shape.
 
 ### `tools/`
 
-Six standalone `main` packages for maintaining observations after the fact. They are *not*
+Seven standalone `main` packages for maintaining observations after the fact. They are *not*
 imported by birdsync, and `go install github.com/Sajmani/birdsync@latest` doesn't install them
 (though `go install ./...` from a clone does). Run them with `go run ./tools/<name>`.
 
-Each builds its own `inat.Client`. `dedupe`, `purge`, and `position` find birdsync-created
+`dedupe` and `repair` exist for a historical reason worth knowing. Before the two eBird
+observation fields were added (`3d036ba` and `7478a09`, July 2025), birdsync could not
+reliably recognize its own observations, so re-runs created duplicates. `dedupe` cleans up
+that era's damage and `repair` backfills the missing field on what survived. **Neither is
+evidence of a current defect** — treating `dedupe`'s existence as a symptom of a live bug
+is a mistake already made once and retracted, in [decisions.md](decisions.md) CR-003.
+
+`taxonfilter` is the exception to the "no tests" rule below: because T-011 forbids running
+anything here, its comparison logic and query construction are covered by
+`tools/taxonfilter/taxonfilter_test.go` instead.
+
+Each builds its own `inat.Client`, except `taxonfilter`, which issues its own GET requests so
+it can vary the `iconic_taxa[]` parameter. `dedupe`, `purge`, and `position` find birdsync-created
 observations using the same `ebird.ObservationID` key as the sync loop; `repair` reads the two
 observation fields directly; `dump` and `poke` don't filter at all.
 
@@ -130,6 +142,7 @@ observation fields directly; `dump` and `poke` don't filter at all.
 | `purge` | Delete observations with no photos and no sounds | `debug` const |
 | `position` | Reset positional accuracy to `ebird.PositionalAccuracy` | `debug` const |
 | `repair` | Backfill the eBird scientific name field | none |
+| `taxonfilter` | Compare a filtered and unfiltered download; diagnose CR-003 | read-only |
 
 `dedupe`, `purge`, and `position` are gated by a `debug` constant at the top of the file:
 `true` logs what would happen, `false` performs it. There is no `--dryrun` flag. As checked in,

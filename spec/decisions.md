@@ -87,15 +87,92 @@ No pair of these contradicts. Together they do:
 4. It is therefore absent from `previouslySynced`, and the same eBird record is created
    again — violating P-020.
 
-Circumstantial support: `tools/dedupe` exists specifically to delete observations sharing
+~~Circumstantial support: `tools/dedupe` exists specifically to delete observations sharing
 a sync key, and the `Aves` filter was added later as a download-volume optimization
 (commit `6f3b826`, "Only download Aves to reduce number of downloads") — after the
-duplicate-detection design.
+duplicate-detection design.~~
+
+**Retracted 2026-08-09**, confirmed by the maintainer and by the commit history:
+
+| Date | Commit | Event |
+| --- | --- | --- |
+| 2025-07-29 | `3d036ba` | eBird Checklist field (6033) introduced |
+| 2025-07-30 | `7478a09` | eBird Scientific Name field added "to improve duplicate detection" |
+| 2025-08-01 | `568cf08` | `dedupe` added, with `ebird.ObservationID.Valid` |
+| 2026-01-18 | `6f3b826` | `Aves` download filter added |
+
+`dedupe` was built to clear duplicates created *before* the birdsync observation fields
+existed to detect them — it arrived two days after the sync key was completed, and five
+months before the `Aves` filter. It is evidence about P-022, the same population
+`tools/repair` serves, and says nothing about this conflict.
+
+The claim should never have been written: the chronology was one `git log` away, and it
+was asserted as "circumstantial support" without being checked. See
+[process.md](process.md#conflicts-and-resolution) on separating evidence from inference,
+added as a result.
+
+What stands is the narrower point: the filter postdates the duplicate-detection design, so
+it was not written with the sync key in mind.
 
 **This has not been confirmed against the live API**, because T-010 forbids it. Confirming
 it needs either the owner's knowledge of the API's filter semantics, or a test against a
 fake that encodes the assumed behavior — which would only prove birdsync's logic, not
 iNaturalist's.
+
+**Instrument:** `tools/taxonfilter` was written to settle this empirically. It downloads
+the account twice — once with `iconic_taxa[]=Aves`, once without — compares the two by
+UUID, and reports how many of the observations the filter hides carry a birdsync sync key.
+It is read-only. Run it with `go run ./tools/taxonfilter` and paste the verdict below.
+
+**Evidence, 2026-08-09**, from a run against the maintainer's account (1478 observations,
+983 of them birdsync-created):
+
+```
+Returned by iconic_taxa[]=Aves:  1026
+  with no taxon at all:             0
+  with a non-Aves taxon:          452
+Present unfiltered but MISSING from the filtered query: 452
+  of those, created by birdsync:    0
+```
+
+**This is inconclusive on the question that matters, not a refutation.** The account
+contains no unidentified observations, so the filter was never handed one to drop. All 452
+it dropped have a non-Aves iconic taxon — the filter working as designed. Step 2 of the
+mechanism, whether the filter hides an observation with no iconic taxon, remains untested
+because there was nothing to test it with.
+
+Two corrections came out of this run:
+
+- **The tool's first verdict overstated the result**, reporting "CR-003's mechanism is
+  real" when the data showed only that non-bird observations are filtered out. Fixed: it
+  now reports `INCONCLUSIVE` when the account has no unidentified observations, and
+  distinguishes that from `REFUTED`.
+- **The detector was wrong.** It classified on the taxon being absent, but iNaturalist may
+  represent an unidentified observation as a placeholder such as "Life" or "Unknown"
+  rather than as a null taxon. The tool now classifies on the *iconic* taxon being absent,
+  which is the property the filter actually tests, and is correct under either
+  representation. Both shapes are covered in `taxonfilter_test.go`.
+
+**Why the decision stands regardless.** Option B is correct whether or not the mechanism
+is real, and the measured cost of choosing it is smaller than assumed: 1478 observations
+instead of 1026, which at 200 per page is **8 requests instead of 6**. The optimization
+being protected is worth two HTTP requests per run. Against that, the downside of being
+wrong is silent duplicate creation in a user's account. The asymmetry decides it without
+needing the answer.
+
+This also disposes of a refinement that the evidence briefly made attractive — asking for
+`iconic_taxa[]=Aves` *and* unidentified observations in one query, keeping most of the
+saving. It would only be safe if iNaturalist's parameter accepts that combination *and*
+"unknown" captures the placeholder representation, and getting either wrong reintroduces
+the bug silently. Two requests is not worth that risk.
+
+**Residual uncertainty, accepted:** whether a birdsync observation can reach the
+unidentified state at all is still unverified. The README says it can ("the observation
+species name will say Unknown"), and eBird slashes and spuhs are the obvious candidates,
+but this account has none — either they all resolved, or the maintainer fixed them by hand
+as the README advises. Settling it definitively would require creating an observation with
+an unresolvable name in a throwaway account. Not worth doing, given that the fix is going
+in anyway.
 
 | Option | Effect |
 | --- | --- |

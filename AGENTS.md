@@ -37,7 +37,7 @@ Run all four before declaring work finished. There is no Makefile and no lint co
 | `media.go` | `mlAssetSet`, eBird↔iNaturalist media diffing |
 | `ebird/` | CSV parsing, Macaulay Library asset download |
 | `inat/` | iNaturalist API v2 client, types, observation-field IDs, credentials |
-| `tools/` | Six standalone `main` packages for account maintenance |
+| `tools/` | Seven standalone `main` packages for account maintenance |
 | `spec/` | Requirements, acceptance criteria, decisions, architecture, process |
 
 ## Hard rules

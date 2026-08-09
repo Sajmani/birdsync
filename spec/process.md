@@ -306,6 +306,14 @@ requirement involved, and any follow-up owed to a source owner.
 Sources are never edited to resolve a conflict. Vendored copies stay byte-identical to upstream;
 local requirements are annotated in place, never rewritten to pretend the conflict didn't happen.
 
+**Evidence and inference are labelled separately, and evidence is checked before it is cited.**
+A plausible causal story — *this cleanup tool exists, so the bug it cleans up must be
+happening* — is a hypothesis. It belongs in the record as one, next to the check that would
+settle it. Most such stories are settled in one command, because version control knows when
+each thing was written and in what order: a tool that predates the code it supposedly
+compensates for cannot be evidence for it. A guess promoted to "supporting evidence" is worse
+than no evidence, because the next reader cannot tell which is which and will build on it.
+
 ### When a mandatory requirement cannot be satisfied
 
 Work stops. There is no local mechanism to override a mandatory source, and "note the gap and
@@ -606,6 +614,9 @@ process; this document never grants an exception to a project's own safety const
   requirement is "more specific," to escape an override that should have been negotiated.
 - **Adoption by gesture.** "We follow the accessibility standard" with no conformance level, no
   pin, and no criteria — a compliance claim with nothing behind it.
+- **Inference dressed as evidence.** A causal story cited in a decision record without being
+  checked, when the repository's own history would have settled it. It survives because it
+  sounds right and nobody re-derives it.
 - **Stale pins.** Vendored sources years behind upstream, discovered during an audit.
 - **Conflict deferral as a habit.** `Deferred` entries accumulating past their dates until the
   register is a to-do list nobody reads.
@@ -628,4 +639,5 @@ project's copy diverge.
 | --- | --- |
 | 2026-08-09 | Initial version. Three phases; `P-###`/`T-###`/`AC-###` IDs cited in code comments; criteria in a separate `acceptance.md`; human gates after context2spec and spec2test; per-project details isolated as bindings. |
 | 2026-08-09 | Added composition and conflict resolution: source provenance and qualified IDs; four precedence tiers; `sources.md` manifest with pinned, vendored imports; `decisions.md` conflict-resolution log; optional subject/value structure on value-setting requirements; spec-level acceptance criteria for emergent conflicts; the rule that spec2code never resolves a conflict; blocking treatment of unsatisfiable mandatory requirements. |
+| 2026-08-09 | Required decision records to separate checked evidence from inference, after a retrofit cited a cleanup tool's existence as support for a bug the tool predated by five months. Version control would have settled it in one command. |
 | 2026-08-09 | Collected the bundle under `spec/`, leaving the repository root for entry-point docs. Motivated by vendored sources needing a directory regardless, by CODEOWNERS on one directory being a mechanical enforcement of Gate 1, and by making `process.md` sit at an identical path in every project so it can be propagated. |

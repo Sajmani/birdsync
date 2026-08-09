@@ -196,8 +196,12 @@ same way birdsync does.
 - `position` — reset the positional accuracy of birdsync observations to 1000 meters.
 - `repair` — backfill the eBird scientific name field on observations created before birdsync
   started setting it. Takes `MyEBirdData.csv` as its only argument.
+- `taxonfilter` — download your observations twice, once unfiltered and once restricted to
+  birds, and report which ones the bird filter drops. Read-only diagnostic; see
+  [spec/decisions.md](spec/decisions.md) CR-003.
 
-**These tools delete and modify observations, and none of them has a `--dryrun` flag.**
+**Most of these tools delete and modify observations, and none of them has a `--dryrun` flag.**
+`dump` and `taxonfilter` are read-only and safe to run.
 `dedupe`, `purge`, and `position` are instead gated by a `debug` constant at the top of their
 source file: when `debug` is `true` the tool only logs what it would do, and when `debug` is
 `false` it makes the changes for real. As checked in, `purge` deletes for real, while `dedupe`
