@@ -747,6 +747,48 @@ CR-002 landed as option A after all, not the recommended option B: with `tools/`
 `dump`, changing `DownloadObservations`'s signature touched one caller instead of six, so
 the reason for deferring half the fix had gone away.
 
+## Open work, as of 2026-08-09
+
+Where to pick this up. Nothing here blocks a release; each item is a known, recorded gap
+rather than a surprise waiting to happen.
+
+**Needs a human to fetch a page** (all `www.inaturalist.org/pages/*` answer an automated
+request with HTTP 403 and a JavaScript challenge):
+
+- <https://www.inaturalist.org/pages/machine_generated_content> → save into
+  `spec/sources/inat-terms-2026-08-09/`. It defines the rule CR-012 turns on. CR-012 is closed
+  on the strength of a moderator not objecting, which is behavior rather than text.
+
+**Unverified against the live service:**
+
+- **A successful sound upload has never been observed.** The download side of CR-009 is
+  confirmed (`ML637691397.mp3`), but the only sound ever attempted was 61 MB and refused. The
+  next checklist with audio under the size limit will settle it.
+
+**Known gaps, each recorded where it belongs:**
+
+| Gap | Where |
+| --- | --- |
+| Credentials-never-logged has no check at all | P-018, T-012; [acceptance.md](acceptance.md#gaps-worth-naming) |
+| `inat.Client.UploadMedia` is exercised only through a mock | tech.md open questions |
+| `main`'s flag and argument handling is untested | [acceptance.md](acceptance.md#gaps-worth-naming) |
+| `DownloadMLAsset` leaks the temp file, and on Windows its handle, on error paths | T-023; [issue #1](https://github.com/Sajmani/birdsync/issues/1) |
+| A download failure is always transient, so a deleted asset is retried every run | [CR-008](#cr-008--a-permanently-rejected-asset-was-retried-forever) |
+| The per-day request cap is not enforced | T-035 |
+| T-022's memory ceiling is unmeasured, and grew when P-061 dropped the taxon filter | tech.md open questions |
+
+**Decisions left open on purpose:**
+
+- Restoring an `Aves` + `unknown` download filter is now purely a bandwidth question, since
+  T-036 removed the ceiling it used to work around. Judge it on request volume alone.
+- `inat-api/R7` (authenticate only when required) is a knowing departure, with its reason in
+  [the transcription](sources/inat-api-2026-08-09/requirements.md).
+
+**Housekeeping:** [issue #5](https://github.com/Sajmani/birdsync/issues/5) is fixed by CR-011
+but still open, and [issue #1](https://github.com/Sajmani/birdsync/issues/1) is partly
+addressed — the date parsing and the CSV-path message are fixed, the temp-file handling on
+Windows is not. Neither has been updated to say so.
+
 ## Deferred items
 
 None.
