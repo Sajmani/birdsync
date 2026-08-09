@@ -30,8 +30,8 @@ One run does the following:
 
    "Not valid" means *either* eBird field is missing (ebird/ebird.go:164), so an observation
    created by an old version of birdsync that set the checklist ID but not the scientific name
-   lands in the fuzzy index instead of `previouslySynced`. That is the population `tools/repair`
-   exists to fix.
+   lands in the fuzzy index instead of `previouslySynced`. A `repair` tool used to backfill
+   that population; it was deleted once the maintainer's account was clean.
 4. **Read the CSV.** `ebird.Records` returns an `iter.Seq[ebird.Record]` over the export
    (ebird/ebird.go:80). Despite the iterator, this isn't streaming: the whole file is read with
    `csv.Reader.ReadAll` and the iterator walks the resulting slice.
@@ -114,40 +114,21 @@ returns); they are not the same shape.
 
 ### `tools/`
 
-Seven standalone `main` packages for maintaining observations after the fact. They are *not*
-imported by birdsync, and `go install github.com/Sajmani/birdsync@latest` doesn't install them
-(though `go install ./...` from a clone does). Run them with `go run ./tools/<name>`.
+One standalone `main` package, `dump`, which downloads the user's observations and prints
+them as JSON. It is *not* imported by birdsync, and `go install
+github.com/Sajmani/birdsync@latest` doesn't install it (though `go install ./...` from a
+clone does). Run it with `go run ./tools/dump`.
 
-`dedupe` and `repair` exist for a historical reason worth knowing. Before the two eBird
-observation fields were added (`3d036ba` and `7478a09`, July 2025), birdsync could not
-reliably recognize its own observations, so re-runs created duplicates. `dedupe` cleans up
-that era's damage and `repair` backfills the missing field on what survived. **Neither is
-evidence of a current defect** — treating `dedupe`'s existence as a symptom of a live bug
-is a mistake already made once and retracted, in [decisions.md](decisions.md) CR-003.
+`tools/` is read-only by construction, enforced by `TestToolsAreReadOnly` (T-032). It used
+to hold six more programs that created, updated, and deleted real observations, guarded
+only by a `debug` constant at the top of each file — `purge` shipped with its guard off,
+deleting for real. Four of them (`dedupe`, `repair`, `position`, `purge`) were one-time
+cleanups for defects that have since been fixed, `poke` was a token smoke test, and
+`taxonfilter` answered CR-003. All were deleted; the history has them if one is needed
+again.
 
-`taxonfilter` is the exception to the "no tests" rule below: because T-011 forbids running
-anything here, its comparison logic and query construction are covered by
-`tools/taxonfilter/taxonfilter_test.go` instead.
-
-Each builds its own `inat.Client`, except `taxonfilter`, which issues its own GET requests so
-it can vary the `iconic_taxa[]` parameter. `dedupe`, `purge`, and `position` find birdsync-created
-observations using the same `ebird.ObservationID` key as the sync loop; `repair` reads the two
-observation fields directly; `dump` and `poke` don't filter at all.
-
-| Tool | Purpose | Guard |
-| --- | --- | --- |
-| `dump` | Print all downloaded observations as JSON | read-only |
-| `poke` | Create one test observation, or upload one asset | none |
-| `dedupe` | Delete duplicate observations sharing a sync key | `debug` const |
-| `purge` | Delete observations with no photos and no sounds | `debug` const |
-| `position` | Reset positional accuracy to `ebird.PositionalAccuracy` | `debug` const |
-| `repair` | Backfill the eBird scientific name field | none |
-| `taxonfilter` | Compare a filtered and unfiltered download; diagnose CR-003 | read-only |
-
-`dedupe`, `purge`, and `position` are gated by a `debug` constant at the top of the file:
-`true` logs what would happen, `false` performs it. There is no `--dryrun` flag. As checked in,
-`purge` deletes for real while `dedupe` and `position` are log-only. Check the constant before
-running any of them.
+Deleting them turned a rule people had to remember into a property a check can enforce,
+which is the trade this repository prefers wherever it is available.
 
 ## Testing
 

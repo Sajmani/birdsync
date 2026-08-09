@@ -95,8 +95,8 @@ The rules are `spec/tech.md` T-005 through T-008; in short, gate at the call sit
 `DRYRUN:` because the README tells users to grep for it, and don't let the counters report
 work that didn't happen. Existing gates are at birdsync.go:212, :236, and :350.
 
-Note that the programs in `tools/` predate this and have no `--dryrun`; they use a `debug`
-constant instead. If you add a tool, a real flag is preferable.
+This applies to birdsync itself. Nothing in `tools/` may mutate at all, so the question
+doesn't arise there.
 
 ## Code style
 
@@ -126,10 +126,10 @@ end to end. Please be careful:
 - Remember that observations you create during testing are public, and that the API token from
   <https://www.inaturalist.org/users/api_token> expires every 24 hours.
 
-**The programs in `tools/` are destructive and have no dry-run flag.** `dedupe`, `purge`, and
-`position` are gated by a `debug` constant at the top of the source file — `true` means log
-only, `false` means do it. As checked in, `purge` deletes for real. Read the source before
-running any of them, and don't point them at an account whose data you care about.
+`tools/` holds only `dump`, which is read-only, and a check enforces that anything added
+there stays that way (T-032 in [spec/tech.md](spec/tech.md)). Please don't add a tool that
+writes: the ones that used to live there were guarded by a `debug` constant that was easy
+to get wrong, and one of them shipped deleting for real.
 
 ## Reporting bugs
 

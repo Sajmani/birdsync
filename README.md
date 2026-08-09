@@ -181,32 +181,16 @@ observations inside that date window.
 
 # Tools
 
-The `tools` directory contains small standalone programs for maintaining observations that
-birdsync has already created. They are separate `main` packages, so
-`go install github.com/Sajmani/birdsync@latest` does not install them; run them from a clone
-with `go run ./tools/<name>`. They read `INAT_USER_ID` and `INAT_API_TOKEN` (or prompt) the
+The `tools` directory contains `dump`, a small read-only program that downloads your
+observations and prints them as JSON. It is a separate `main` package, so
+`go install github.com/Sajmani/birdsync@latest` does not install it; run it from a clone
+with `go run ./tools/dump`. It reads `INAT_USER_ID` and `INAT_API_TOKEN` (or prompts) the
 same way birdsync does.
 
-- `dump` — download your observations and print them as JSON. Read-only; useful for debugging.
-- `poke` — create a single test observation, or upload one Macaulay Library asset to an
-  observation you name. Useful for checking that your API token works.
-- `dedupe` — find observations that share an (eBird checklist, eBird scientific name) pair and
-  delete all but one, preferring the one with the most identifications, then the oldest.
-- `purge` — delete birdsync observations that have neither photos nor sounds.
-- `position` — reset the positional accuracy of birdsync observations to 1000 meters.
-- `repair` — backfill the eBird scientific name field on observations created before birdsync
-  started setting it. Takes `MyEBirdData.csv` as its only argument.
-- `taxonfilter` — download your observations twice, once unfiltered and once restricted to
-  birds, and report which ones the bird filter drops. Read-only diagnostic; see
-  [spec/decisions.md](spec/decisions.md) CR-003.
-
-**Most of these tools delete and modify observations, and none of them has a `--dryrun` flag.**
-`dump` and `taxonfilter` are read-only and safe to run.
-`dedupe`, `purge`, and `position` are instead gated by a `debug` constant at the top of their
-source file: when `debug` is `true` the tool only logs what it would do, and when `debug` is
-`false` it makes the changes for real. As checked in, `purge` deletes for real, while `dedupe`
-and `position` are in log-only mode. `poke` and `repair` have no such guard and always write.
-Read the source before running any of these against your account.
+Nothing in `tools` can modify your account. Earlier versions shipped tools that deleted
+and updated observations — `dedupe`, `purge`, `position`, `repair`, `poke` — and those
+have been removed; they were one-time cleanups for bugs that are now fixed. If you need
+one, it is in the git history.
 
 # Development
 

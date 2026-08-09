@@ -37,7 +37,7 @@ Run all four before declaring work finished. There is no Makefile and no lint co
 | `media.go` | `mlAssetSet`, eBird↔iNaturalist media diffing |
 | `ebird/` | CSV parsing, Macaulay Library asset download |
 | `inat/` | iNaturalist API v2 client, types, observation-field IDs, credentials |
-| `tools/` | Seven standalone `main` packages for account maintenance |
+| `tools/` | `dump`, a read-only observation dumper. Read-only by construction (T-032) |
 | `spec/` | Requirements, acceptance criteria, decisions, architecture, process |
 
 ## Hard rules
@@ -54,9 +54,9 @@ Violating any of these costs a user real data. They are stated in full in
   issues no writes at all; reads are fine. Log the skipped action with a `DRYRUN:` prefix
   (T-006), and don't let the counters claim work that didn't happen (T-007). Existing gates:
   birdsync.go:212, :236, :350.
-- **Never run anything in `tools/`** (T-011). They create, update, and delete real
-  observations in whatever account the environment's credentials point at, and `purge` is
-  checked in with its guard off. Reading them is fine.
+- **`tools/` stays read-only** (T-032), enforced by `TestToolsAreReadOnly`. Don't add a
+  tool that creates, updates, deletes, or uploads. **Don't run one either** (T-033): they
+  use the user's real credentials against the live service.
 - **Never log or echo credentials** (T-012).
 - **Don't add dependencies** (T-002) or touch the `go` / `toolchain` directives (T-003)
   without asking. Both are the maintainer's call, and both are proposed as their own change.

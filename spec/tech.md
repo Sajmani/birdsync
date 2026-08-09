@@ -38,7 +38,8 @@ These are the rules whose violation costs a user real data. They outrank conveni
 
 **T-005** — Every operation that creates, updates, deletes, or uploads is gated on
 `--dryrun` **at the call site in `birdsync()`**, not inside the client.
-*Rationale: `inat.Client` is shared with `tools/`, which has no such flag.*
+*Rationale: `inat.Client` is shared with `tools/`, which has no such flag. The gate
+belongs where the decision is made, not in a client that other callers reuse.*
 
 **T-006** — A skipped mutation is logged with a `DRYRUN:` prefix (implements P-052).
 
@@ -57,9 +58,22 @@ in favour of relabelling; implements P-060.*
 **T-010** — Tests never contact `api.inaturalist.org`, the Macaulay Library CDN, or any
 other live service, and never depend on a real account's contents.
 
-**T-011** — Nothing in the build, test, or development workflow runs a program in
+**T-011** — ~~Nothing in the build, test, or development workflow runs a program in
 `tools/`. They create, update, and delete observations in whatever account the
-environment's credentials point at, and `purge` is checked in with its guard off.
+environment's credentials point at, and `purge` is checked in with its guard off.~~
+Status: **Withdrawn** — the mutating tools were deleted rather than governed by a rule
+nobody could check. Superseded by T-032 and T-033.
+
+**T-032** — No program in `tools/` performs a mutating operation. Nothing there may
+create, update, delete, or upload.
+*Rationale: `tools/` held six programs that modified real accounts, guarded by a `debug`
+constant that one of them shipped with turned off and by an instruction not to run them.
+A structural property that a check can enforce is worth more than a warning people have to
+read and remember. Deleted tools remain in the history if one is needed again.*
+
+**T-033** — Nothing in the build, test, or development workflow runs a program in
+`tools/`. They contact the live service with the user's real credentials, which no
+automated process should do on the user's behalf.
 
 **T-012** — Credentials are never logged, echoed, or written to a file.
 
@@ -156,7 +170,7 @@ Per [process.md](process.md#project-bindings):
 | ID citation syntax | Go line comment: `// Verifies: P-020.` |
 | Artifact locations | `spec/`; vendored sources in `spec/sources/<name>-<pin>/` |
 | Subject vocabulary | Dotted paths rooted at `build`, `cli`, `http`, `inat`, `log`, `media`, `observation`, `sync`. The owner adds roots. |
-| Hard safety constraints | T-005, T-010, T-011, T-012 |
+| Hard safety constraints | T-005, T-010, T-012, T-032, T-033 |
 | External systems | `api.inaturalist.org` and `cdn.download.ams.birds.cornell.edu` are never contacted from a test; use `httptest` via T-014 |
 | Approval authority | The repository owner (Sajmani) for every gate, waiver, amendment, and risk acceptance |
 | Source refresh cadence | Reviewed when a `spec/` change is made, and at minimum annually |

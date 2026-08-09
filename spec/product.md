@@ -34,7 +34,8 @@ taxon, which the user fixes by hand.
 
 **P-007** — The programs in `tools/` are not part of the product. They are maintenance
 utilities, are not installed by `go install` of the root package, and carry no
-compatibility promise.
+compatibility promise. They are also read-only (T-032): no tool may alter a user's
+account.
 
 ## Invocation
 
@@ -94,7 +95,8 @@ exact iNaturalist equivalent.*
 **P-022** — An observation missing either sync-key field is not recognized as
 birdsync-created.
 *Rationale: observations created by versions that set only the checklist field fall into
-this population; `tools/repair` exists to backfill them.*
+this population. A `repair` tool existed to backfill them and was deleted once the
+maintainer's account was clean; it is recoverable from the history.*
 
 ## Downloading existing observations
 

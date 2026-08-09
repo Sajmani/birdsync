@@ -53,6 +53,7 @@ All are level `code` unless stated otherwise. "Command" is the `-run` pattern un
 | AC-020 | `TestRecords` | Unit, temp file | T-018 | verified |
 | AC-021 | `TestObservationID_Valid` | Unit, table-driven | P-019, P-022 | verified |
 | AC-022 | `.github/workflows/ci.yml` runs AC-001–AC-004 on push and PR | CI configuration | T-030, T-031 | verified |
+| AC-028 | `TestToolsAreReadOnly` | Static analysis (AST) over `tools/` | T-032 | verified |
 
 ### Criteria that do not bite
 
@@ -103,16 +104,15 @@ change of mechanism.
 
 **AC-024 has a prerequisite that no automated check can supply.** Whether
 `iconic_taxa[]=Aves` actually drops untaxoned observations is a fact about iNaturalist,
-not about birdsync, and T-010 forbids asking it from the test suite. `tools/taxonfilter`
-exists to answer it: it downloads an account twice, filtered and unfiltered, compares by
-UUID, and reports how many birdsync-created observations the filter hides. It is
-read-only — GET requests only — so unlike the rest of `tools/` it is safe to point at a
-real account.
+not about birdsync, and T-010 forbids asking it from the test suite. A read-only
+`taxonfilter` tool was written to answer it empirically; its run is recorded in
+[decisions.md](decisions.md) CR-003, and the tool was deleted afterwards (recoverable at
+commit `fb581a3`).
 
-Its own logic is tested (`tools/taxonfilter/taxonfilter_test.go`, covering the comparison,
-the sync-key predicate, query construction, pagination, and the 401 path), because T-011
-means nobody may run it as part of the build. Running it against a real account is a
-**human-executed criterion**, and its output belongs in CR-003 as evidence.
+The run was inconclusive — the account held no unidentified observations — so **AC-024 is
+written against the requirement rather than against iNaturalist's filter semantics**: a
+previously synced observation must be recognized whatever its taxon. That check is
+independent of a fact we could not establish, which makes it the more durable one anyway.
 
 AC-027 is a static check because the convention is unenforceable by example — a test can
 only show that one function returns an error, never that no function calls `log.Fatal`.
@@ -130,7 +130,7 @@ requirements have an automated check.
 | P-004 no reverse sync | — | gap (non-goal; human review) |
 | P-005 never modifies others' observations | — | **gap — see [Recommended additions](#recommended-additions)** |
 | P-006 no taxonomy reconciliation | — | gap (non-goal) |
-| P-007 `tools/` not part of the product | AC-001 | partial |
+| P-007 `tools/` not part of the product, read-only | AC-001, AC-028 | verified |
 | P-008 one positional argument | — | gap (`main`, untested) |
 | P-009 flags precede the argument | — | gap (Go flag behavior) |
 | P-010 `--flag=false` form | — | gap (Go flag behavior) |
@@ -196,7 +196,9 @@ requirements have an automated check.
 | T-008 client mutates unconditionally | — | gap (design note; human review) |
 | T-009 `ignore_photos` always set | AC-008 | verified |
 | T-010 no live API calls in tests | AC-005 | verified |
-| T-011 never run `tools/` | — | gap (process rule; human review) |
+| T-011 *withdrawn* | — | n/a |
+| T-032 `tools/` is read-only | AC-028 | verified |
+| T-033 never run `tools/` | — | gap (process rule; human review) |
 | T-012 credentials never logged | — | **gap — security-relevant** |
 | T-013 client interfaces | AC-006, AC-007, AC-012 | verified (used, so preserved) |
 | T-014 base-URL seams | AC-010, AC-018 | verified (used, so preserved) |

@@ -1,6 +1,9 @@
 package main
 
 import (
+	"go/ast"
+	"go/parser"
+	"go/token"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -73,5 +76,75 @@ func TestNoLiveServiceHostsInTests(t *testing.T) {
 	// the walk stops finding test files at all.
 	if scanned == 0 {
 		t.Fatal("Scanned no _test.go files; the check is not doing anything")
+	}
+}
+
+// TestToolsAreReadOnly enforces that nothing in tools/ can modify a user's
+// account. The directory used to hold six programs that created, updated, and
+// deleted observations, guarded only by a `debug` constant that one of them
+// shipped with turned off, and by a rule in AGENTS.md telling people not to run
+// them. A rule nobody can check is a rule that eventually gets broken, so the
+// mutating tools were deleted and this check keeps them from coming back.
+//
+// It parses rather than greps, so a mention in a comment or a string doesn't
+// trip it, and a renamed import doesn't evade it: the test looks for calls to
+// the mutating methods by selector name, which survives aliasing of the inat
+// package.
+//
+// Verifies: T-032.
+func TestToolsAreReadOnly(t *testing.T) {
+	mutating := map[string]bool{
+		"CreateObservation": true,
+		"UpdateObservation": true,
+		"DeleteObservation": true,
+		"UploadMedia":       true,
+	}
+
+	root, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("Getwd: %v", err)
+	}
+	toolsDir := filepath.Join(root, "tools")
+	if _, err := os.Stat(toolsDir); os.IsNotExist(err) {
+		return // no tools to check
+	}
+
+	fset := token.NewFileSet()
+	var scanned int
+	err = filepath.WalkDir(toolsDir, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if d.IsDir() || !strings.HasSuffix(d.Name(), ".go") {
+			return nil
+		}
+		f, err := parser.ParseFile(fset, path, nil, 0)
+		if err != nil {
+			return err
+		}
+		scanned++
+		rel, _ := filepath.Rel(root, path)
+		ast.Inspect(f, func(n ast.Node) bool {
+			call, ok := n.(*ast.CallExpr)
+			if !ok {
+				return true
+			}
+			sel, ok := call.Fun.(*ast.SelectorExpr)
+			if !ok {
+				return true
+			}
+			if mutating[sel.Sel.Name] {
+				t.Errorf("%s:%d calls %s: programs in tools/ must be read-only (T-032)",
+					rel, fset.Position(sel.Pos()).Line, sel.Sel.Name)
+			}
+			return true
+		})
+		return nil
+	})
+	if err != nil {
+		t.Fatalf("Walking %s: %v", toolsDir, err)
+	}
+	if scanned == 0 {
+		t.Fatal("Scanned no .go files under tools/; the check is not doing anything")
 	}
 }

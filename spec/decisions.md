@@ -119,10 +119,11 @@ it needs either the owner's knowledge of the API's filter semantics, or a test a
 fake that encodes the assumed behavior — which would only prove birdsync's logic, not
 iNaturalist's.
 
-**Instrument:** `tools/taxonfilter` was written to settle this empirically. It downloads
-the account twice — once with `iconic_taxa[]=Aves`, once without — compares the two by
-UUID, and reports how many of the observations the filter hides carry a birdsync sync key.
-It is read-only. Run it with `go run ./tools/taxonfilter` and paste the verdict below.
+**Instrument:** a read-only `taxonfilter` tool was written to settle this empirically. It
+downloaded the account twice — once with `iconic_taxa[]=Aves`, once without — compared the
+two by UUID, and reported how many of the hidden observations carried a birdsync sync key.
+It was deleted after producing the evidence below; recover it from commit `fb581a3` if the
+question is reopened.
 
 **Evidence, 2026-08-09**, from a run against the maintainer's account (1478 observations,
 983 of them birdsync-created):
