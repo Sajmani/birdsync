@@ -52,8 +52,8 @@ Violating any of these costs a user real data. They are stated in full in
 - **Every mutating operation is gated on `--dryrun`** (T-005), at the call site in
   `birdsync()` — not in the client, which is shared with `tools/` (T-008). A `--dryrun` run
   issues no writes at all; reads are fine. Log the skipped action with a `DRYRUN:` prefix
-  (T-006), and don't let the counters claim work that didn't happen (T-007). Existing gates:
-  birdsync.go:212, :236, :350.
+  (T-006), and don't let the counters claim work that didn't happen (T-007). The gates are
+  in `birdsync()`, around `UploadMedia`, `UpdateObservation`, and `CreateObservation`.
 - **`tools/` stays read-only** (T-032), enforced by `TestToolsAreReadOnly`. Don't add a
   tool that creates, updates, deletes, or uploads. **Don't run one either** (T-033): they
   use the user's real credentials against the live service.
@@ -82,7 +82,7 @@ to match the old behavior when you notice the mismatch.
 Hard-won operational knowledge. The requirement each one protects is cited where there is
 one.
 
-- **Flags are package-level globals** (`birdsync.go:23`), so tests share state. Call
+- **Flags are package-level globals**, so tests share state. Call
   `resetFlags()` at the top of a new test. It covers every flag except `debug`, which each
   test saves and restores by hand (T-015).
 - **`dateTimeFlag.Set("")` fails and leaves the old value.** Zero `after`/`before` by
@@ -91,7 +91,7 @@ one.
 - **eBird dates come in two formats**, `2006-01-02` and `1/2/2006`, with an optional time.
   Always compare via `ebird.Record.Observed()`, never `Record.Date` directly. Keying on the
   raw field was a real bug: it silently disabled `--fuzzy` for anyone whose export used the
-  second format. Regression test at `birdsync_test.go:291` (T-019).
+  second format. Regression test: `TestFuzzyMatchDateFormats` (T-019).
 - **The eBird CSV has a variable number of columns.** Read fields by header name, never by
   position (T-018).
 - **A Macaulay Library asset ID doesn't reveal whether it's a photo or a sound.** The only

@@ -93,7 +93,8 @@ if dryRun {
 The rules are `spec/tech.md` T-005 through T-008; in short, gate at the call site inside
 `birdsync()` rather than in the client (`tools/` shares it), prefix the log line with
 `DRYRUN:` because the README tells users to grep for it, and don't let the counters report
-work that didn't happen. Existing gates are at birdsync.go:212, :236, and :350.
+work that didn't happen. The gates are in `birdsync()`, around `UploadMedia`,
+`UpdateObservation`, and `CreateObservation`.
 
 This applies to birdsync itself. Nothing in `tools/` may mutate at all, so the question
 doesn't arise there.

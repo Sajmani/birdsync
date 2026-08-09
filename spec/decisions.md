@@ -4,7 +4,8 @@ Append-only record of conflicts found while composing the requirements, and how 
 resolved. Written per [process.md](process.md#conflicts-and-resolution).
 
 Entries are never rewritten. A decision that turns out badly is superseded by a later
-entry, not edited.
+entry, not edited. Line references in an entry describe the code as it stood on that
+entry's date, and are not updated as the file changes — that is what makes them evidence.
 
 **Status: all conflicts resolved at Gate 1 on 2026-08-09 by the repository owner.** Four
 of the five resolutions require code changes, which are phase-3 work and are listed in

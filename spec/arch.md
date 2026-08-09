@@ -20,21 +20,21 @@ One run does the following:
    `INAT_API_TOKEN`, prompting interactively if they're unset (`inat/vars.go`).
 2. **Download existing observations.** Fetch the user's iNaturalist observations into memory,
    200 per page, restricted only to the `--after`/`--before` date window when set
-   (`inat.Client.DownloadObservations`, inat/inat.go:19). Deliberately not filtered by taxon:
+   (`inat.Client.DownloadObservations`). Deliberately not filtered by taxon:
    see CR-003 in [decisions.md](decisions.md).
-3. **Build two indexes** over those observations (birdsync.go:136-167):
+3. **Build two indexes** over those observations, at the top of `birdsync()`:
    - `previouslySynced`, keyed by `ebird.ObservationID` — the pair of eBird observation-field
      values that identifies a birdsync-created observation.
    - `fuzzyMatch`, keyed by observation date plus name, for every observation whose
      `ObservationID` is *not* valid. Each is indexed twice, under its common name and under its
      scientific name. Used only when `--fuzzy` is set.
 
-   "Not valid" means *either* eBird field is missing (ebird/ebird.go:164), so an observation
+   "Not valid" means *either* eBird field is missing (`ebird.ObservationID.Valid`), so an observation
    created by an old version of birdsync that set the checklist ID but not the scientific name
    lands in the fuzzy index instead of `previouslySynced`. A `repair` tool used to backfill
    that population; it was deleted once the maintainer's account was clean.
-4. **Read the CSV.** `ebird.Records` returns an `iter.Seq[ebird.Record]` over the export
-   (ebird/ebird.go:80). Despite the iterator, this isn't streaming: the whole file is read with
+4. **Read the CSV.** `ebird.Records` returns an `iter.Seq[ebird.Record]` over the export.
+   Despite the iterator, this isn't streaming: the whole file is read with
    `csv.Reader.ReadAll` and the iterator walks the resulting slice.
 5. **Filter and act** on each record, in this order: `--after`, `--before`, already-synced,
    `--fuzzy`, `--verifiable`. Records that survive all five become new iNaturalist observations.
@@ -42,11 +42,16 @@ One run does the following:
    the run: the date is checked before the date filters, the coordinates just before the
    observation is built.
    The already-synced branch isn't a pure skip: when eBird has assets the iNaturalist
-   description doesn't list, it uploads them and updates the observation (birdsync.go:254-263).
+   description doesn't list, it uploads them and updates the observation (the `addMedia`
+   closure).
 6. **Create, then attach media.** The observation is created first, and each Macaulay Library
    asset is downloaded and uploaded to the now-existing observation afterward. The observation
    description is then updated with the asset URLs. Media cannot be attached to an observation
-   that doesn't exist yet, which is why the order matters.
+   that doesn't exist yet, which is why the order matters. Each downloaded file is removed
+   straight after its upload attempt, so at most one asset sits on disk at a time.
+7. **Report.** `stats.summary()` builds the end-of-run lines and `main` logs them. It is a
+   separate function so it can be tested: the labels change under `--dryrun`, and a summary
+   that contradicts what happened is invisible until a user acts on it.
 
 ## The sync key
 
@@ -58,7 +63,7 @@ Birdsync recognizes its own observations using two iNaturalist
 - [eBird Scientific Name](https://www.inaturalist.org/observation_fields/20215)
   (`inat.EBirdScientificNameField`, ID 20215)
 
-Together these form `ebird.ObservationID` (ebird/ebird.go:149), which makes the sync
+Together these form `ebird.ObservationID`, which makes the sync
 idempotent: re-running birdsync over the same CSV skips everything it already uploaded.
 
 The iNaturalist taxon is deliberately *not* used as the key, because the taxon may be changed
@@ -140,14 +145,23 @@ which is the trade this repository prefers wherever it is available.
 
 | File | Covers |
 | --- | --- |
-| `birdsync_test.go` | The sync loop, via `mockEBirdClient` and `mockINatClient` |
+| `birdsync_test.go` | The sync loop and `stats.summary()`, via `mockEBirdClient` and `mockINatClient` |
+| `guard_test.go` | Static analysis over the repository itself: no live hostnames in tests, no writes under `tools/`, no `log.Fatal` in library packages |
 | `media_test.go` | `mediaChange`; the `mlAssetSet` helpers only indirectly |
 | `ebird/ebird_test.go` | CSV parsing (temp file), `Record.Observed` date formats, `ObservationID.Valid`, and `downloadMLAsset` against an `httptest` server |
-| `inat/inat_test.go` | `DownloadObservations`, against an `httptest` server |
-| `inat/client_test.go` | `CreateObservation`, `UpdateObservation`, `DeleteObservation` |
+| `inat/inat_test.go` | `DownloadObservations`: pagination, query parameters, and the error path |
+| `inat/client_test.go` | `CreateObservation`, `UpdateObservation` (including `ignore_photos`), `DeleteObservation` |
 
-`inat.Client.UploadMedia` has no test — the multipart request it builds (inat/client.go:125) is
-only exercised through the mock in `birdsync_test.go`. It's the largest untested surface here.
+The fakes in `birdsync_test.go` record every mutating call they receive. That is what makes
+`--dryrun` checkable directly — asserting that nothing was written, rather than inferring it
+from counters, which is how the bug in CR-001 survived.
+
+`inat.Client.UploadMedia` has no test — the multipart request it builds is only exercised
+through the mock in `birdsync_test.go`. It's the largest untested surface here, and the only
+place binary data is written to a user's account.
+
+`spec/acceptance.md` maps each requirement to the check that verifies it, and lists the ones
+with no check.
 
 Two things make this work: the client interfaces in `glue.go`, and base-URL parameters that let
 a test server stand in for the real service — `inat.NewClient` takes one, and the exported

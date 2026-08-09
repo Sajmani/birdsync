@@ -63,7 +63,8 @@ All are level `code` unless stated otherwise. "Command" is the `-run` pattern un
 
 ### Criteria that do not bite
 
-**AC-016 does not catch a broken `--dryrun` gate.** Mutating `birdsync.go:350` from
+**AC-016 does not catch a broken `--dryrun` gate.** Mutating the `CreateObservation` gate in
+`birdsync()` from
 `if dryRun` to `if false` leaves `TestDryRunMediaCount` green, because it only inspects
 counters — and the counters increment outside the gate ([CR-001](decisions.md)). AC-006
 was written for this reason and does fail under the same mutation. AC-016 is kept for
@@ -74,8 +75,10 @@ failing. Three checks were mutation-tested while writing this document:
 
 | Criterion | Mutation | Result |
 | --- | --- | --- |
-| AC-006 | `if dryRun` → `if false` at birdsync.go:350 | fails, as intended |
+| AC-006 | `if dryRun` → `if false` at the `CreateObservation` gate | fails, as intended |
 | AC-016 | same mutation | **passes** — does not bite |
+| AC-027 | restore a `log.Fatal` in `inat` | fails, as intended |
+| AC-028 | a scratch tool calling `DeleteObservation` | fails, as intended |
 | AC-008 | `IgnorePhotos: true` → `false` | fails, as intended |
 | AC-005 | added a scratch `_test.go` naming the live API host | fails, as intended |
 
@@ -125,8 +128,10 @@ only show that one function returns an error, never that no function calls `log.
 
 ## Traceability
 
-Every requirement, and what verifies it. This table is the honest accounting: 33 of 93
-requirements have an automated check.
+Every requirement, and what verifies it. This table is the honest accounting: **54 of 95
+requirements have an automated check** (52 verified outright, 2 preserved by being used),
+up from 33 of 93 when this document was written. Phase 3 added the rest, mostly as a side
+effect: implementing a fix well means checking it.
 
 | Requirement | Criteria | Status |
 | --- | --- | --- |

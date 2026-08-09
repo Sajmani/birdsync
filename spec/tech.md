@@ -110,7 +110,7 @@ Subject: `inat.page_size` · Value: `200`
 **T-019** — Any comparison of an eBird observation date goes through `Record.Observed()`,
 never `Record.Date` directly.
 *Rationale: eBird writes `2006-01-02` or `1/2/2006`, with an optional time. Keying on the
-raw field was a real bug; regression test at `birdsync_test.go:291`.*
+raw field was a real bug; regression test: `TestFuzzyMatchDateFormats`.*
 
 **T-020** — An empty taxon name never enters the fuzzy-match index (implements P-032).
 
@@ -181,9 +181,8 @@ guides keep a terse summary with citations rather than being reduced to bare lin
 Still open:
 
 1. **`inat.Client.UploadMedia` has no test.** The multipart request it builds
-   (`inat/client.go:125`) is only exercised through a mock. It is the largest untested
-   surface, and it is also the one that writes binary data to a user's account. Phase 2
-   should decide whether to cover it against an `httptest` server.
+   is only exercised through a mock. It is the largest untested surface, and it is also the
+   one that writes binary data to a user's account.
 2. **T-022's memory ceiling grows** now that P-061 downloads every observation rather
    than birds only. Nobody has measured what a large account costs. Worth a benchmark
    criterion in phase 2 rather than a guess here.
