@@ -62,6 +62,8 @@ All are level `code` unless stated otherwise. "Command" is the `-run` pattern un
 | AC-028 | `TestToolsAreReadOnly` | Static analysis (AST) over `tools/` | T-032 | verified |
 | AC-029 | `TestFileExtension`, `TestDownloadMLAsset_Photo`, `_Sound` | Unit + integration | P-045, T-004 | verified |
 | AC-030 | `TestFailedUploadIsRetriedNextRun`, `TestAllUploadsFailingLeavesNoUpdate` | Integration, two-run round trip with injected upload failures | P-040, P-047, P-050 | verified |
+| AC-031 | `TestPermanentUploadFailureIsNotRetried`, `TestTransientUploadFailureIsRetried`, `TestStatusErrorPermanence` | Integration + unit, both directions mutation-tested | P-063, P-064 | verified |
+| AC-032 | `TestStatusErrorIncludesBody` | Integration, `httptest` | T-034 | verified |
 
 ### Criteria that do not bite
 
@@ -81,6 +83,7 @@ failing. Three checks were mutation-tested while writing this document:
 | AC-016 | same mutation | **passes** — does not bite |
 | AC-027 | restore a `log.Fatal` in `inat` | fails, as intended |
 | AC-028 | a scratch tool calling `DeleteObservation` | fails, as intended |
+| AC-031 | `Permanent()` forced to `true`, then to `false` | fails both ways, as intended |
 | AC-008 | `IgnorePhotos: true` → `false` | fails, as intended |
 | AC-005 | added a scratch `_test.go` naming the live API host | fails, as intended |
 
@@ -199,6 +202,8 @@ effect: implementing a fix well means checking it.
 | P-060 dry-run labels | AC-023 | verified |
 | P-061 no taxon filter | AC-024 | verified |
 | P-062 bad records skipped and counted | AC-025 | verified |
+| P-063 permanent vs transient upload failure | AC-031 | verified |
+| P-064 permanent failures reported each run | AC-031 | partial — recording checked, per-run report not asserted |
 | T-001 single module | AC-001 | verified |
 | T-002 one dependency | — | **gap — see [Recommended additions](#recommended-additions)** |
 | T-003 `go`/`toolchain` policy | — | gap (human review) |
@@ -228,6 +233,7 @@ effect: implementing a fix well means checking it.
 | T-025 `go vet` | AC-002 | verified |
 | T-026 error wrapping | — | gap (human review) |
 | T-027 `log.Fatal` placement | AC-027 | verified |
+| T-034 errors include the response body | AC-032 | verified |
 | T-028 `log.Printf` vs `debugf` | — | gap (human review) |
 | T-029 comments explain why | — | gap (human review) |
 | T-030 CI runs the standing checks | AC-022 | verified |

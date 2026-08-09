@@ -5,6 +5,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"log"
@@ -258,7 +259,7 @@ func birdsync(eBirdCSVFilename string, ebirdClient ebirdClient, inatUserID strin
 			// the URLs back out of it on the next run — so listing an asset
 			// that failed makes the failure permanent as well as untrue
 			// (P-040, CR-007).
-			var uploaded mlAssetSet
+			var uploaded, permanentlyFailed mlAssetSet
 			// Upload the media
 			for _, id := range assetIDs.ids {
 				if dryRun {
@@ -286,6 +287,13 @@ func birdsync(eBirdCSVFilename string, ebirdClient ebirdClient, inatUserID strin
 					if err != nil {
 						log.Printf("Couldn't upload ML asset %s to iNaturalist: %v", id, err)
 						s.errors++
+						// A refusal of the file itself won't come good on a
+						// later run, so record it rather than re-downloading
+						// and re-uploading it forever (P-063).
+						var statusErr *inat.StatusError
+						if errors.As(err, &statusErr) && statusErr.Permanent() {
+							permanentlyFailed.Add(id)
+						}
 						continue
 					}
 					if isPhoto {
@@ -296,14 +304,17 @@ func birdsync(eBirdCSVFilename string, ebirdClient ebirdClient, inatUserID strin
 					uploaded.Add(id)
 				}
 			}
-			if uploaded.Len() == 0 {
-				// Every asset failed. There is nothing to add, so don't write
-				// an unchanged description back and don't count an update that
-				// didn't happen (T-007). The next run will try again.
+			if uploaded.Len() == 0 && permanentlyFailed.Len() == 0 {
+				// Everything failed, and might yet succeed. Don't write an
+				// unchanged description back, and don't count an update that
+				// didn't happen (T-007). The next run tries again.
 				return
 			}
 			for _, id := range uploaded.ids {
-				obs.Description += "Macaulay Library Asset: " + mlAssetURL(id) + "\n"
+				obs.Description += assetLine(id, true)
+			}
+			for _, id := range permanentlyFailed.ids {
+				obs.Description += assetLine(id, false)
 			}
 			// Update the description
 			if dryRun {

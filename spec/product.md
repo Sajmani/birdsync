@@ -164,7 +164,9 @@ Observers (2527), Submission ID (6033), Scientific Name (20215).
 
 **P-040** — The description contains: a line attributing the observation to birdsync, the
 eBird observation details when present, the checklist URL, the protocol, the checklist
-comments when present, and one `Macaulay Library Asset:` line per uploaded asset.
+comments when present, one `Macaulay Library Asset:` line per uploaded asset, and one
+`Macaulay Library Asset (upload failed):` line per asset the service permanently refused
+(P-063).
 
 **P-041** — Observations birdsync creates are public, like any iNaturalist observation.
 
@@ -240,6 +242,17 @@ CR-005.*
 
 **P-059** — There is no rollback. Observations created before an abort remain in the
 user's account, and re-running is safe because of P-020.
+
+**P-063** — An upload that fails permanently — the service rejected the file itself, rather
+than the attempt — is recorded in the description as failed and is not attempted again. A
+failure that may be transient is not recorded, and is retried on the next run.
+Subject: `media.upload.permanent_failure` · Value: `HTTP 4xx except 401, 408, 429`
+*Rationale: [CR-008](decisions.md#cr-008--a-permanently-rejected-asset-was-retried-forever). Without
+the distinction, birdsync either gives up on a network blip or re-downloads a 50 MB sound
+file on every run forever. Removing the line by hand is the way to ask for a retry.*
+
+**P-064** — A permanently failed asset is reported on each run, so the user learns about it
+without birdsync retrying it.
 
 ## Amendments from Gate 1
 

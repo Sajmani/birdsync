@@ -2,9 +2,11 @@ package inat
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/google/uuid"
@@ -96,5 +98,63 @@ func TestClient_DeleteObservation(t *testing.T) {
 
 	if err := client.DeleteObservation(obsUUID); err != nil {
 		t.Errorf("DeleteObservation() error = %v", err)
+	}
+}
+
+// TestStatusErrorIncludesBody checks that a refusal carries iNaturalist's
+// explanation. Without it every failure read "bad HTTP status: 422
+// Unprocessable Entity", whether the file was too large, the format
+// unsupported, or the asset withdrawn — and the user had no way to tell which.
+//
+// Verifies: T-034.
+func TestStatusErrorIncludesBody(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.Error(w, "File is too large (max 50 MB)", http.StatusUnprocessableEntity)
+	}))
+	defer server.Close()
+
+	client := NewClient(server.URL, "test-token", "test-user-agent")
+	err := client.CreateObservation(Observation{})
+	if err == nil {
+		t.Fatal("CreateObservation() against a refusing server returned no error")
+	}
+	if !strings.Contains(err.Error(), "File is too large") {
+		t.Errorf("Error %q doesn't include the server's explanation (T-034)", err)
+	}
+
+	var statusErr *StatusError
+	if !errors.As(err, &statusErr) {
+		t.Fatalf("Error %v is not a *StatusError, so callers can't classify it (P-063)", err)
+	}
+	if !statusErr.Permanent() {
+		t.Error("422 should be permanent: the service rejected the file itself (P-063)")
+	}
+}
+
+// TestStatusErrorPermanence pins the classification down case by case. Getting
+// it wrong in one direction retries forever; in the other it discards a user's
+// photo on a transient error.
+//
+// Verifies: P-063.
+func TestStatusErrorPermanence(t *testing.T) {
+	for _, tt := range []struct {
+		code int
+		want bool
+	}{
+		{http.StatusUnprocessableEntity, true},   // 422: file rejected
+		{http.StatusRequestEntityTooLarge, true}, // 413: too big
+		{http.StatusUnsupportedMediaType, true},  // 415: wrong format
+		{http.StatusNotFound, true},              // 404: gone
+		{http.StatusUnauthorized, false},         // 401: refresh the token
+		{http.StatusRequestTimeout, false},       // 408: try again
+		{http.StatusTooManyRequests, false},      // 429: explicitly try later
+		{http.StatusInternalServerError, false},  // 5xx: their problem, not the file's
+		{http.StatusServiceUnavailable, false},   //
+		{http.StatusGatewayTimeout, false},       //
+	} {
+		e := &StatusError{StatusCode: tt.code}
+		if got := e.Permanent(); got != tt.want {
+			t.Errorf("StatusError{%d}.Permanent() = %v, want %v", tt.code, got, tt.want)
+		}
 	}
 }

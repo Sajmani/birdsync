@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"strings"
 
 	"github.com/google/uuid"
 )
@@ -55,7 +56,7 @@ func (c *Client) roundTrip(req *http.Request) (string, error) {
 			resp.Status)
 	}
 	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("bad HTTP status: %s", resp.Status)
+		return "", newStatusError(resp)
 	}
 	b, err := io.ReadAll(resp.Body)
 	if err != nil {
@@ -171,4 +172,50 @@ func (c *Client) UploadMedia(filename string, isPhoto bool, mlAssetID string, ob
 	}
 	// TODO: log the media URL from the response body
 	return nil
+}
+
+// maxErrorBody caps how much of a failed response is kept. iNaturalist's
+// explanations are short; anything longer is probably an HTML error page.
+const maxErrorBody = 512
+
+// StatusError is returned when the API answers with a non-200 status. It
+// carries the response body, because iNaturalist explains its refusals there
+// and the status line alone cannot distinguish a file that is too large from
+// one in an unsupported format (T-034).
+type StatusError struct {
+	StatusCode int
+	Status     string
+	Body       string
+}
+
+func newStatusError(resp *http.Response) *StatusError {
+	e := &StatusError{StatusCode: resp.StatusCode, Status: resp.Status}
+	// A failure to read the body must not mask the failure being reported.
+	if b, err := io.ReadAll(io.LimitReader(resp.Body, maxErrorBody)); err == nil {
+		e.Body = strings.TrimSpace(string(b))
+	}
+	return e
+}
+
+func (e *StatusError) Error() string {
+	if e.Body == "" {
+		return fmt.Sprintf("bad HTTP status: %s", e.Status)
+	}
+	return fmt.Sprintf("bad HTTP status: %s: %s", e.Status, e.Body)
+}
+
+// Permanent reports whether retrying is pointless because the service rejected
+// the request itself rather than the attempt.
+//
+// 4xx means the request was unacceptable, with three exceptions that a later
+// run can get past: 401 needs a fresh token, 408 and 429 are explicit
+// invitations to try again. Everything else, including every 5xx and every
+// network error, is treated as transient — retrying costs a request, whereas
+// wrongly giving up loses a user's photo (P-063).
+func (e *StatusError) Permanent() bool {
+	switch e.StatusCode {
+	case http.StatusUnauthorized, http.StatusRequestTimeout, http.StatusTooManyRequests:
+		return false
+	}
+	return e.StatusCode >= 400 && e.StatusCode < 500
 }

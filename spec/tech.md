@@ -101,6 +101,13 @@ Subject: `inat.page_size` · Value: `200`
 *Rationale: required by `inat/api-recommended-practices` (see
 [sources.md](sources.md)).*
 
+**T-034** — An error from a non-200 API response includes the response body, truncated, not
+just the status line.
+*Rationale: iNaturalist explains its refusals in the body. Discarding it left every failure
+looking identical — `bad HTTP status: 422 Unprocessable Entity` whether the file was too
+large, the format unsupported, or the asset withdrawn. Classification under P-063 depends on
+the status code, but the human reading the log needs the reason.*
+
 ## Data format handling
 
 **T-018** — The eBird CSV is read by header name, never by column position, with

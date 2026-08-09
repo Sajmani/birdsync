@@ -69,9 +69,10 @@ type mockINatClient struct {
 	uploadMediaErr error
 
 	// failUploads makes UploadMedia fail for particular Macaulay Library asset
-	// IDs, so a test can exercise a partial failure rather than an all-or-
-	// nothing one. Until this existed no test set any of the error fields.
-	failUploads map[string]bool
+	// IDs with a chosen error, so a test can exercise a partial failure rather
+	// than an all-or-nothing one, and can distinguish a permanent refusal from
+	// a transient one. Until this existed no test set any of the error fields.
+	failUploads map[string]error
 
 	// Every mutating call is recorded, so a test can assert both what birdsync
 	// sent and — for --dryrun — that it sent nothing at all. Without this the
@@ -105,8 +106,8 @@ func (m *mockINatClient) UpdateObservation(obs inat.Observation) error {
 }
 
 func (m *mockINatClient) UploadMedia(filename string, isPhoto bool, assetID, obsUUID string) error {
-	if m.failUploads[assetID] {
-		return errors.New("upload failed")
+	if err, ok := m.failUploads[assetID]; ok {
+		return err
 	}
 	m.uploaded = append(m.uploaded, uploadedMedia{filename, isPhoto, assetID, obsUUID})
 	return m.uploadMediaErr
@@ -941,7 +942,7 @@ func TestFailedUploadIsRetriedNextRun(t *testing.T) {
 
 	// Run 1: the second asset fails to upload.
 	firstEbird := &mockEBirdClient{records: []ebird.Record{rec}}
-	firstInat := &mockINatClient{failUploads: map[string]bool{bad: true}}
+	firstInat := &mockINatClient{failUploads: map[string]error{bad: errors.New("upload failed")}}
 
 	resetFlags()
 	first := birdsync("MyEBirdData.csv", firstEbird, "myUserID", firstInat)
@@ -1011,7 +1012,7 @@ func TestAllUploadsFailingLeavesNoUpdate(t *testing.T) {
 		Time:             "03:00 PM",
 		MLCatalogNumbers: "80003 80004",
 	}}}
-	mockInat := &mockINatClient{failUploads: map[string]bool{"80003": true, "80004": true}}
+	mockInat := &mockINatClient{failUploads: map[string]error{"80003": errors.New("upload failed"), "80004": errors.New("upload failed")}}
 
 	resetFlags()
 	stats := birdsync("MyEBirdData.csv", mockEbird, "myUserID", mockInat)
@@ -1024,5 +1025,123 @@ func TestAllUploadsFailingLeavesNoUpdate(t *testing.T) {
 	}
 	if stats.updatedObservations != 0 {
 		t.Errorf("updatedObservations = %d, want 0: no update was made (T-007)", stats.updatedObservations)
+	}
+}
+
+// TestPermanentUploadFailureIsNotRetried covers the case CR-007's fix made
+// worse before CR-008 fixed it: an asset iNaturalist will never accept, such as
+// a sound file over its size limit. Retrying it means re-downloading tens of
+// megabytes from the Macaulay Library on every run, forever.
+//
+// A permanent refusal is recorded in the description so it isn't retried, and
+// reported each run so the user knows. A transient failure is not recorded, so
+// it is.
+//
+// Verifies: P-063, P-064.
+func TestPermanentUploadFailureIsNotRetried(t *testing.T) {
+	origDebug := debug
+	debug = true
+	defer func() { debug = origDebug }()
+
+	const tooBig = "90001"
+	rec := ebird.Record{
+		SubmissionID:     "S900",
+		ScientificName:   "Corvus brachyrhynchos",
+		CommonName:       "American Crow",
+		Date:             "2023-01-03",
+		Time:             "03:00 PM",
+		MLCatalogNumbers: tooBig,
+	}
+
+	// Run 1: iNaturalist refuses the file itself.
+	firstEbird := &mockEBirdClient{records: []ebird.Record{rec}}
+	firstInat := &mockINatClient{failUploads: map[string]error{
+		tooBig: &inat.StatusError{
+			StatusCode: 422,
+			Status:     "422 Unprocessable Entity",
+			Body:       "File is too large (max 50 MB)",
+		},
+	}}
+
+	resetFlags()
+	birdsync("MyEBirdData.csv", firstEbird, "myUserID", firstInat)
+
+	if len(firstInat.updated) != 1 {
+		t.Fatalf("Expected the observation to be updated to record the failure, got %d updates", len(firstInat.updated))
+	}
+	desc := firstInat.updated[0].Description
+	if !strings.Contains(desc, failedMarker) {
+		t.Errorf("Description doesn't record the permanent failure (P-063):\n%s", desc)
+	}
+
+	// Run 2: same record, against the observation run 1 produced. The upload
+	// would now succeed, but it must not be attempted — the description says
+	// the service refused it.
+	secondEbird := &mockEBirdClient{records: []ebird.Record{rec}}
+	secondInat := &mockINatClient{observations: []inat.Result{{
+		UUID:        firstInat.created[0].UUID,
+		ObservedOn:  "2023-01-03",
+		Taxon:       inat.Taxon{Name: "Corvus brachyrhynchos"},
+		Description: desc,
+		Ofvs: []inat.Ofv{
+			{FieldID: inat.EBirdField, Value: "S900"},
+			{FieldID: inat.EBirdScientificNameField, Value: "Corvus brachyrhynchos"},
+		},
+	}}}
+
+	resetFlags()
+	second := birdsync("MyEBirdData.csv", secondEbird, "myUserID", secondInat)
+
+	if len(secondInat.uploaded) != 0 {
+		t.Errorf("Retried an asset the service permanently refused: %+v (P-063)", secondInat.uploaded)
+	}
+	if second.errors != 0 {
+		t.Errorf("errors = %d, want 0: nothing should have been attempted", second.errors)
+	}
+	if second.previouslySkips != 1 {
+		t.Errorf("previouslySkips = %d, want 1", second.previouslySkips)
+	}
+}
+
+// TestTransientUploadFailureIsRetried is the other side of P-063: a failure
+// that might come good must not be recorded as permanent, or a network blip
+// would cost a photo.
+//
+// Verifies: P-063.
+func TestTransientUploadFailureIsRetried(t *testing.T) {
+	origDebug := debug
+	debug = true
+	defer func() { debug = origDebug }()
+
+	for _, tc := range []struct {
+		name string
+		err  error
+	}{
+		{"server error", &inat.StatusError{StatusCode: 503, Status: "503 Service Unavailable"}},
+		{"rate limited", &inat.StatusError{StatusCode: 429, Status: "429 Too Many Requests"}},
+		{"token expired", &inat.StatusError{StatusCode: 401, Status: "401 Unauthorized"}},
+		{"network error", errors.New("connection reset")},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			mockEbird := &mockEBirdClient{records: []ebird.Record{{
+				SubmissionID:     "S901",
+				ScientificName:   "Corvus brachyrhynchos",
+				CommonName:       "American Crow",
+				Date:             "2023-01-03",
+				Time:             "03:00 PM",
+				MLCatalogNumbers: "90002",
+			}}}
+			mockInat := &mockINatClient{failUploads: map[string]error{"90002": tc.err}}
+
+			resetFlags()
+			birdsync("MyEBirdData.csv", mockEbird, "myUserID", mockInat)
+
+			for _, u := range mockInat.updated {
+				if strings.Contains(u.Description, failedMarker) {
+					t.Errorf("Recorded %v as permanent; it may come good on the next run (P-063):\n%s",
+						tc.err, u.Description)
+				}
+			}
+		})
 	}
 }

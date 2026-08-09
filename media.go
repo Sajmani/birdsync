@@ -16,15 +16,28 @@ import (
 // TODO: Correct these differences by resyncing the media.
 func mediaChange(rec ebird.Record, r inat.Result) (mlAssetSet, string) {
 	eSet := eBirdMLAssets(rec.MLCatalogNumbers)
-	iSet := iNatMLAssets(r)
+	iSet, fSet := iNatMLAssets(r)
+	// An asset already recorded either way is not offered for upload again: a
+	// permanent failure is remembered precisely so it isn't retried (P-063).
+	known := iSet
+	for _, id := range fSet.ids {
+		known.Add(id)
+	}
 	var diffs []string
 	var addedMediaIDs mlAssetSet
-	if diff := mlAssetDiff(eSet, iSet); diff.Len() > 0 {
+	if diff := mlAssetDiff(eSet, known); diff.Len() > 0 {
 		addedMediaIDs = diff
 		diffs = append(diffs, fmt.Sprintf("%d ML Asset IDs added to eBird: %s", diff.Len(), diff))
 	}
-	if diff := mlAssetDiff(iSet, eSet); diff.Len() > 0 {
+	if diff := mlAssetDiff(known, eSet); diff.Len() > 0 {
 		diffs = append(diffs, fmt.Sprintf("%d ML Asset IDs removed from eBird: %s", diff.Len(), diff))
+	}
+	if fSet.Len() > 0 {
+		// Reported on every run so the user knows something needs attention,
+		// without birdsync retrying it (P-064). Deleting the line from the
+		// description asks for a retry.
+		diffs = append(diffs, fmt.Sprintf("%d ML Asset IDs previously failed to upload and will not be retried: %s",
+			fSet.Len(), fSet))
 	}
 	photoCount := len(r.Photos)
 	soundCount := len(r.Sounds)
@@ -78,15 +91,37 @@ func eBirdMLAssets(mlAssets string) mlAssetSet {
 	return set
 }
 
-func iNatMLAssets(r inat.Result) mlAssetSet {
-	var set mlAssetSet
+// failedMarker distinguishes an asset birdsync could not upload from one it
+// did. Both suppress a retry, but only the uploaded set is compared against the
+// media actually attached to the observation, so a recorded failure doesn't
+// report a count mismatch on every run (P-063).
+const failedMarker = "(upload failed)"
+
+// iNatMLAssets parses the Macaulay Library assets recorded in an observation's
+// description, separating those birdsync uploaded from those the service
+// permanently refused.
+func iNatMLAssets(r inat.Result) (uploaded, failed mlAssetSet) {
 	for _, line := range strings.Split(r.Description, "\n") {
-		if i := strings.Index(line, "macaulaylibrary.org/asset/"); i >= 0 {
-			id := line[i+len("macaulaylibrary.org/asset/"):]
-			set.Add(strings.TrimSpace(id))
+		i := strings.Index(line, "macaulaylibrary.org/asset/")
+		if i < 0 {
+			continue
+		}
+		id := strings.TrimSpace(line[i+len("macaulaylibrary.org/asset/"):])
+		if strings.Contains(line, failedMarker) {
+			failed.Add(id)
+		} else {
+			uploaded.Add(id)
 		}
 	}
-	return set
+	return uploaded, failed
+}
+
+// assetLine renders one description line for an asset.
+func assetLine(id string, ok bool) string {
+	if ok {
+		return "Macaulay Library Asset: " + mlAssetURL(id) + "\n"
+	}
+	return "Macaulay Library Asset " + failedMarker + ": " + mlAssetURL(id) + "\n"
 }
 
 func mlAssetURL(id string) string {

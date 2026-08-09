@@ -382,6 +382,50 @@ run's own output back in as the second run's starting state, since the round tri
 description is where the defect lived. Asserting only that the description omits the failed
 asset would have tested the symptom.
 
+## CR-008 — A permanently rejected asset was retried forever
+
+- **Kind:** consequence of an earlier fix, surfaced by asking what happens next
+- **Subject:** `media.upload.permanent_failure`
+- **Involves:** P-040, P-047, P-050, P-063, T-034
+- **Found:** 2026-08-09, by the maintainer asking what CR-007's fix does to a sound file
+  over iNaturalist's 50 MB limit
+
+[CR-007](#cr-007--a-failed-media-upload-leaves-its-url-in-the-description) stopped recording
+failed uploads as done, so they are retried. For a transient failure that is the point. For a
+permanent one — a file the service will never accept — it means re-downloading the asset from
+the Macaulay Library and re-uploading it on every run, indefinitely, with no way to stop it.
+birdsync keeps no state between runs except the iNaturalist observation itself, so anything it
+must remember has to be recorded there.
+
+CR-007 traded silent permanent loss for loud permanent waste. Both are wrong; the difference
+is that the second one is visible.
+
+Compounding it, the user could not tell the two cases apart: `roundTrip` discarded the
+response body, so every refusal read `bad HTTP status: 422 Unprocessable Entity` regardless of
+cause (T-034).
+
+| Option | Effect |
+| --- | --- |
+| A. Retry forever, but make the error legible | Simplest; no new state; still re-downloads a large file every run |
+| **B. Record permanent failures in the description** | Bounded and truthful; needs the description parsed into two sets so a recorded failure isn't counted as attached |
+| C. Skip oversized files before uploading | Avoids the wasted upload, but hardcodes a threshold iNaturalist owns and that the README says is 50 MB only by observation |
+
+**Resolved 2026-08-09 (owner): option B, plus the error-message fix from A.**
+
+Permanence is decided by the status code: a 4xx means the service rejected the request itself,
+except 401 (refresh the token), 408 and 429 (try later). Anything else, including every 5xx and
+every network error, stays transient and is retried.
+
+The description is now parsed into two sets — uploaded and permanently failed. Both suppress a
+retry; only the uploaded set is compared against the media actually attached, so a recorded
+failure does not produce a P-049 count mismatch on every run.
+
+Download failures are out of scope and stay transient: `ebird.DownloadMLAsset` returns an
+untyped error, so a 404 for a withdrawn asset is retried like a network blip. Recorded as a
+known limit rather than fixed here.
+
+To ask for a retry, delete the `(upload failed)` line from the observation's description.
+
 ## Work arising
 
 Phase-3 changes owed by the resolutions above. None may be implemented before

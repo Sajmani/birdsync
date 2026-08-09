@@ -102,6 +102,8 @@ Once birdsync has finished running, you should check the observations it created
 - If iNaturalist doesn't recognize the scientific name provided by eBird, the observation species name will say "Unknown". Fix this by editing the observation in iNaturalist.
 - If the iNaturalist observation has no photos or sounds, either because none were in eBird or because birdsync failed to copy them, then the observation will be marked "Casual". Fix this by uploading media for these observations or deleting them. Note that birdsync skips observations without media by default (`--verifiable` defaults to true), so this mostly happens when a media upload failed. iNaturalist rejects sound files larger than 50 MB; in these cases you will need to add a smaller file to the observation.
 
+When iNaturalist refuses a file outright — too large, or an unsupported format — birdsync records it in the observation description as `Macaulay Library Asset (upload failed):` and doesn't try again, since re-downloading a large file on every run would achieve nothing. It reports the asset on each run so you know it needs attention. If you want birdsync to retry, delete that line from the description.
+
 # How birdsync works
 
 Given (`iNaturalist user name`, `eBird CSV file`):
