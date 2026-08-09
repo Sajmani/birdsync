@@ -55,8 +55,8 @@ originating in the Macaulay Library into a user's iNaturalist account.
 | Owner | Cornell Lab of Ornithology |
 
 **Vendored and transcribed 2026-08-09.** The working assumption — that a user's export
-references only their own assets, making the copy a personal data transfer — turns out to be
-half confirmed. A contributor keeps copyright in their own media (`ml-terms/R1`) and may
+references only their own assets, making the copy a personal data transfer — is documented
+and evidence-supported rather than enforced (CR-010, closed). A contributor keeps copyright in their own media (`ml-terms/R1`) and may
 download it freely (`R2`), so birdsync's intended case is squarely permitted, which answers
 [product.md](product.md#open-questions)'s first open question. But another contributor's media
 may not be downloaded without permission (`R3`), and birdsync cannot tell the difference: it

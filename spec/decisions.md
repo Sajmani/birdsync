@@ -557,7 +557,12 @@ the API returns the contributor, so a check is a few lines.
 Note the residual: this is evidence from one account. A user whose export *does* contain a
 co-observer's asset would have birdsync copy it without anyone noticing.
 
-**Status: escalated — awaiting the maintainer's decision to close.**
+**Resolved 2026-08-09 (owner): closed as an accepted assumption**, documented rather than
+enforced. birdsync relies on an eBird export listing only the user's own Macaulay Library
+assets. The evidence above supports it and `ml-terms/R4` explains why it should hold.
+
+Reopen on a counter-example: an asset in someone's export whose `userDisplayName` is not
+theirs. Option B is then a few lines, since the API returns the contributor.
 
 ## Work arising
 
