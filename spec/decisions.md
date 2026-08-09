@@ -297,6 +297,18 @@ A criterion written around the observed behavior cannot detect that the behavior
 **Resolved 2026-08-09 (owner): option A.** P-045 amended to name the mapping. The download
 tests now assert an exact extension, and `TestFileExtension` covers the mapping directly.
 
+**Confirmed against the live service 2026-08-09.** A narrow real run (`--after 2026-08-05
+--before 2026-08-06`) uploaded 8 assets, all logged as `ML<id>.jpg`, all accepted, and all 8
+attached: each of the 4 observations shows a media count equal to the number of assets its
+description lists. No temp files were left behind (T-023), and no errors occurred.
+
+**Still unverified: the sound path.** All 8 assets were photos, so `audio/mpeg` → `.mp3` has
+not been exercised against iNaturalist — and that is the half more likely to have been
+rejected as `.m2a`. It cannot easily be tested on purpose, because an asset ID doesn't reveal
+whether it is a photo or a sound until it is downloaded (P-044, T-021), so a checklist with
+audio can't be picked out of the CSV in advance. Accepted as low residual risk: the mapping is
+unit-tested and the photo half is confirmed.
+
 Note the fallback case cannot assert a specific extension — `text/plain` resolves to `.conf`
 on macOS — so it asserts only that some extension is returned. Pinning a value there would
 rebuild the fragility the mapping removes.
