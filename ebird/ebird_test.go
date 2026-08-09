@@ -37,11 +37,11 @@ func TestDownloadMLAsset_Sound(t *testing.T) {
 	if isPhoto {
 		t.Errorf("Expected isPhoto=false for a sound asset, got true")
 	}
-	// The extension must be a valid one for audio/mpeg (e.g. .mp3 or .m2a).
-	ext := filepath.Ext(filename)
-	validSoundExts := map[string]bool{".mp3": true, ".m2a": true, ".mp2": true, ".mpga": true}
-	if !validSoundExts[ext] {
-		t.Errorf("Expected a valid audio/mpeg extension, got %q", ext)
+	// The extension must be exactly .mp3, not merely one of the several the
+	// system mime database associates with audio/mpeg. Accepting any of them
+	// is what let the filename vary by machine (P-045).
+	if ext := filepath.Ext(filename); ext != ".mp3" {
+		t.Errorf("Sound extension = %q, want %q (P-045)", ext, ".mp3")
 	}
 }
 
@@ -70,11 +70,8 @@ func TestDownloadMLAsset_Photo(t *testing.T) {
 	if !isPhoto {
 		t.Errorf("Expected isPhoto=true for a photo asset, got false")
 	}
-	// The extension must be a valid one for image/jpeg (e.g. .jpeg or .jpe or .jpg).
-	ext := filepath.Ext(filename)
-	validPhotoExts := map[string]bool{".jpeg": true, ".jpe": true, ".jpg": true}
-	if !validPhotoExts[ext] {
-		t.Errorf("Expected a valid image/jpeg extension, got %q", ext)
+	if ext := filepath.Ext(filename); ext != ".jpg" {
+		t.Errorf("Photo extension = %q, want %q (P-045)", ext, ".jpg")
 	}
 }
 
@@ -248,6 +245,59 @@ func TestObservationID_Valid(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			if got := tc.id.Valid(); got != tc.want {
 				t.Errorf("ObservationID.Valid() = %v, want %v", got, tc.want)
+			}
+		})
+	}
+}
+
+// TestFileExtension covers the mapping directly, including the cases the two
+// download tests can't reach. The extension has to be the same on every
+// machine: mime.ExtensionsByType returns a sorted set, so taking its first
+// element gave .jpe on macOS, .jfif on Linux, and .m2a for MP3 audio
+// everywhere — a filename that depended on whose laptop ran the sync (T-004).
+//
+// Verifies: P-045, T-004.
+func TestFileExtension(t *testing.T) {
+	tests := []struct {
+		contentType string
+		want        string
+		wantAny     bool // any non-empty extension is acceptable
+		wantErr     bool
+	}{
+		{contentType: "image/jpeg", want: ".jpg"},
+		{contentType: "audio/mpeg", want: ".mp3"},
+		{contentType: "image/png", want: ".png"},
+		// Parameters are legal on the header and must not defeat the lookup.
+		{contentType: "image/jpeg; charset=binary", want: ".jpg"},
+		{contentType: "IMAGE/JPEG", want: ".jpg"},
+		// Unmapped but known to the system: falls back rather than failing.
+		// No specific extension is asserted, because the answer genuinely
+		// depends on the machine's mime database — text/plain resolves to
+		// .conf on macOS. Asserting one would rebuild the fragility this
+		// mapping exists to remove.
+		{contentType: "text/plain", wantAny: true},
+		{contentType: "not a media type", wantErr: true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.contentType, func(t *testing.T) {
+			got, err := fileExtension(tt.contentType)
+			if tt.wantErr {
+				if err == nil {
+					t.Fatalf("fileExtension(%q) = %q, want an error", tt.contentType, got)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("fileExtension(%q) error = %v", tt.contentType, err)
+			}
+			if tt.wantAny {
+				if got == "" {
+					t.Errorf("fileExtension(%q) returned no extension", tt.contentType)
+				}
+				return
+			}
+			if got != tt.want {
+				t.Errorf("fileExtension(%q) = %q, want %q", tt.contentType, got, tt.want)
 			}
 		})
 	}

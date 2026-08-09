@@ -257,6 +257,50 @@ Code change pending.
 
 ---
 
+## CR-006 — Uploaded file extensions varied by machine
+
+- **Kind:** requirement under-specified, and violated by the implementation
+- **Subject:** `media.filename.extension`
+- **Involves:** P-045, T-004
+- **Found:** 2026-08-09, by CI failing on Linux for the first time
+
+`downloadMLAsset` derived the extension with
+`mime.ExtensionsByType(contentType)` and took `extensions[0]`. That call returns
+*every* extension registered for the type, sorted, from the machine's mime database, so
+the first element is arbitrary:
+
+| | photos (image/jpeg) | sounds (audio/mpeg) |
+| --- | --- | --- |
+| macOS | `.jpe` | `.m2a` |
+| Linux (CI) | `.jfif` | `.m2a` |
+| Before `0c7b6d2` | `.jpe` | `.mp3` |
+
+Commit `0c7b6d2` ("Fix crash when uploading sound files") replaced a hardcoded
+`ext := ".mp3"` with this lookup, so since June 2026 every sound has been uploaded as
+`ML<id>.m2a`. Whether iNaturalist rejects that is not verifiable here (T-010), but the
+README already warns users about unexplained media-upload failures.
+
+P-045 said "the extension implied by the response content type", which is ambiguous: several
+extensions are implied and it named no way to choose. T-004 is also implicated, since this is
+platform-dependent behavior visible to the user.
+
+The test did not catch it because it was written to accept whatever the platform produced —
+its allowlist was `{.jpeg, .jpe, .jpg}` — so it passed on macOS while the code picked `.jpe`.
+A criterion written around the observed behavior cannot detect that the behavior is wrong.
+
+| Option | Effect |
+| --- | --- |
+| **A. Map known content types to a canonical extension**, fall back to the mime database | Deterministic on every platform; restores `.mp3`; still works if the CDN serves something new |
+| B. Derive from which URL responded (`/2400` → `.jpg`, `/mp3` → `.mp3`) | Simplest, but assumes the photo endpoint is always JPEG and ignores the header |
+| C. Prefer a canonical extension if the mime list contains one | Less code, still platform-dependent whenever no canonical form is present |
+
+**Resolved 2026-08-09 (owner): option A.** P-045 amended to name the mapping. The download
+tests now assert an exact extension, and `TestFileExtension` covers the mapping directly.
+
+Note the fallback case cannot assert a specific extension — `text/plain` resolves to `.conf`
+on macOS — so it asserts only that some extension is returned. Pinning a value there would
+rebuild the fragility the mapping removes.
+
 ## Work arising
 
 Phase-3 changes owed by the resolutions above. None may be implemented before

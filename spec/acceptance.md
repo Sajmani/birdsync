@@ -60,6 +60,7 @@ All are level `code` unless stated otherwise. "Command" is the `-run` pattern un
 | AC-021 | `TestObservationID_Valid` | Unit, table-driven | P-019, P-022 | verified |
 | AC-022 | `.github/workflows/ci.yml` runs AC-001–AC-004 on push and PR | CI configuration | T-030, T-031 | verified |
 | AC-028 | `TestToolsAreReadOnly` | Static analysis (AST) over `tools/` | T-032 | verified |
+| AC-029 | `TestFileExtension`, `TestDownloadMLAsset_Photo`, `_Sound` | Unit + integration | P-045, T-004 | verified |
 
 ### Criteria that do not bite
 
@@ -179,7 +180,7 @@ effect: implementing a fix well means checking it.
 | P-042 create before attaching media | AC-007 | verified |
 | P-043 2400px photos, MP3 sounds | AC-018 | verified |
 | P-044 photo-then-sound fallback | AC-018 | verified |
-| P-045 `ML<id>` filename | AC-007 | partial — asset ID checked, filename not |
+| P-045 `ML<id>` filename and extension | AC-007, AC-029 | verified |
 | P-046 description updated, media kept | AC-007, AC-008 | verified |
 | P-047 additive media re-sync | AC-013 | verified |
 | P-048 removals reported, not applied | AC-017 | verified |
@@ -200,7 +201,7 @@ effect: implementing a fix well means checking it.
 | T-001 single module | AC-001 | verified |
 | T-002 one dependency | — | **gap — see [Recommended additions](#recommended-additions)** |
 | T-003 `go`/`toolchain` policy | — | gap (human review) |
-| T-004 platform independence | AC-001 | partial (one OS in CI) |
+| T-004 platform independence | AC-001, AC-029 | partial — CI builds on one OS, but the extension mapping is now platform-independent by construction |
 | T-005 `--dryrun` gates at the call site | AC-006 | verified |
 | T-006 `DRYRUN:` prefix | — | gap |
 | T-007 honest counters | AC-023 | verified |

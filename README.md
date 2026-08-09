@@ -130,8 +130,8 @@ Given (`iNaturalist user name`, `eBird CSV file`):
       Asset IDs don't say whether they're a photo or a sound, so birdsync tries the photo
       URL first and falls back to the sound URL.
     - Upload the photo or sound to iNaturalist, associated with the new observation.
-      Media is uploaded under the filename `ML<asset ID>`, so you can trace any file in
-      iNaturalist back to its Macaulay Library asset.
+      Media is uploaded under the filename `ML<asset ID>.jpg` or `ML<asset ID>.mp3`, so you
+      can trace any file in iNaturalist back to its Macaulay Library asset.
 
 ## What birdsync writes to iNaturalist
 

@@ -179,9 +179,13 @@ Subject: `media.photo.max_dimension_px` · Value: `2400`
 **P-044** — A Macaulay Library asset ID does not say whether it is a photo or a sound, so
 birdsync tries the photo URL and falls back to the sound URL on a 404.
 
-**P-045** — Media is uploaded under the filename `ML<asset ID>` plus the extension
-implied by the response content type, so any file in iNaturalist can be traced back to
-its Macaulay Library asset.
+**P-045** — Media is uploaded under the filename `ML<asset ID>` plus a canonical extension
+for the response content type — `.jpg`, `.png`, `.mp3`, `.wav` — so any file in iNaturalist
+can be traced back to its Macaulay Library asset.
+Subject: `media.filename.extension` · Value: `{image/jpeg: .jpg, image/png: .png, audio/mpeg: .mp3, audio/wav: .wav}`
+*Rationale: the extension must not depend on the machine running the sync. Amended by
+[CR-006](decisions.md#cr-006--uploaded-file-extensions-varied-by-machine); previously it was
+whichever extension the system's mime database happened to list first.*
 
 **P-046** — After uploading, the observation description is updated with the asset URLs,
 without detaching the media already attached.
