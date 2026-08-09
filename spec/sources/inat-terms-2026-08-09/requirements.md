@@ -48,9 +48,13 @@ is in the terms rather than in guidance, so it binds harder.
 > removal of the content."
 > — Community Guidelines, marked (!): "grounds for immediate suspension without warning"
 
-**For birdsync: unresolved, and the most consequential open question in this specification.**
-See [CR-012](../../decisions.md#cr-012--is-birdsync-machine-generated-content). The rule's
-scope is set by a page that is not vendored here.
+**For birdsync: permitted.** The rule's scope is set by
+<https://www.inaturalist.org/pages/machine_generated_content>, vendored here, which lists
+"writing a script to create observations from a manually curated local folder of your images
+and metadata on your desktop" and "creating a third-party app that enables a real person/people
+to create content" among its examples of *acceptable* behavior, and permits using a machine
+"to facilitate posting this content" where a human decided each observation. See
+[CR-012](../../decisions.md#cr-012--is-birdsync-machine-generated-content), closed.
 
 ### `inat-terms/R5` — Don't behave like a machine
 

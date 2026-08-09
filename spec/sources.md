@@ -38,14 +38,17 @@ departure**, recorded with its reason rather than left as an oversight.
 | Adopted parts | `inat-terms/R1`–`R6`, in [requirements.md](sources/inat-terms-2026-08-09/requirements.md) |
 | Exclusions | Conduct rules birdsync cannot reach: harassment, sockpuppets, explicit content, commercial AI training |
 | Owner | iNaturalist |
-| **Incomplete** | The definition of machine generated content is linked but not vendored, and it is the page CR-012 turns on |
+| Also vendored | The definition of machine generated content, which the guidelines link to and CR-012 turns on |
 
-**Vendored and transcribed 2026-08-09.** Yielded one hard conflict,
-[CR-012](decisions.md#cr-012--is-birdsync-machine-generated-content): the guidelines prohibit
-machines posting content "with no human oversight curating each piece", on pain of account
-suspension, and birdsync is a machine that posts observations. Also `inat-terms/R3`, a
-rate-and-volume clause in the terms themselves, which binds harder than the API guidance
-behind T-035.
+**Vendored and transcribed 2026-08-09.** Raised the sharpest question in this specification
+and then answered it: the guidelines prohibit machines posting content "with no human oversight
+curating each piece", on pain of account suspension, but the linked definition lists writing a
+script to post observations from your own curated data among its examples of *acceptable*
+behavior. [CR-012](decisions.md#cr-012--is-birdsync-machine-generated-content), closed.
+
+Also `inat-terms/R3`, a rate-and-volume clause in the terms themselves, which binds harder than
+the API guidance behind T-035, and `inat-terms/R5`, which puts an obligation on the user that
+became P-067.
 
 ### `ml-terms` — Macaulay Library / eBird media terms
 

@@ -702,12 +702,35 @@ rule or any terms-of-service concern**. Nobody else did either. That is the stro
 available short of asking staff directly: a moderator who understood what birdsync does
 treated it as a question of data quality and community burden, not of prohibited conduct.
 
-**Resolved 2026-08-09 (owner): closed as accepted**, on the same footing as
-[CR-010](#cr-010--birdsync-cannot-tell-whose-media-it-is-downloading) — a documented,
-evidence-supported reading rather than a ruling. Reopen if iNaturalist says otherwise.
+**Resolved 2026-08-09: birdsync is not machine generated content, on the rule's own text.**
+The definition page was retrieved later the same day (revised 2026-05-20 by `tiwane`, vendored
+at `sources/inat-terms-2026-08-09/machine-generated-content.html`) and answers the question
+directly. The principle:
 
-Residual: the definition at `/pages/machine_generated_content` is still unread, so the
-reading rests on how staff behaved rather than on what the rule says.
+> "It's ok for humans to use machines as tools for arriving at their choice **or to facilitate
+> posting this content**, as long as there is human involvement/oversight creating the
+> content/decisions about each individual observation, identification, or comment."
+
+And two of its own examples of acceptable behavior:
+
+> "Writing a script to create observations from a manually curated local folder of your images
+> and metadata on your desktop."
+>
+> "Creating a third-party app that enables a real person/people to create content."
+
+The first is nearly a description of birdsync: a script creating observations from the user's
+own curated metadata — `MyEBirdData.csv` on their desktop — and their own media. The second
+covers it too. Every prohibited example is content whose *substance* is machine-produced:
+camera-trap images posted without moderation, identifications from a machine-learning model,
+generic comments and messages posted by script. birdsync produces no substance of its own. The
+species, the date, the location and the photograph are all the user's, decided one observation
+at a time when they entered the checklist.
+
+The residual is narrow and worth naming: that human decision was made in eBird, sometimes years
+before the sync, rather than at the moment of posting. The text permits a machine "to
+facilitate posting this content", which is exactly that separation, so this reading is
+comfortable — but it is the hinge, and it is why P-067's advice to review what was created is
+more than politeness.
 
 **What the moderator did raise is a separate obligation, and it stands:**
 
@@ -752,12 +775,9 @@ the reason for deferring half the fix had gone away.
 Where to pick this up. Nothing here blocks a release; each item is a known, recorded gap
 rather than a surprise waiting to happen.
 
-**Needs a human to fetch a page** (all `www.inaturalist.org/pages/*` answer an automated
-request with HTTP 403 and a JavaScript challenge):
-
-- <https://www.inaturalist.org/pages/machine_generated_content> → save into
-  `spec/sources/inat-terms-2026-08-09/`. It defines the rule CR-012 turns on. CR-012 is closed
-  on the strength of a moderator not objecting, which is behavior rather than text.
+All three sources are vendored, including the machine-generated-content definition that
+CR-012 turned on. Note that `www.inaturalist.org/pages/*` answers automated requests with HTTP
+403 and a JavaScript challenge, so refreshing any of them needs a human with a browser.
 
 **Unverified against the live service:**
 

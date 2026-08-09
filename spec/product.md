@@ -283,7 +283,10 @@ without birdsync retrying it.
 **P-067** — The documentation tells users what iNaturalist expects of an account that syncs
 in bulk: review what was created, and respond to identifiers' comments.
 *Rationale: `inat-terms/R5` makes this the account holder's obligation, with suspension named
-as the consequence, and birdsync is what puts them in a position to breach it. Recorded from
+as the consequence, and birdsync is what puts them in a position to breach it. It also carries
+more weight than politeness: `inat-terms/R4` permits a script to post observations only where a
+human decided each one, so a user who reviews nothing is the one who moves birdsync from the
+permitted side of that rule to the prohibited side. Recorded from
 [CR-012](decisions.md#cr-012--is-birdsync-machine-generated-content).*
 
 **P-068** — The documentation explains that birdsync-created observations are identifiable —
