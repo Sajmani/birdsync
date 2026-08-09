@@ -68,6 +68,7 @@ All are level `code` unless stated otherwise. "Command" is the `-run` pattern un
 | AC-034 | `TestDownloadObservationsPagesByID`, `TestDownloadObservationsCursorMustAdvance` | Integration, `httptest` fake honouring `per_page` | P-065, T-036 | verified |
 | AC-035 | `TestClientPacesRequests`, `TestDefaultMinRequestIntervalMatchesGuidance` | Integration + unit | T-035 | verified — the per-day cap is not checked |
 | AC-036 | `TestRecordsRejectsBadInput` | Unit, temp files | P-066 | verified |
+| AC-037 | README carries the community-obligations section | Human review | P-067, P-068 | verified |
 
 ### Criteria that do not bite
 
@@ -210,6 +211,8 @@ effect: implementing a fix well means checking it.
 | P-063 permanent vs transient upload failure | AC-031 | verified |
 | P-065 accounts over 10,000 observations | AC-034 | verified |
 | P-066 unusable input reported clearly | AC-036 | verified |
+| P-067 documents the user's community obligations | AC-037 | verified (human review) |
+| P-068 documents that synced observations are identifiable | AC-037 | verified (human review) |
 | P-064 permanent failures reported each run | AC-031, AC-033 | verified |
 | T-001 single module | AC-001 | verified |
 | T-002 one dependency | — | **gap — see [Recommended additions](#recommended-additions)** |

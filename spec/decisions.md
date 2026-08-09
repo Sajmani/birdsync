@@ -692,8 +692,41 @@ its author. A user could lose their observations for using software the README r
 `inat-terms/R5` puts an obligation on the user that birdsync currently never mentions, and
 saying so costs a paragraph.
 
-**Status: escalated — blocked on retrieving
-<https://www.inaturalist.org/pages/machine_generated_content>.**
+**Evidence, 2026-08-09.** birdsync was announced on the iNaturalist forum in September 2025
+and discussed over 19 posts and about a thousand views:
+<https://forum.inaturalist.org/t/birdsync-a-tool-to-sync-verifiable-ebird-observations-to-inaturalist/70008>
+
+A **forum moderator** (`cthawley`, staff) took part on 2025-09-10, described the tool's mode
+of operation accurately as "semi-automated", and **did not raise the machine-generated-content
+rule or any terms-of-service concern**. Nobody else did either. That is the strongest evidence
+available short of asking staff directly: a moderator who understood what birdsync does
+treated it as a question of data quality and community burden, not of prohibited conduct.
+
+**Resolved 2026-08-09 (owner): closed as accepted**, on the same footing as
+[CR-010](#cr-010--birdsync-cannot-tell-whose-media-it-is-downloading) — a documented,
+evidence-supported reading rather than a ruling. Reopen if iNaturalist says otherwise.
+
+Residual: the definition at `/pages/machine_generated_content` is still unread, so the
+reading rests on how staff behaved rather than on what the rule says.
+
+**What the moderator did raise is a separate obligation, and it stands:**
+
+> "Duplicating observations on both platforms increases the work for the humans who interact
+> with the platforms with little/no scientific benefit... In small amounts, this probably
+> doesn't matter. But if a large volume of eBird observations starting coming to iNat in a
+> semi-automated fashion (or vice versa), that could be a large waste of identifier
+> time/effort and take away from the user experience."
+
+That is `inat-terms/R5` and `inat-terms/R6` stated by a moderator in concrete terms, and it
+lands on volume — the one dimension where birdsync's defaults have real leverage. Two things
+follow, recorded as P-067 and P-068:
+
+- `--verifiable` defaulting to true is not only a quality choice. A medialess observation is
+  pure identifier burden with nothing to identify, so the default that skips them is the
+  single largest thing birdsync does to limit the cost it imposes. Worth saying in P-030's
+  rationale so nobody flips the default for convenience.
+- Users need telling. The obligation in `inat-terms/R5` — answer comments, don't add a lot of
+  content and vanish — falls on the account holder, and birdsync currently never mentions it.
 
 ## Work arising
 

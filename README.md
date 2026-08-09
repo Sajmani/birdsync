@@ -186,6 +186,26 @@ Restricting a run with `--after` or `--before` also restricts which existing iNa
 observations get downloaded. Duplicate detection and fuzzy matching therefore only consider
 observations inside that date window.
 
+# Being a good iNaturalist citizen
+
+Syncing puts observations into your account in bulk, and iNaturalist's
+[community guidelines](https://www.inaturalist.org/pages/community+guidelines) place the
+responsibility for them on you, not on this tool. Two things are worth knowing:
+
+- **Look at what was created, and answer comments.** The guidelines single out accounts that
+  add "a lot of content very quickly" and then don't "respond to comments and messages". If
+  an identifier questions one of your synced observations, that's a person spending their
+  time on your record. When they correct an identification, consider updating the original
+  eBird checklist too.
+- **Sync only observations worth identifying.** `--verifiable` defaults to true so that
+  birdsync skips records with no photo or sound. An observation with no media gives an
+  identifier nothing to work with, so turning this off adds work for other people and gets
+  you "Casual" records in return.
+
+Observations birdsync creates are identifiable as such: the description says so, and the
+*eBird Submission ID* and *eBird Scientific Name* observation fields are set. Identifiers who
+prefer not to work on synced records can filter on those fields.
+
 # Tools
 
 The `tools` directory contains `dump`, a small read-only program that downloads your

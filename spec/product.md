@@ -126,8 +126,13 @@ record lands in.*
 **P-030** — `--verifiable` skips records with no Macaulay Library catalog numbers, and
 defaults to **on**.
 Subject: `cli.verifiable.default` · Value: `true`
-*Rationale: iNaturalist will not treat a medialess observation as verifiable, so the
-default avoids filling a user's account with "Casual" records.*
+*Rationale: iNaturalist will not treat a medialess observation as verifiable, so the default
+avoids filling a user's account with "Casual" records.*
+*It is also the main thing birdsync does to limit the burden it puts on other people. A
+medialess observation gives an identifier nothing to identify, so it is pure cost to the
+community — the concern a forum moderator raised about volume
+([CR-012](decisions.md#cr-012--is-birdsync-machine-generated-content)). Don't flip this
+default for convenience.*
 
 **P-031** — `--fuzzy` skips a record when an existing observation not carrying a sync key
 has the same observation date and the same name, matched against either the common name
@@ -274,6 +279,18 @@ file on every run forever. Removing the line by hand is the way to ask for a ret
 
 **P-064** — A permanently failed asset is reported on each run, so the user learns about it
 without birdsync retrying it.
+
+**P-067** — The documentation tells users what iNaturalist expects of an account that syncs
+in bulk: review what was created, and respond to identifiers' comments.
+*Rationale: `inat-terms/R5` makes this the account holder's obligation, with suspension named
+as the consequence, and birdsync is what puts them in a position to breach it. Recorded from
+[CR-012](decisions.md#cr-012--is-birdsync-machine-generated-content).*
+
+**P-068** — The documentation explains that birdsync-created observations are identifiable —
+by the attribution line and the two eBird observation fields — so that identifiers who would
+rather not work on synced records can recognise them.
+*Rationale: raised on the forum thread in CR-012 as a mitigation for identifier burden. It is
+already true (P-019, P-040); it is simply not written down anywhere a reader would find it.*
 
 ## Amendments from Gate 1
 
