@@ -530,8 +530,34 @@ export omits the sender's assets, and B adds a dependency on an unpublished endp
 against a case that may not exist. B is cheap to add later precisely because the API returns
 the contributor.
 
-**Status: escalated — awaiting the maintainer**, who is likely to know from experience whether
-shared checklists ever put another birder's media in their export.
+**Evidence, 2026-08-09.** Tested against the maintainer's current export
+(`MyEBirdData 8.csv`, 14,488 rows, 1,904 distinct assets) using
+`search.macaulaylibrary.org/api/v2/search`, which reports each asset's `userDisplayName`:
+
+| Sample | Own | Another contributor | Unindexed |
+| --- | --- | --- | --- |
+| 29 assets on multi-observer checklists (party sizes to 25) | 28 | **0** | 1 |
+| 10 assets, one per checklist, from the set below | 1 | **0** | 9 |
+
+A set-difference test — every asset in the export against every asset the API attributes to
+the maintainer — left 74 unaccounted for, which looked like leakage. It was not: sampled
+across 22 checklists, those assets return NOT FOUND from the search index while still
+downloading from the CDN, so the enumeration of contributions was incomplete rather than the
+export contaminated. The test is recorded as inconclusive; the sampling is what carries the
+weight.
+
+Neither sample found a single asset belonging to another contributor, including on the
+checklists most likely to have been shared.
+
+**Recommendation: close as an accepted assumption**, documented rather than enforced. The
+sampling supports it, eBird's own statement that media belongs to the uploading account
+(`ml-terms/R4`) explains why, and option B stays cheap to add if a counter-example appears —
+the API returns the contributor, so a check is a few lines.
+
+Note the residual: this is evidence from one account. A user whose export *does* contain a
+co-observer's asset would have birdsync copy it without anyone noticing.
+
+**Status: escalated — awaiting the maintainer's decision to close.**
 
 ## Work arising
 
