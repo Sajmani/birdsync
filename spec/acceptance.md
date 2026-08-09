@@ -100,7 +100,7 @@ would break AC-004 for everyone.
 | --- | --- | --- | --- |
 | AC-023 | A `--dryrun` run's summary says `Would create` / `Would update`, never `Created` / `Updated` | P-060, T-007 | CR-001 |
 | ~~AC-024~~ | *landed* — `TestDownloadObservationsNoTaxonFilter`, `TestUntaxonedObservationIsRecognized` | P-061, P-020 | CR-003 |
-| AC-025 | A record with an unparseable date, time, latitude, or longitude is skipped and counted, and the run completes and processes later records | P-062 | CR-005 |
+| ~~AC-025~~ | *landed* — `TestInvalidRecordsAreSkipped` | P-062 | CR-005 |
 | AC-026 | `downloadMLAsset` leaves no file behind after the caller finishes with it | T-023 | Gate 1 |
 | AC-027 | Static analysis: no `log.Fatal` outside `main` and `tools/` | T-027 | CR-002 |
 
@@ -191,7 +191,7 @@ requirements have an automated check.
 | P-059 no rollback | — | gap (consequence of P-058) |
 | P-060 dry-run labels | AC-023 | pending |
 | P-061 no taxon filter | AC-024 | verified |
-| P-062 bad records skipped and counted | AC-025 | pending |
+| P-062 bad records skipped and counted | AC-025 | verified |
 | T-001 single module | AC-001 | verified |
 | T-002 one dependency | — | **gap — see [Recommended additions](#recommended-additions)** |
 | T-003 `go`/`toolchain` policy | — | gap (human review) |

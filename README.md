@@ -86,7 +86,9 @@ Uploaded 61 photos to iNaturalist
 Uploaded 4 sounds to iNaturalist
 ```
 The skip counts for `--fuzzy`, `--after`, `--before`, and `--verifiable` are only printed when
-those flags are in effect. A final "Failed to upload N media assets" line appears if any
+those flags are in effect. A "Skipped N eBird observations with unparseable fields" line
+appears if any rows had a date, time, or coordinate birdsync couldn't read; those rows are
+skipped and the rest of the run continues. A final "Failed to upload N media assets" line appears if any
 media downloads or uploads failed; those failures are logged but don't stop the run.
 
 Under `--dryrun`, the last two lines are replaced by a single

@@ -497,6 +497,85 @@ func TestDryRunIssuesNoWrites(t *testing.T) {
 	}
 }
 
+// TestInvalidRecordsAreSkipped checks that a record birdsync can't parse costs
+// that record, not the run. A single malformed date used to call log.Fatalf,
+// ending the sync after an arbitrary number of observations had already been
+// created — and eBird exports vary enough between users that one bad row in
+// twelve thousand is a realistic thing to hit.
+//
+// Verifies: P-062.
+func TestInvalidRecordsAreSkipped(t *testing.T) {
+	origDebug := debug
+	debug = true
+	defer func() { debug = origDebug }()
+
+	mockEbird := &mockEBirdClient{records: []ebird.Record{
+		{
+			SubmissionID:     "S600",
+			ScientificName:   "Corvus brachyrhynchos",
+			CommonName:       "American Crow",
+			Date:             "2023-01-03",
+			Time:             "03:00 PM",
+			Latitude:         "37.4",
+			Longitude:        "-122.0",
+			MLCatalogNumbers: "60001",
+		},
+		{
+			SubmissionID:     "S601",
+			ScientificName:   "Turdus migratorius",
+			CommonName:       "American Robin",
+			Date:             "not-a-date", // unparseable
+			Time:             "03:00 PM",
+			MLCatalogNumbers: "60002",
+		},
+		{
+			SubmissionID:     "S602",
+			ScientificName:   "Zenaida macroura",
+			CommonName:       "Mourning Dove",
+			Date:             "2023-01-03",
+			Time:             "03:00 PM",
+			Latitude:         "not-a-number", // unparseable
+			Longitude:        "-122.0",
+			MLCatalogNumbers: "60003",
+		},
+		{
+			// Must still be processed: the run continues past both failures.
+			SubmissionID:     "S603",
+			ScientificName:   "Sturnus vulgaris",
+			CommonName:       "European Starling",
+			Date:             "2023-01-03",
+			Time:             "04:00 PM",
+			Latitude:         "37.5",
+			Longitude:        "-122.1",
+			MLCatalogNumbers: "60004",
+		},
+	}}
+	mockInat := &mockINatClient{}
+
+	resetFlags()
+
+	stats := birdsync("MyEBirdData.csv", mockEbird, "myUserID", mockInat)
+
+	if stats.totalRecords != 4 {
+		t.Errorf("totalRecords = %d, want 4", stats.totalRecords)
+	}
+	if stats.invalidSkips != 2 {
+		t.Errorf("invalidSkips = %d, want 2 (P-062)", stats.invalidSkips)
+	}
+	if stats.createdObservations != 2 {
+		t.Errorf("createdObservations = %d, want 2: the run must continue past a bad record", stats.createdObservations)
+	}
+	if len(mockInat.created) != 2 {
+		t.Fatalf("Created %d observations, want 2", len(mockInat.created))
+	}
+	// The record after both failures is the one that proves the run continued.
+	if got := mockInat.created[1].ObservationFieldValuesAttributes; len(got) == 0 {
+		t.Error("Second created observation has no fields")
+	} else if last := mockInat.created[1]; last.SpeciesGuess != "Sturnus vulgaris" {
+		t.Errorf("Second created observation = %q, want the record following the bad ones", last.SpeciesGuess)
+	}
+}
+
 // TestUntaxonedObservationIsRecognized checks that a previously synced
 // observation is matched by its sync key whatever its taxon — including no
 // taxon at all, which is what iNaturalist leaves behind when it can't resolve

@@ -65,8 +65,12 @@ func prettyPrintln(v any) {
 
 type stats struct {
 	afterSkips, beforeSkips, verifiableSkips, previouslySkips, fuzzySkips int
-	totalRecords, createdObservations, updatedObservations                int
-	uploadedPhotos, uploadedSounds                                        int
+	// invalidSkips counts records whose date, time, or coordinates could not be
+	// parsed. They are skipped rather than fatal: one bad row in a large export
+	// should not end a sync that has already created observations (P-062).
+	invalidSkips                                           int
+	totalRecords, createdObservations, updatedObservations int
+	uploadedPhotos, uploadedSounds                         int
 	// pendingMedia counts the media assets a --dryrun would have uploaded.
 	// A Macaulay Library asset ID doesn't say whether it's a photo or a sound,
 	// and a dry run doesn't download it to find out, so these can't be split
@@ -114,6 +118,9 @@ func main() {
 	}
 	if verifiable {
 		log.Printf("Skipped %d unverifiable eBird observations", stats.verifiableSkips)
+	}
+	if stats.invalidSkips > 0 {
+		log.Printf("Skipped %d eBird observations with unparseable fields", stats.invalidSkips)
 	}
 	log.Printf("Created %d new iNaturalist observations", stats.createdObservations)
 	log.Printf("Updated %d iNaturalist observations", stats.updatedObservations)
@@ -177,7 +184,13 @@ func birdsync(eBirdCSVFilename string, ebirdClient ebirdClient, inatUserID strin
 		s.totalRecords++
 		observed, err := rec.Observed()
 		if err != nil {
-			log.Fatalf("line %d: bad date/time: %v", rec.Line, err)
+			// A malformed row costs that row, not the run. eBird's export
+			// varies between users, so one unparseable date in a twelve
+			// thousand row file is realistic, and aborting partway would
+			// leave the sync half done (P-062).
+			log.Printf("line %d: SKIPPING record with bad date/time: %v", rec.Line, err)
+			s.invalidSkips++
+			continue
 		}
 		// Skip records that were not observed between --after and --before.
 		if !after.Time().IsZero() && observed.Before(after.Time()) {
@@ -289,16 +302,34 @@ func birdsync(eBirdCSVFilename string, ebirdClient ebirdClient, inatUserID strin
 			}
 		}
 
+		assetIDs := eBirdMLAssets(rec.MLCatalogNumbers)
+		// Skip records without media assets if --verifiable is set. This is
+		// checked before the record is parsed any further, so that a record is
+		// counted against the rule that actually skipped it (P-026).
+		if verifiable && assetIDs.Len() == 0 {
+			debugf("line %d: SKIPPING record that has no photos or sounds (--verifiable=true)", rec.Line)
+			s.verifiableSkips++
+			continue
+		}
+
 		// Create the iNaturalist observation from the eBird record.
-		floatField := func(line int, s string) float64 {
+		coordinate := func(s string) (float64, error) {
 			if s == "" {
-				return 0
+				return 0, nil // eBird omits coordinates for some locations
 			}
-			f, err := strconv.ParseFloat(s, 64)
-			if err != nil {
-				log.Fatalf("line %d: Invalid float64 %q: %v", line, s, err)
-			}
-			return f
+			return strconv.ParseFloat(s, 64)
+		}
+		latitude, err := coordinate(rec.Latitude)
+		if err != nil {
+			log.Printf("line %d: SKIPPING record with bad latitude %q: %v", rec.Line, rec.Latitude, err)
+			s.invalidSkips++
+			continue
+		}
+		longitude, err := coordinate(rec.Longitude)
+		if err != nil {
+			log.Printf("line %d: SKIPPING record with bad longitude %q: %v", rec.Line, rec.Longitude, err)
+			s.invalidSkips++
+			continue
 		}
 		keyField := func(id int, s string) inat.ObservationFieldValue {
 			return inat.ObservationFieldValue{
@@ -309,8 +340,8 @@ func birdsync(eBirdCSVFilename string, ebirdClient ebirdClient, inatUserID strin
 		obs := inat.Observation{
 			UUID:               uuid.New(),
 			CaptiveFlag:        false, // eBird checklists should only include wild birds
-			Latitude:           floatField(rec.Line, rec.Latitude),
-			Longitude:          floatField(rec.Line, rec.Longitude),
+			Latitude:           latitude,
+			Longitude:          longitude,
 			LocationIsExact:    false,
 			PositionalAccuracy: float64(positionalAccuracy),
 			SpeciesGuess:       rec.ScientificName,
@@ -339,13 +370,6 @@ func birdsync(eBirdCSVFilename string, ebirdClient ebirdClient, inatUserID strin
 		if len(rec.ChecklistComments) > 0 {
 			obs.Description += "eBird checklist comments:\n" +
 				rec.ChecklistComments + "\n"
-		}
-		assetIDs := eBirdMLAssets(rec.MLCatalogNumbers)
-		// Skip records without media assets if --verifiable is set.
-		if verifiable && assetIDs.Len() == 0 {
-			debugf("line %d: SKIPPING record that has no photos or sounds (--verifiable=true)", rec.Line)
-			s.verifiableSkips++
-			continue
 		}
 		if dryRun {
 			log.Printf("DRYRUN: Syncing eBird observation %s to iNaturalist (%d media assets)\n",

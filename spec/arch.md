@@ -38,6 +38,9 @@ One run does the following:
    `csv.Reader.ReadAll` and the iterator walks the resulting slice.
 5. **Filter and act** on each record, in this order: `--after`, `--before`, already-synced,
    `--fuzzy`, `--verifiable`. Records that survive all five become new iNaturalist observations.
+   A record whose date or coordinates won't parse is skipped and counted rather than ending
+   the run: the date is checked before the date filters, the coordinates just before the
+   observation is built.
    The already-synced branch isn't a pure skip: when eBird has assets the iNaturalist
    description doesn't list, it uploads them and updates the observation (birdsync.go:254-263).
 6. **Create, then attach media.** The observation is created first, and each Macaulay Library
