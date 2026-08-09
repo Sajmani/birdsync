@@ -191,9 +191,19 @@ type StatusError struct {
 func newStatusError(resp *http.Response) *StatusError {
 	e := &StatusError{StatusCode: resp.StatusCode, Status: resp.Status}
 	// A failure to read the body must not mask the failure being reported.
-	if b, err := io.ReadAll(io.LimitReader(resp.Body, maxErrorBody)); err == nil {
-		e.Body = strings.TrimSpace(string(b))
+	b, err := io.ReadAll(io.LimitReader(resp.Body, maxErrorBody))
+	if err != nil {
+		return e
 	}
+	body := strings.TrimSpace(string(b))
+	// An HTML error page comes from a proxy in front of the API and says
+	// nothing the status line doesn't, while spilling markup across several
+	// log lines. A 413 from nginx arrives this way.
+	if body == "" || strings.HasPrefix(body, "<") {
+		return e
+	}
+	// Collapse the message onto one line so a log stays readable.
+	e.Body = strings.Join(strings.Fields(body), " ")
 	return e
 }
 

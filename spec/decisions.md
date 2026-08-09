@@ -412,6 +412,16 @@ cause (T-034).
 
 **Resolved 2026-08-09 (owner): option B, plus the error-message fix from A.**
 
+**Confirmed end to end against the live service 2026-08-09**, on the observation that
+prompted CR-007. Deleting the recorded line from its description asked for a retry; birdsync
+downloaded the 61.1 MB sound, iNaturalist answered `413 Request Entity Too Large`, the
+failure was classified permanent, recorded in the description with the retry instructions,
+counted once, and not retried. Every link in the chain behaved as specified.
+
+That run also showed T-034 overshooting: the 413 came from nginx as a seven-line HTML page,
+which went into the log verbatim. An HTML body is now dropped — it says nothing the status
+line doesn't — and a genuine message is collapsed onto one line.
+
 Permanence is decided by the status code: a 4xx means the service rejected the request itself,
 except 401 (refresh the token), 408 and 429 (try later). Anything else, including every 5xx and
 every network error, stays transient and is retried.
@@ -466,9 +476,10 @@ returns `.mp3` for sounds too and would otherwise mask a missing map entry. Dele
 `audio/mpeg3` from the map now fails the suite; before that assertion it changed nothing any
 test could see.
 
-**Not yet confirmed against the live service.** No sound has been synced since the fix. The
-three assets above are attached to observations that predate `0c7b6d2`, which is consistent
-with sounds having worked until then.
+**Confirmed against the live service 2026-08-09.** A run that retried asset `637691397`
+logged `Uploading sound as ML637691397.mp3` — the first sound birdsync has downloaded since
+`0c7b6d2`. The upload then failed on size, which is a separate matter (below), but the
+download and naming worked.
 
 ## Work arising
 

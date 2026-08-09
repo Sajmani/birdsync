@@ -107,6 +107,8 @@ just the status line.
 looking identical — `bad HTTP status: 422 Unprocessable Entity` whether the file was too
 large, the format unsupported, or the asset withdrawn. Classification under P-063 depends on
 the status code, but the human reading the log needs the reason.*
+*An HTML body is dropped rather than included: it comes from a proxy rather than the API, and
+a 413 arrives as a seven-line nginx page. A message that is kept is collapsed onto one line.*
 
 ## Data format handling
 

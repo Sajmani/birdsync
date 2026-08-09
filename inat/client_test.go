@@ -158,3 +158,59 @@ func TestStatusErrorPermanence(t *testing.T) {
 		}
 	}
 }
+
+// TestStatusErrorDropsHTMLBody checks that a proxy's error page doesn't end up
+// in the log. iNaturalist's own refusals are short text; a 413 comes from nginx
+// as a seven-line HTML document that says nothing the status line doesn't.
+//
+// Verifies: T-034.
+func TestStatusErrorDropsHTMLBody(t *testing.T) {
+	const nginx = `<html>
+<head><title>413 Request Entity Too Large</title></head>
+<body>
+<center><h1>413 Request Entity Too Large</h1></center>
+<hr><center>nginx</center>
+</body>
+</html>`
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusRequestEntityTooLarge)
+		w.Write([]byte(nginx))
+	}))
+	defer server.Close()
+
+	client := NewClient(server.URL, "test-token", "test-user-agent")
+	err := client.CreateObservation(Observation{})
+	if err == nil {
+		t.Fatal("CreateObservation() against a refusing server returned no error")
+	}
+	if strings.Contains(err.Error(), "<html") || strings.Contains(err.Error(), "\n") {
+		t.Errorf("Error carries the proxy's HTML page (T-034): %q", err)
+	}
+	if !strings.Contains(err.Error(), "413") {
+		t.Errorf("Error %q doesn't name the status", err)
+	}
+}
+
+// TestStatusErrorCollapsesWhitespace keeps a genuine multi-line message on one
+// log line.
+//
+// Verifies: T-034.
+func TestStatusErrorCollapsesWhitespace(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusUnprocessableEntity)
+		w.Write([]byte("{\n  \"error\": \"File is too large\"\n}"))
+	}))
+	defer server.Close()
+
+	client := NewClient(server.URL, "test-token", "test-user-agent")
+	err := client.CreateObservation(Observation{})
+	if err == nil {
+		t.Fatal("Expected an error")
+	}
+	if strings.Contains(err.Error(), "\n") {
+		t.Errorf("Error spans multiple lines: %q", err)
+	}
+	if !strings.Contains(err.Error(), "File is too large") {
+		t.Errorf("Error %q lost the explanation", err)
+	}
+}
