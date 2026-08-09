@@ -249,6 +249,15 @@ so importing them means a human or agent turning prose into numbered requirement
 transcription can be wrong. Record who produced it, from which document and revision, on what
 date, and treat it as reviewable material rather than as ground truth.
 
+**Some sources refuse to be fetched.** A publisher may block automated retrieval — a bot
+challenge, a login wall, a paywall, a PDF behind a click-through. Then a human retrieves the
+document and the provenance records that, including who did it and how. Do not work around
+the block: a service that has asked not to be scraped has asked, and evading it to import its
+own rules is self-defeating. Above all, do not fill the gap from memory. An agent asked for a
+rate limit it cannot fetch will produce a plausible number, and a plausible number in a
+requirements document is indistinguishable from a real one. Leave the requirement unwritten
+and the source marked unpinned until someone can supply the text.
+
 ### Scope
 
 A source, or an individual requirement, may declare a scope: the components, surfaces, or
@@ -648,6 +657,7 @@ project's copy diverge.
 | --- | --- |
 | 2026-08-09 | Initial version. Three phases; `P-###`/`T-###`/`AC-###` IDs cited in code comments; criteria in a separate `acceptance.md`; human gates after context2spec and spec2test; per-project details isolated as bindings. |
 | 2026-08-09 | Added composition and conflict resolution: source provenance and qualified IDs; four precedence tiers; `sources.md` manifest with pinned, vendored imports; `decisions.md` conflict-resolution log; optional subject/value structure on value-setting requirements; spec-level acceptance criteria for emergent conflicts; the rule that spec2code never resolves a conflict; blocking treatment of unsatisfiable mandatory requirements. |
+| 2026-08-09 | Added guidance for a source that cannot be fetched: a human retrieves it, the block is not worked around, and the requirement is left unwritten rather than filled in from memory. Prompted by iNaturalist answering automated requests for its own API guidance with a bot challenge. |
 | 2026-08-09 | Warned against deriving a check's expected value from a run rather than from the requirement, after a two-month-old defect survived a test whose allowlist had been built from the buggy output. Distinct from "a criterion must be able to fail": that test would have failed if the code broke, but could never report that the code was already wrong. |
 | 2026-08-09 | Required decision records to separate checked evidence from inference, after a retrofit cited a cleanup tool's existence as support for a bug the tool predated by five months. Version control would have settled it in one command. |
 | 2026-08-09 | Collected the bundle under `spec/`, leaving the repository root for entry-point docs. Motivated by vendored sources needing a directory regardless, by CODEOWNERS on one directory being a mechanical enforcement of Gate 1, and by making `process.md` sit at an identical path in every project so it can be propagated. |

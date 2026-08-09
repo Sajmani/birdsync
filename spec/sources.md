@@ -13,7 +13,7 @@ Whose requirements apply to this project, and who outranks whom. Written per
 | Field | Value |
 | --- | --- |
 | Origin | <https://www.inaturalist.org/pages/api+recommended+practices> |
-| Version | Not yet pinned |
+| Version | **Not pinned — retrieval blocked** (HTTP 403 with a JavaScript challenge, 2026-08-09) |
 | Tier | **Governing** |
 | Import style | By reference |
 | Scope | All requests to the iNaturalist API |
@@ -30,7 +30,7 @@ which is a gap to close in phase 2.
 | Field | Value |
 | --- | --- |
 | Origin | <https://www.inaturalist.org/pages/terms>, <https://www.inaturalist.org/pages/community+guidelines> |
-| Version | Not yet pinned |
+| Version | **Not pinned — retrieval blocked** (HTTP 403 with a JavaScript challenge, 2026-08-09) |
 | Tier | **Mandatory** |
 | Import style | By reference |
 | Scope | Everything birdsync writes to a user's account |
@@ -98,9 +98,17 @@ will otherwise be re-asked every year.
 
 ## Vendoring status
 
-`ml-terms` is vendored and pinned. The other by-reference sources are declared but unpinned,
-which does not satisfy [process.md](process.md#import-style)'s requirement that a
-by-reference source be vendored and pinned.
+`ml-terms` is vendored and pinned. The two iNaturalist sources are **not**, and cannot be
+retrieved by an agent: `www.inaturalist.org/pages/*` answers an automated request with HTTP
+403 and a JavaScript challenge (checked 2026-08-09 for the terms, the community guidelines,
+and the API recommended practices). The `v1/swagger.json` spec is fetchable but carries no
+rate-limit guidance.
+
+Working around the challenge is not on the table — evading a service's bot protection in
+order to import its own rules for being a well-behaved client would be self-defeating. Nor is
+writing the limits from memory: a plausible invented number is indistinguishable from a real
+one once it is in a requirements file, which is how CR-009 happened. These stay unpinned
+until a human saves the pages.
 
 This is a deliberate deferral, not an oversight: fetching and transcribing three sets of
 terms of service is a substantial task with legal consequence, and the transcription is
