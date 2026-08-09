@@ -60,7 +60,7 @@ All are level `code` unless stated otherwise. "Command" is the `-run` pattern un
 | AC-021 | `TestObservationID_Valid` | Unit, table-driven | P-019, P-022 | verified |
 | AC-022 | `.github/workflows/ci.yml` runs AC-001–AC-004 on push and PR | CI configuration | T-030, T-031 | verified |
 | AC-028 | `TestToolsAreReadOnly` | Static analysis (AST) over `tools/` | T-032 | verified |
-| AC-029 | `TestFileExtension`, `TestDownloadMLAsset_Photo`, `_Sound` | Unit + integration | P-045, T-004 | verified |
+| AC-029 | `TestFileExtension`, `TestDownloadMLAsset_Photo`, `_Sound` | Unit + integration, fixtures verified against the real CDN | P-043, P-045, T-004 | verified |
 | AC-030 | `TestFailedUploadIsRetriedNextRun`, `TestAllUploadsFailingLeavesNoUpdate` | Integration, two-run round trip with injected upload failures | P-040, P-047, P-050 | verified |
 | AC-031 | `TestPermanentUploadFailureIsNotRetried`, `TestTransientUploadFailureIsRetried`, `TestStatusErrorPermanence` | Integration + unit, both directions mutation-tested | P-063, P-064 | verified |
 | AC-032 | `TestStatusErrorIncludesBody` | Integration, `httptest` | T-034 | verified |

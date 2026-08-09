@@ -426,6 +426,50 @@ known limit rather than fixed here.
 
 To ask for a retry, delete the `(upload failed)` line from the observation's description.
 
+## CR-009 — No sound file could be downloaded at all
+
+- **Kind:** requirement violated by implementation; a check that passed on invented data
+- **Subject:** `media.filename.extension`
+- **Involves:** P-043, P-045, T-004
+- **Found:** 2026-08-09, while diagnosing the observation that surfaced CR-007
+
+The Macaulay Library CDN serves sounds as `Content-Type: audio/mpeg3`, confirmed against it
+for three independent assets (`637691397`, `623187742`, `633968116`); photos come as
+`image/jpeg`. `audio/mpeg3` is not a registered media type, so
+`mime.ExtensionsByType("audio/mpeg3")` returns an empty list, and `fileExtension` treated
+that as an error. `DownloadMLAsset` therefore failed for every sound, before any upload was
+attempted.
+
+This dates from `0c7b6d2`, which replaced a hardcoded `ext := ".mp3"` for sounds — which
+worked — with detection from the response header, which does not. It is the third defect
+from that commit, after [CR-006](#cr-006--uploaded-file-extensions-varied-by-machine) and
+[CR-007](#cr-007--a-failed-media-upload-leaves-its-url-in-the-description).
+
+**CR-006's fix did not catch it, and neither did its test.** The canonical map was built from
+the value in the existing test fixture, `audio/mpeg`, which was never checked against the
+CDN. The test then passed because the fixture and the map agreed with each other. This is
+precisely the failure mode added to [process.md](process.md#failure-modes-to-watch-for) hours
+earlier — an expected value derived from something other than reality — and repeating it that
+quickly says the warning is worth keeping.
+
+**Resolved 2026-08-09:** the map is keyed on content types verified against the CDN, and
+`fileExtension` can no longer fail: an unrecognised type falls back to what the endpoint
+implies, since the photo URL serves images and the sound URL serves audio. Naming a file
+slightly wrong is a far smaller harm than refusing to download it.
+
+The system mime database is no longer consulted at all. It produced both extension bugs: a
+platform-dependent answer for JPEG and no answer for MP3.
+
+The test fixture now sends `audio/mpeg3`, and the fallback is observable — the tests assert
+which types are mapped rather than only which extension comes out, because the fallback
+returns `.mp3` for sounds too and would otherwise mask a missing map entry. Deleting
+`audio/mpeg3` from the map now fails the suite; before that assertion it changed nothing any
+test could see.
+
+**Not yet confirmed against the live service.** No sound has been synced since the fix. The
+three assets above are attached to observations that predate `0c7b6d2`, which is consistent
+with sounds having worked until then.
+
 ## Work arising
 
 Phase-3 changes owed by the resolutions above. None may be implemented before

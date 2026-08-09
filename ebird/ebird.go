@@ -217,11 +217,7 @@ func downloadMLAsset(baseURL, mlAssetID string) (string, bool, error) {
 	}
 
 	// Detect the file extension from the Content-Type response header.
-	// The Macaulay Library CDN sets this reliably for both photos and sounds.
-	ext, err := fileExtension(resp.Header.Get("Content-Type"))
-	if err != nil {
-		return "", isPhoto, fmt.Errorf("DownloadMLAsset(%s): %w", mlAssetID, err)
-	}
+	ext := fileExtension(resp.Header.Get("Content-Type"), isPhoto)
 	tmpFile.Close() // Close the file before renaming it.
 
 	newPath := tmpFile.Name() + ext
@@ -233,37 +229,44 @@ func downloadMLAsset(baseURL, mlAssetID string) (string, bool, error) {
 }
 
 // canonicalExtensions gives one extension per content type the Macaulay
-// Library serves.
+// Library serves. The values are what the CDN actually sends, checked against
+// it, not what the standards suggest it ought to send: sounds arrive as
+// audio/mpeg3, which is not a registered type at all.
 //
-// mime.ExtensionsByType returns every extension registered for a type, sorted,
-// and the system's mime database decides what that set contains. Taking its
-// first element produced .jpe for a JPEG on macOS, .jfif on Linux, and .m2a
-// for an MP3 on both — so the name a file arrived under in iNaturalist
-// depended on the machine that uploaded it (T-004), and none of those three is
-// the extension a user or a service expects (P-045).
+// The system mime database is deliberately not consulted. mime.ExtensionsByType
+// returns every extension registered for a type, sorted, and which ones those
+// are depends on the machine — it gave .jpe for a JPEG on macOS, .jfif on
+// Linux, and nothing whatsoever for audio/mpeg3. Both of this file's extension
+// bugs came from trusting it (T-004, P-045).
 var canonicalExtensions = map[string]string{
-	"image/jpeg": ".jpg",
-	"image/png":  ".png",
-	"audio/mpeg": ".mp3",
-	"audio/wav":  ".wav",
+	"image/jpeg":  ".jpg",
+	"image/png":   ".png",
+	"audio/mpeg":  ".mp3",
+	"audio/mpeg3": ".mp3",
+	"audio/wav":   ".wav",
 }
 
-// fileExtension returns the filename extension to use for an asset served with
-// the given Content-Type header.
-func fileExtension(contentType string) (string, error) {
+// fileExtension returns the filename extension for an asset served with the
+// given Content-Type. isPhoto says which endpoint answered.
+//
+// It cannot fail. An unrecognised content type falls back to what the endpoint
+// implies, because the photo URL serves images and the sound URL serves audio;
+// getting the extension slightly wrong is a much smaller harm than refusing to
+// download a user's media over it, which is what the previous version did to
+// every sound file.
+func fileExtension(contentType string, isPhoto bool) string {
 	mediaType, _, err := mime.ParseMediaType(contentType)
-	if err != nil {
-		return "", fmt.Errorf("fileExtension: parsing content type %q: %w", contentType, err)
+	if err == nil {
+		if ext, ok := canonicalExtensions[mediaType]; ok {
+			return ext
+		}
 	}
-	if ext, ok := canonicalExtensions[mediaType]; ok {
-		return ext, nil
+	// Worth knowing about: it means the CDN has started serving something new,
+	// and the map should be extended rather than left to the fallback.
+	log.Printf("Unrecognized Content-Type %q for a %s; falling back by endpoint",
+		contentType, map[bool]string{true: "photo", false: "sound"}[isPhoto])
+	if isPhoto {
+		return ".jpg"
 	}
-	// Something the Macaulay Library hasn't served before. Fall back to the
-	// system database rather than failing the download; the result may vary
-	// between machines, which is exactly why the known types are mapped above.
-	extensions, err := mime.ExtensionsByType(mediaType)
-	if err != nil || len(extensions) == 0 {
-		return "", fmt.Errorf("fileExtension: no extension for mime type %q: %w", mediaType, err)
-	}
-	return extensions[0], nil
+	return ".mp3"
 }

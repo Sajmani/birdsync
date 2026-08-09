@@ -95,7 +95,15 @@ func eBirdMLAssets(mlAssets string) mlAssetSet {
 // did. Both suppress a retry, but only the uploaded set is compared against the
 // media actually attached to the observation, so a recorded failure doesn't
 // report a count mismatch on every run (P-063).
-const failedMarker = "(upload failed)"
+//
+// Only the opening fragment is matched, so the guidance that follows it can be
+// reworded without orphaning descriptions already written.
+const failedMarker = "(upload failed"
+
+// failedNote is the full parenthetical written into the description. It
+// explains itself because the person who finds it is reading an observation,
+// not this source file, and the retry mechanism is otherwise undiscoverable.
+const failedNote = "(upload failed permanently; delete this from the description to retry)"
 
 // iNatMLAssets parses the Macaulay Library assets recorded in an observation's
 // description, separating those birdsync uploaded from those the service
@@ -121,7 +129,7 @@ func assetLine(id string, ok bool) string {
 	if ok {
 		return "Macaulay Library Asset: " + mlAssetURL(id) + "\n"
 	}
-	return "Macaulay Library Asset " + failedMarker + ": " + mlAssetURL(id) + "\n"
+	return "Macaulay Library Asset " + failedNote + ": " + mlAssetURL(id) + "\n"
 }
 
 func mlAssetURL(id string) string {

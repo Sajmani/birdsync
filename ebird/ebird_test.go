@@ -1,10 +1,13 @@
 package ebird
 
 import (
+	"bytes"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 )
@@ -18,7 +21,11 @@ func TestDownloadMLAsset_Sound(t *testing.T) {
 			// Photo not found; this is a sound asset.
 			http.NotFound(w, r)
 		case "/asset/" + assetID + "/mp3":
-			w.Header().Set("Content-Type", "audio/mpeg")
+			// audio/mpeg3 is what the Macaulay Library CDN actually sends,
+			// verified against it. The previous fixture said audio/mpeg, a
+			// plausible invention, and that is why nobody noticed that no
+			// sound file could be downloaded at all.
+			w.Header().Set("Content-Type", "audio/mpeg3")
 			w.WriteHeader(http.StatusOK)
 			w.Write([]byte("fake mp3 data"))
 		default:
@@ -252,52 +259,58 @@ func TestObservationID_Valid(t *testing.T) {
 
 // TestFileExtension covers the mapping directly, including the cases the two
 // download tests can't reach. The extension has to be the same on every
-// machine: mime.ExtensionsByType returns a sorted set, so taking its first
-// element gave .jpe on macOS, .jfif on Linux, and .m2a for MP3 audio
-// everywhere — a filename that depended on whose laptop ran the sync (T-004).
+// machine, and the function must never fail: refusing to download a user's
+// sound file because its content type wasn't recognised is a far worse outcome
+// than naming it slightly wrong (T-004, P-045).
 //
 // Verifies: P-045, T-004.
 func TestFileExtension(t *testing.T) {
 	tests := []struct {
-		contentType string
-		want        string
-		wantAny     bool // any non-empty extension is acceptable
-		wantErr     bool
+		contentType  string
+		isPhoto      bool
+		want         string
+		wantFallback bool // reached the endpoint default rather than the map
 	}{
-		{contentType: "image/jpeg", want: ".jpg"},
+		// Content types confirmed against the Macaulay Library CDN.
+		{contentType: "image/jpeg", isPhoto: true, want: ".jpg"},
+		{contentType: "audio/mpeg3", want: ".mp3"},
+		// Registered spelling, in case the CDN ever switches to it.
 		{contentType: "audio/mpeg", want: ".mp3"},
-		{contentType: "image/png", want: ".png"},
+		{contentType: "image/png", isPhoto: true, want: ".png"},
 		// Parameters are legal on the header and must not defeat the lookup.
-		{contentType: "image/jpeg; charset=binary", want: ".jpg"},
-		{contentType: "IMAGE/JPEG", want: ".jpg"},
-		// Unmapped but known to the system: falls back rather than failing.
-		// No specific extension is asserted, because the answer genuinely
-		// depends on the machine's mime database — text/plain resolves to
-		// .conf on macOS. Asserting one would rebuild the fragility this
-		// mapping exists to remove.
-		{contentType: "text/plain", wantAny: true},
-		{contentType: "not a media type", wantErr: true},
+		{contentType: "image/jpeg; charset=binary", isPhoto: true, want: ".jpg"},
+		{contentType: "IMAGE/JPEG", isPhoto: true, want: ".jpg"},
+		// Unrecognised: fall back to what the endpoint implies rather than
+		// failing, which is what lost every sound file.
+		{contentType: "audio/x-something-new", want: ".mp3", wantFallback: true},
+		{contentType: "image/webp", isPhoto: true, want: ".jpg", wantFallback: true},
+		{contentType: "", want: ".mp3", wantFallback: true},
+		{contentType: "not a media type", isPhoto: true, want: ".jpg", wantFallback: true},
 	}
 	for _, tt := range tests {
-		t.Run(tt.contentType, func(t *testing.T) {
-			got, err := fileExtension(tt.contentType)
-			if tt.wantErr {
-				if err == nil {
-					t.Fatalf("fileExtension(%q) = %q, want an error", tt.contentType, got)
-				}
-				return
-			}
-			if err != nil {
-				t.Fatalf("fileExtension(%q) error = %v", tt.contentType, err)
-			}
-			if tt.wantAny {
-				if got == "" {
-					t.Errorf("fileExtension(%q) returned no extension", tt.contentType)
-				}
-				return
-			}
+		name := tt.contentType
+		if name == "" {
+			name = "empty"
+		}
+		t.Run(name, func(t *testing.T) {
+			// The fallback returns the same answer as the map for the types
+			// birdsync sees, so comparing extensions alone can't tell whether
+			// a type is actually mapped. Watch for the warning instead:
+			// without this, deleting audio/mpeg3 from the map changes nothing
+			// that any test can see.
+			var logged bytes.Buffer
+			log.SetOutput(&logged)
+			defer log.SetOutput(os.Stderr)
+
+			got := fileExtension(tt.contentType, tt.isPhoto)
 			if got != tt.want {
-				t.Errorf("fileExtension(%q) = %q, want %q", tt.contentType, got, tt.want)
+				t.Errorf("fileExtension(%q, isPhoto=%v) = %q, want %q",
+					tt.contentType, tt.isPhoto, got, tt.want)
+			}
+			fellBack := strings.Contains(logged.String(), "Unrecognized Content-Type")
+			if fellBack != tt.wantFallback {
+				t.Errorf("fileExtension(%q) fell back to the endpoint default = %v, want %v: %s",
+					tt.contentType, fellBack, tt.wantFallback, logged.String())
 			}
 		})
 	}
