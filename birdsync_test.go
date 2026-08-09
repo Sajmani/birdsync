@@ -2,6 +2,7 @@ package main
 
 import (
 	"iter"
+	"os"
 	"strings"
 	"testing"
 	"time"
@@ -13,6 +14,11 @@ import (
 
 type mockEBirdClient struct {
 	records []ebird.Record
+
+	// tempDir, when set, makes DownloadMLAsset write a real file there and
+	// record its path in downloaded, so a test can check it gets cleaned up.
+	tempDir    string
+	downloaded []string
 }
 
 func (m *mockEBirdClient) Records(path string) (iter.Seq[ebird.Record], error) {
@@ -25,8 +31,23 @@ func (m *mockEBirdClient) Records(path string) (iter.Seq[ebird.Record], error) {
 	}, nil
 }
 
+// DownloadMLAsset returns an empty filename by default. Set tempDir to make it
+// behave like the real one and write an actual file, which is what a test of
+// temp-file cleanup needs.
 func (m *mockEBirdClient) DownloadMLAsset(id string) (string, bool, error) {
-	return "", false, nil // isPhoto is false (media are sounds)
+	if m.tempDir == "" {
+		return "", false, nil // isPhoto is false (media are sounds)
+	}
+	f, err := os.CreateTemp(m.tempDir, "ML"+id+"-*.mp3")
+	if err != nil {
+		return "", false, err
+	}
+	defer f.Close()
+	if _, err := f.WriteString("fake asset data"); err != nil {
+		return "", false, err
+	}
+	m.downloaded = append(m.downloaded, f.Name())
+	return f.Name(), false, nil
 }
 
 // uploadedMedia records one call to mockINatClient.UploadMedia.
@@ -740,5 +761,50 @@ func TestCreatedObservationContent(t *testing.T) {
 	}
 	if got := mockInat.uploaded[0].assetID; got != "33333" {
 		t.Errorf("Uploaded asset ID = %q, want %q (P-045)", got, "33333")
+	}
+}
+
+// TestTempFilesAreCleanedUp checks that downloaded media doesn't accumulate in
+// the system temp directory. Each asset is downloaded to a temp file and
+// uploaded; nothing deleted them afterwards, so a full sync of an account with
+// thousands of photos left thousands of files behind.
+//
+// Verifies: T-023.
+func TestTempFilesAreCleanedUp(t *testing.T) {
+	origDebug := debug
+	debug = true
+	defer func() { debug = origDebug }()
+
+	dir := t.TempDir()
+	mockEbird := &mockEBirdClient{
+		tempDir: dir,
+		records: []ebird.Record{{
+			SubmissionID:     "S700",
+			ScientificName:   "Corvus brachyrhynchos",
+			CommonName:       "American Crow",
+			Date:             "2023-01-03",
+			Time:             "03:00 PM",
+			MLCatalogNumbers: "70001 70002",
+		}},
+	}
+	mockInat := &mockINatClient{}
+
+	resetFlags()
+
+	birdsync("MyEBirdData.csv", mockEbird, "myUserID", mockInat)
+
+	if len(mockEbird.downloaded) != 2 {
+		t.Fatalf("Downloaded %d assets, want 2", len(mockEbird.downloaded))
+	}
+	for _, name := range mockEbird.downloaded {
+		if _, err := os.Stat(name); !os.IsNotExist(err) {
+			t.Errorf("Temp file %s still exists after the run (T-023)", name)
+		}
+	}
+
+	// The uploads must still have happened: deleting the file too early would
+	// pass this test and break the feature.
+	if len(mockInat.uploaded) != 2 {
+		t.Errorf("Uploaded %d assets, want 2", len(mockInat.uploaded))
 	}
 }

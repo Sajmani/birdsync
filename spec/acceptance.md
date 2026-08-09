@@ -101,7 +101,7 @@ would break AC-004 for everyone.
 | AC-023 | A `--dryrun` run's summary says `Would create` / `Would update`, never `Created` / `Updated` | P-060, T-007 | CR-001 |
 | ~~AC-024~~ | *landed* — `TestDownloadObservationsNoTaxonFilter`, `TestUntaxonedObservationIsRecognized` | P-061, P-020 | CR-003 |
 | ~~AC-025~~ | *landed* — `TestInvalidRecordsAreSkipped` | P-062 | CR-005 |
-| AC-026 | `downloadMLAsset` leaves no file behind after the caller finishes with it | T-023 | Gate 1 |
+| ~~AC-026~~ | *landed* — `TestTempFilesAreCleanedUp` | T-023 | Gate 1 |
 | AC-027 | Static analysis: no `log.Fatal` outside `main` and `tools/` | T-027 | CR-002 |
 
 AC-024 is worth two checks rather than one. Asserting the absent parameter tests the
@@ -216,7 +216,7 @@ requirements have an automated check.
 | T-020 empty name excluded | AC-015 | verified |
 | T-021 asset type unknown before download | AC-018 | verified |
 | T-022 memory ceiling | — | gap (unmeasured; benchmark recommended) |
-| T-023 temp files deleted | AC-026 | pending |
+| T-023 temp files deleted | AC-026 | verified |
 | T-024 `gofmt` | AC-003 | verified |
 | T-025 `go vet` | AC-002 | verified |
 | T-026 error wrapping | — | gap (human review) |

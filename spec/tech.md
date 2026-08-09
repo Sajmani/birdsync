@@ -126,8 +126,8 @@ scale (tens of thousands of records) and is a known ceiling, not a design goal.
 
 **T-023** — Temporary files created while downloading media are deleted before the run
 ends.
-*Status: **not yet satisfied** — `ebird.downloadMLAsset` creates one temp file per asset
-and nothing removes it (`ebird/ebird.go:210-234`). Confirmed as a defect at Gate 1.*
+*The file belongs to the caller once `DownloadMLAsset` returns it, so `birdsync()` removes
+it after the upload attempt, successful or not — at most one asset is on disk at a time.*
 
 ## Code conventions
 

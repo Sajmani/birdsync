@@ -233,6 +233,14 @@ func birdsync(eBirdCSVFilename string, ebirdClient ebirdClient, inatUserID strin
 						continue
 					}
 					err = inatClient.UploadMedia(filename, isPhoto, id, obs.UUID.String())
+					// The download is a temp file that belongs to us now, so
+					// remove it whether or not the upload worked. Syncing an
+					// account with thousands of assets used to leave one file
+					// per asset behind (T-023). Removing here rather than in a
+					// defer keeps at most one asset on disk at a time.
+					if rmErr := os.Remove(filename); rmErr != nil {
+						debugf("Couldn't remove temp file %s: %v", filename, rmErr)
+					}
 					if err != nil {
 						log.Printf("Couldn't upload ML asset %s to iNaturalist: %v", id, err)
 						s.errors++
