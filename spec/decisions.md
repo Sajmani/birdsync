@@ -422,6 +422,10 @@ That run also showed T-034 overshooting: the 413 came from nginx as a seven-line
 which went into the log verbatim. An HTML body is now dropped — it says nothing the status
 line doesn't — and a genuine message is collapsed onto one line.
 
+**P-064 confirmed on the following run**, which reported `1 ML Asset IDs previously failed to
+upload and will not be retried: 637691397`, attempted no download or upload, updated nothing,
+and counted no error. The asset is mentioned once per run and costs nothing.
+
 Permanence is decided by the status code: a 4xx means the service rejected the request itself,
 except 401 (refresh the token), 408 and 429 (try later). Anything else, including every 5xx and
 every network error, stays transient and is retried.

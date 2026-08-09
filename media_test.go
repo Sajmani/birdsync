@@ -69,6 +69,46 @@ func TestMediaChange(t *testing.T) {
 			want: "iNat description lists 1 ML Asset IDs, but observation has 2 media files (2 photos + 0 sounds)",
 		},
 		{
+			// P-064: the asset stays in eBird and is recorded as permanently
+			// failed, so it must be reported and not offered for upload.
+			name: "previously failed asset is reported, not retried",
+			rec: ebird.Record{
+				MLCatalogNumbers: "12345",
+			},
+			r: inat.Result{
+				Description: assetLine("12345", false),
+			},
+			want: "1 ML Asset IDs previously failed to upload and will not be retried: 12345",
+		},
+		{
+			// A failed asset alongside a successful one: only the failure is
+			// reported, and the successful one is neither re-uploaded nor
+			// counted as missing.
+			name: "failed asset alongside an uploaded one",
+			rec: ebird.Record{
+				MLCatalogNumbers: "12345 67890",
+			},
+			r: inat.Result{
+				Description: assetLine("12345", true) + assetLine("67890", false),
+				Photos:      []inat.Photo{{}},
+			},
+			want: "1 ML Asset IDs previously failed to upload and will not be retried: 67890",
+		},
+		{
+			// A failed asset must not count towards the media the description
+			// claims is attached, or every run would report a mismatch.
+			name: "failed asset excluded from the attached-media count",
+			rec: ebird.Record{
+				MLCatalogNumbers: "12345 67890",
+			},
+			r: inat.Result{
+				Description: assetLine("12345", true) + assetLine("67890", false),
+				Photos:      []inat.Photo{{}},
+				Sounds:      nil,
+			},
+			want: "1 ML Asset IDs previously failed to upload and will not be retried: 67890",
+		},
+		{
 			name: "added, removed, and count mismatch",
 			rec: ebird.Record{
 				MLCatalogNumbers: "12345 99999",

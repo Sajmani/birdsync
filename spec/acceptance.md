@@ -64,6 +64,7 @@ All are level `code` unless stated otherwise. "Command" is the `-run` pattern un
 | AC-030 | `TestFailedUploadIsRetriedNextRun`, `TestAllUploadsFailingLeavesNoUpdate` | Integration, two-run round trip with injected upload failures | P-040, P-047, P-050 | verified |
 | AC-031 | `TestPermanentUploadFailureIsNotRetried`, `TestTransientUploadFailureIsRetried`, `TestStatusErrorPermanence` | Integration + unit, both directions mutation-tested | P-063, P-064 | verified |
 | AC-032 | `TestStatusErrorIncludesBody`, `TestStatusErrorDropsHTMLBody`, `TestStatusErrorCollapsesWhitespace` | Integration, `httptest` | T-034 | verified |
+| AC-033 | `TestMediaChange` — the three failed-asset cases | Unit, table-driven | P-064 | verified |
 
 ### Criteria that do not bite
 
@@ -203,7 +204,7 @@ effect: implementing a fix well means checking it.
 | P-061 no taxon filter | AC-024 | verified |
 | P-062 bad records skipped and counted | AC-025 | verified |
 | P-063 permanent vs transient upload failure | AC-031 | verified |
-| P-064 permanent failures reported each run | AC-031 | partial — recording checked and confirmed live; the per-run report is not asserted by a test |
+| P-064 permanent failures reported each run | AC-031, AC-033 | verified |
 | T-001 single module | AC-001 | verified |
 | T-002 one dependency | — | **gap — see [Recommended additions](#recommended-additions)** |
 | T-003 `go`/`toolchain` policy | — | gap (human review) |
