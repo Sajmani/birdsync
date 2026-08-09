@@ -13,33 +13,39 @@ Whose requirements apply to this project, and who outranks whom. Written per
 | Field | Value |
 | --- | --- |
 | Origin | <https://www.inaturalist.org/pages/api+recommended+practices> |
-| Version | **Not pinned — retrieval blocked** (HTTP 403 with a JavaScript challenge, 2026-08-09) |
+| Version | Retrieved 2026-08-09 by the maintainer from a browser; hash in [PROVENANCE.md](sources/inat-api-2026-08-09/PROVENANCE.md) |
 | Tier | **Governing** |
-| Import style | By reference |
+| Import style | By reference, vendored at `sources/inat-api-2026-08-09/` |
 | Scope | All requests to the iNaturalist API |
-| Adopted parts | Client identification, page size, request rate |
+| Adopted parts | `inat-api/R1`–`R8`, in [requirements.md](sources/inat-api-2026-08-09/requirements.md) |
+| Exclusions | Bulk access routes — observation exports, the GBIF dataset — which serve consumers of iNaturalist data, not a user syncing their own |
 | Owner | iNaturalist |
 
-The service operator can rate-limit or block a client that ignores these, so they
-override local convenience. Already reflected in T-016 (`User-Agent`) and T-017
-(`per_page=200`); the rate-limit guidance is **not yet expressed as a requirement**,
-which is a gap to close in phase 2.
-
+The service operator can rate-limit or block a client that ignores these, so they override
+local convenience. Eight requirements transcribed, of which six are satisfied: T-016
+(`User-Agent`), T-017 (`per_page=200`), T-035 (pacing), T-036 (`id_above` paging), and two
+that hold by construction. `inat-api/R7` — authenticate only when necessary — is a **knowing
+departure**, recorded with its reason rather than left as an oversight.
 ### `inat-terms` — iNaturalist terms of service and community guidelines
 
 | Field | Value |
 | --- | --- |
 | Origin | <https://www.inaturalist.org/pages/terms>, <https://www.inaturalist.org/pages/community+guidelines> |
-| Version | **Not pinned — retrieval blocked** (HTTP 403 with a JavaScript challenge, 2026-08-09) |
+| Version | Retrieved 2026-08-09 by the maintainer from a browser; hashes in [PROVENANCE.md](sources/inat-terms-2026-08-09/PROVENANCE.md) |
 | Tier | **Mandatory** |
-| Import style | By reference |
-| Scope | Everything birdsync writes to a user's account |
-| Adopted parts | Content ownership and licensing; automated posting |
+| Import style | By reference, vendored at `sources/inat-terms-2026-08-09/` |
+| Scope | Everything birdsync writes to a user's account, and the manner of writing it |
+| Adopted parts | `inat-terms/R1`–`R6`, in [requirements.md](sources/inat-terms-2026-08-09/requirements.md) |
+| Exclusions | Conduct rules birdsync cannot reach: harassment, sockpuppets, explicit content, commercial AI training |
 | Owner | iNaturalist |
+| **Incomplete** | The definition of machine generated content is linked but not vendored, and it is the page CR-012 turns on |
 
-Governs what may be uploaded and under whose authority. Relevant to
-[product.md open question 4](product.md#open-questions): birdsync uploads media
-originating in the Macaulay Library into a user's iNaturalist account.
+**Vendored and transcribed 2026-08-09.** Yielded one hard conflict,
+[CR-012](decisions.md#cr-012--is-birdsync-machine-generated-content): the guidelines prohibit
+machines posting content "with no human oversight curating each piece", on pain of account
+suspension, and birdsync is a machine that posts observations. Also `inat-terms/R3`, a
+rate-and-volume clause in the terms themselves, which binds harder than the API guidance
+behind T-035.
 
 ### `ml-terms` — Macaulay Library / eBird media terms
 
@@ -98,8 +104,8 @@ will otherwise be re-asked every year.
 
 ## Vendoring status
 
-`ml-terms` is vendored and pinned. The two iNaturalist sources are **not**, and cannot be
-retrieved by an agent: `www.inaturalist.org/pages/*` answers an automated request with HTTP
+All three by-reference sources are now vendored and pinned. The two iNaturalist ones could
+not be retrieved by an agent and were saved by the maintainer from a browser: `www.inaturalist.org/pages/*` answers an automated request with HTTP
 403 and a JavaScript challenge (checked 2026-08-09 for the terms, the community guidelines,
 and the API recommended practices). The `v1/swagger.json` spec is fetchable but carries no
 rate-limit guidance.

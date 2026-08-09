@@ -643,6 +643,58 @@ service that asks for one request per second. The client now requires the cursor
 and errors out if it doesn't, with a test that caps requests so a regression fails fast rather
 than wedging the suite.
 
+## CR-012 — Is birdsync "machine generated content"?
+
+- **Kind:** conflict between an adopted mandatory source and the product's very purpose
+- **Subject:** `posting.automation`
+- **Involves:** `inat-terms/R4`, `inat-terms/R5`, `inat-api/R6`, P-001, P-002
+- **Found:** 2026-08-09, on vendoring `inat-terms`
+
+iNaturalist's community guidelines carry this, marked `(!)` — a class the page introduces as
+"grounds for immediate suspension without warning":
+
+> "(!) Machine generated observations, identifications, comments, and messages. We do not
+> allow machines to generate and post content on iNat with no human oversight curating each
+> piece of content, and any account suspected of doing so is subject to suspension and the
+> removal of the content."
+
+birdsync is a machine that posts observations. A default run creates every eligible record
+without the user seeing them individually. Whether that is what the rule prohibits turns on
+"human oversight curating each piece of content", and the rule's scope is defined by
+<https://www.inaturalist.org/pages/machine_generated_content>, which is blocked to automated
+retrieval and **not vendored**. Until someone reads it, this cannot be resolved.
+
+**The case that birdsync is outside the rule.** Nothing is generated. Every observation
+originates in a checklist the user typed into eBird by hand; the identification is the name
+they chose; the media is theirs, taken by them. birdsync transfers human-curated records
+between two services the user belongs to, under their own account and their own API token,
+which is exactly the arrangement `inat-api/R6` asks for. The curation happened in eBird.
+
+**The case that it is inside.** The rule says oversight of "each piece of content", and a
+default run posts hundreds of observations the user has not looked at since entering them
+elsewhere, possibly years earlier. iNaturalist's concern is presumably data quality and
+accountability, and neither is served by a user who cannot say what is in their own account.
+`inat-terms/R5` sharpens it: an account that "adds a lot of content very quickly and does not
+respond to comments and messages" is named as a suspension risk, and a birdsync user who
+syncs and walks away is describable in exactly those words.
+
+**Why this is not academic.** The penalty falls on the *user's* account, not on the tool or
+its author. A user could lose their observations for using software the README recommends.
+
+| Option | Effect |
+| --- | --- |
+| A. Read the definition page and decide against it | The only route to an actual answer; needs a human to fetch it |
+| B. Ask iNaturalist directly, on their forum | Definitive and durable; slow, and invites a ruling that might go against the tool |
+| C. Tell users in the README what the guidelines expect of them — review what is created, answer comments | Cheap, honest, and useful whatever A and B conclude; does not by itself resolve the rule |
+| D. Make review the default: require `--dryrun` first, or cap a first run | Aligns the tool with the strictest reading; a large behavior change, and a burden if the strict reading is wrong |
+
+**Recommendation: A, then C, and B if A leaves it ambiguous.** C is worth doing regardless —
+`inat-terms/R5` puts an obligation on the user that birdsync currently never mentions, and
+saying so costs a paragraph.
+
+**Status: escalated — blocked on retrieving
+<https://www.inaturalist.org/pages/machine_generated_content>.**
+
 ## Work arising
 
 Phase-3 changes owed by the resolutions above. None may be implemented before
