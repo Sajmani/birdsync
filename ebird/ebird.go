@@ -80,7 +80,7 @@ func (r Record) ObservationID() ObservationID {
 func Records(filename string) (iter.Seq[Record], error) {
 	f, err := os.Open(filename)
 	if err != nil {
-		log.Fatalf("ebird.Records(%s): %v", filename, err)
+		return nil, fmt.Errorf("Records(%s): %w", filename, err)
 	}
 	defer f.Close()
 
@@ -91,10 +91,10 @@ func Records(filename string) (iter.Seq[Record], error) {
 	r.FieldsPerRecord = -1
 	recs, err := r.ReadAll()
 	if err != nil {
-		log.Fatalf("Error reading CSV records from %s: %v", filename, err)
+		return nil, fmt.Errorf("Records(%s): reading CSV: %w", filename, err)
 	}
 	if len(recs) < 1 {
-		log.Fatalf("No records found in %s", filename)
+		return nil, fmt.Errorf("Records(%s): file is empty", filename)
 	}
 	field := make(map[string]int)
 	for i, f := range recs[0] {

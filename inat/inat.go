@@ -3,6 +3,7 @@ package inat
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"net/url"
@@ -16,7 +17,7 @@ import (
 // DownloadObservations downloads and returns all observations for inatUserID.
 // The dates d1 and d2 specify the start and end of the observation date range if nonzero.
 // The fields list specifies which fields are populated in the results.
-func (c *Client) DownloadObservations(inatUserID string, d1, d2 time.Time, fields ...string) []Result {
+func (c *Client) DownloadObservations(inatUserID string, d1, d2 time.Time, fields ...string) ([]Result, error) {
 	const dateFormat = "2006-01-02"
 	var d1str, d2str string
 	if !d1.IsZero() {
@@ -38,7 +39,7 @@ func (c *Client) DownloadObservations(inatUserID string, d1, d2 time.Time, field
 	for page := 1; ; page++ {
 		u, err := url.Parse(c.baseURL + "/observations")
 		if err != nil {
-			log.Fatal(err)
+			return nil, fmt.Errorf("DownloadObservations: %w", err)
 		}
 		q := u.Query()
 		q.Set("user_id", inatUserID)
@@ -64,17 +65,17 @@ func (c *Client) DownloadObservations(inatUserID string, d1, d2 time.Time, field
 
 		req, err := http.NewRequest("GET", u.String(), nil)
 		if err != nil {
-			log.Fatal(err)
+			return nil, fmt.Errorf("DownloadObservations: %w", err)
 		}
 		body, err := c.roundTrip(req)
 		if err != nil {
-			log.Fatal(err)
+			return nil, fmt.Errorf("DownloadObservations: page %d: %w", page, err)
 		}
 
 		var observations Observations
 		err = json.Unmarshal([]byte(body), &observations)
 		if err != nil {
-			log.Fatal(err)
+			return nil, fmt.Errorf("DownloadObservations: decoding page %d: %w", page, err)
 		}
 
 		if observations.TotalResults == 0 {
@@ -89,7 +90,7 @@ func (c *Client) DownloadObservations(inatUserID string, d1, d2 time.Time, field
 			break
 		}
 	}
-	return results
+	return results, nil
 }
 
 func TestObservation() Observation {

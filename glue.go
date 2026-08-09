@@ -53,7 +53,7 @@ func (ebirdClientImpl) DownloadMLAsset(id string) (string, bool, error) {
 type inatClient interface {
 	GetUserID() string
 	GetAPIToken() string
-	DownloadObservations(string, time.Time, time.Time, ...string) []inat.Result
+	DownloadObservations(string, time.Time, time.Time, ...string) ([]inat.Result, error)
 	CreateObservation(inat.Observation) error
 	UpdateObservation(inat.Observation) error
 	UploadMedia(string, bool, string, string) error
@@ -71,7 +71,7 @@ func (c inatClientImpl) GetAPIToken() string {
 	return inat.GetAPIToken()
 }
 
-func (c inatClientImpl) DownloadObservations(userID string, after, before time.Time, fields ...string) []inat.Result {
+func (c inatClientImpl) DownloadObservations(userID string, after, before time.Time, fields ...string) ([]inat.Result, error) {
 	return c.client.DownloadObservations(userID, after, before, fields...)
 }
 

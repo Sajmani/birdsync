@@ -25,8 +25,11 @@ func main() {
 	apiToken := inat.GetAPIToken()
 	client := inat.NewClient(inat.BaseURL, apiToken, UserAgent)
 
-	results := client.DownloadObservations(inatUserID, time.Time{}, time.Time{},
+	results, err := client.DownloadObservations(inatUserID, time.Time{}, time.Time{},
 		"description", "photos.all", "sounds.all", "taxon.name", "ofvs.all")
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	for _, r := range results {
 		prettyPrintln(r)

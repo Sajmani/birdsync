@@ -165,8 +165,13 @@ func (s stats) summary() []string {
 }
 
 func birdsync(eBirdCSVFilename string, ebirdClient ebirdClient, inatUserID string, inatClient inatClient) stats {
-	results := inatClient.DownloadObservations(inatUserID, after.Time(), before.Time(),
+	results, err := inatClient.DownloadObservations(inatUserID, after.Time(), before.Time(),
 		"description", "observed_on", "photos.all", "sounds.all", "taxon.all", "ofvs.all")
+	if err != nil {
+		// Nothing useful can happen without the existing observations: syncing
+		// blind would duplicate everything the user already has.
+		log.Fatalf("Downloading iNaturalist observations: %v", err)
+	}
 
 	previouslySynced := map[ebird.ObservationID]inat.Result{}
 	type fuzzyKey struct {

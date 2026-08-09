@@ -62,6 +62,7 @@ type mockINatClient struct {
 	userID         string
 	apitoken       string
 	observations   []inat.Result
+	downloadErr    error
 	createObsErr   error
 	updateObsErr   error
 	uploadMediaErr error
@@ -83,8 +84,8 @@ func (m *mockINatClient) GetAPIToken() string {
 	return m.apitoken
 }
 
-func (m *mockINatClient) DownloadObservations(userID string, after, before time.Time, fields ...string) []inat.Result {
-	return m.observations
+func (m *mockINatClient) DownloadObservations(userID string, after, before time.Time, fields ...string) ([]inat.Result, error) {
+	return m.observations, m.downloadErr
 }
 
 func (m *mockINatClient) CreateObservation(obs inat.Observation) error {

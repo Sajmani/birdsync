@@ -52,7 +52,10 @@ func TestDownloadObservations(t *testing.T) {
 	defer server.Close()
 
 	client := NewClient(server.URL, "", "")
-	results := client.DownloadObservations("testuser", time.Time{}, time.Time{})
+	results, err := client.DownloadObservations("testuser", time.Time{}, time.Time{})
+	if err != nil {
+		t.Fatalf("DownloadObservations() error = %v", err)
+	}
 	if len(results) != 2 {
 		t.Errorf("Expected 2 results, got %d", len(results))
 	}
@@ -79,7 +82,9 @@ func TestDownloadObservationsNoTaxonFilter(t *testing.T) {
 	defer server.Close()
 
 	client := NewClient(server.URL, "", "")
-	client.DownloadObservations("testuser", time.Time{}, time.Time{})
+	if _, err := client.DownloadObservations("testuser", time.Time{}, time.Time{}); err != nil {
+		t.Fatalf("DownloadObservations() error = %v", err)
+	}
 
 	if hasIconic {
 		t.Error("Download sent iconic_taxa[]; it must not filter by taxon (P-061)")
@@ -106,7 +111,9 @@ func TestDownloadObservationsDateWindow(t *testing.T) {
 	d1 := time.Date(2023, 1, 2, 15, 4, 5, 0, time.UTC)
 	d2 := time.Date(2023, 3, 4, 6, 7, 8, 0, time.UTC)
 	client := NewClient(server.URL, "", "")
-	client.DownloadObservations("testuser", d1, d2)
+	if _, err := client.DownloadObservations("testuser", d1, d2); err != nil {
+		t.Fatalf("DownloadObservations() error = %v", err)
+	}
 
 	if !sawParams {
 		t.Fatal("Server received no request")
@@ -135,9 +142,33 @@ func TestDownloadObservationsNoDateWindow(t *testing.T) {
 	defer server.Close()
 
 	client := NewClient(server.URL, "", "")
-	client.DownloadObservations("testuser", time.Time{}, time.Time{})
+	if _, err := client.DownloadObservations("testuser", time.Time{}, time.Time{}); err != nil {
+		t.Fatalf("DownloadObservations() error = %v", err)
+	}
 
 	if hasD1 || hasD2 {
 		t.Errorf("Unset date window sent d1=%v d2=%v, want neither (P-025)", hasD1, hasD2)
+	}
+}
+
+// TestDownloadObservationsError checks that a failed download returns an error
+// rather than ending the process. It used to call log.Fatal, which meant a
+// transient server error killed a sync that had already created observations,
+// and killed the test binary in any test that provoked it.
+//
+// Verifies: T-027.
+func TestDownloadObservationsError(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.Error(w, "boom", http.StatusInternalServerError)
+	}))
+	defer server.Close()
+
+	client := NewClient(server.URL, "", "")
+	results, err := client.DownloadObservations("testuser", time.Time{}, time.Time{})
+	if err == nil {
+		t.Fatal("DownloadObservations() with a failing server returned no error")
+	}
+	if results != nil {
+		t.Errorf("DownloadObservations() returned %d results alongside an error", len(results))
 	}
 }

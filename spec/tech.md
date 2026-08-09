@@ -8,9 +8,8 @@ user. Written per [process.md](process.md).
 keep only a terse summary of the hard safety rules, with citations back to the `T-###`
 requirements here.
 
-Five requirements below are **not yet satisfied by the code**. They are the work arising
-from Gate 1, listed in [decisions.md](decisions.md#work-arising), and they are phase-3
-changes: none may be implemented until `acceptance.md` exists and passes Gate 2.
+The five requirements that were unsatisfied at Gate 1 have all been implemented; see
+[decisions.md](decisions.md#work-arising).
 
 ## Module and dependencies
 
@@ -141,10 +140,9 @@ exception, wrapping with a phrase describing the step.
 
 **T-027** — `log.Fatal` is acceptable in `main` and in `tools/`; the `ebird` and `inat`
 packages return errors to their caller.
-*Status: **not yet satisfied** — `ebird.Records` and `inat.DownloadObservations` call
-`log.Fatal`. [CR-002](decisions.md#cr-002--logfatal-in-packages-required-to-return-errors) resolved this in
-favour of fixing both, which changes `DownloadObservations`'s signature and its callers
-in `tools/`.*
+*Enforced by static analysis rather than convention, since a test can show that one
+function returns an error but only analysis can show that no function exits. `os.Exit` is
+checked too, being the same thing under another name.*
 
 **T-028** — User-visible progress goes through `log.Printf`; verbose detail goes through
 `debugf`, gated on `--debug`.

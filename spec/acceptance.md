@@ -102,7 +102,7 @@ would break AC-004 for everyone.
 | ~~AC-024~~ | *landed* — `TestDownloadObservationsNoTaxonFilter`, `TestUntaxonedObservationIsRecognized` | P-061, P-020 | CR-003 |
 | ~~AC-025~~ | *landed* — `TestInvalidRecordsAreSkipped` | P-062 | CR-005 |
 | ~~AC-026~~ | *landed* — `TestTempFilesAreCleanedUp` | T-023 | Gate 1 |
-| AC-027 | Static analysis: no `log.Fatal` outside `main` and `tools/` | T-027 | CR-002 |
+| ~~AC-027~~ | *landed* — `TestNoLogFatalInLibraryPackages` | T-027 | CR-002 |
 
 AC-024 is worth two checks rather than one. Asserting the absent parameter tests the
 mechanism; the empty-taxon round trip tests the requirement, and would survive a future
@@ -220,7 +220,7 @@ requirements have an automated check.
 | T-024 `gofmt` | AC-003 | verified |
 | T-025 `go vet` | AC-002 | verified |
 | T-026 error wrapping | — | gap (human review) |
-| T-027 `log.Fatal` placement | AC-027 | pending |
+| T-027 `log.Fatal` placement | AC-027 | verified |
 | T-028 `log.Printf` vs `debugf` | — | gap (human review) |
 | T-029 comments explain why | — | gap (human review) |
 | T-030 CI runs the standing checks | AC-022 | verified |

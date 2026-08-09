@@ -261,13 +261,19 @@ Code change pending.
 Phase-3 changes owed by the resolutions above. None may be implemented before
 `acceptance.md` exists and passes Gate 2.
 
-| From | Change | Requirements |
-| --- | --- | --- |
-| CR-001 | Relabel the dry-run summary lines | P-060, T-007 |
-| CR-002 | Return errors from `ebird.Records` and `inat.DownloadObservations`; update `tools/` callers | T-027 |
-| CR-003 | Remove the `iconic_taxa[]=Aves` filter; update the README's fuzzy-matching limitation in the same commit | P-061, P-020 |
-| CR-005 | Skip, log, and count records with unparseable fields | P-062 |
-| — | Delete temporary media files after upload | T-023 |
+All five landed in phase 3 on 2026-08-09, each with a criterion watched failing first.
+
+| From | Change | Requirements | Landed |
+| --- | --- | --- | --- |
+| CR-001 | Relabel the dry-run summary lines | P-060, T-007 | `53844b9` |
+| CR-002 | Return errors from `ebird.Records` and `inat.DownloadObservations` | T-027 | this commit |
+| CR-003 | Remove the `iconic_taxa[]=Aves` filter | P-061, P-020 | `084acba` |
+| CR-005 | Skip, log, and count records with unparseable fields | P-062 | `4651b5e` |
+| — | Delete temporary media files after upload | T-023 | `d5f4416` |
+
+CR-002 landed as option A after all, not the recommended option B: with `tools/` reduced to
+`dump`, changing `DownloadObservations`'s signature touched one caller instead of six, so
+the reason for deferring half the fix had gone away.
 
 ## Deferred items
 

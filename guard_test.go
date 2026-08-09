@@ -148,3 +148,72 @@ func TestToolsAreReadOnly(t *testing.T) {
 		t.Fatal("Scanned no .go files under tools/; the check is not doing anything")
 	}
 }
+
+// TestNoLogFatalInLibraryPackages enforces T-027: log.Fatal belongs in main and
+// in tools/, not in a package that has a caller. A library that calls it takes
+// the decision to abort away from the program using it — and in this repository
+// the program using it is sometimes a test, which the call takes down with it.
+//
+// A convention like this cannot be checked by example. A test can show that one
+// function returns an error; only analysis can show that no function exits.
+//
+// Verifies: T-027.
+func TestNoLogFatalInLibraryPackages(t *testing.T) {
+	root, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("Getwd: %v", err)
+	}
+
+	fset := token.NewFileSet()
+	var scanned int
+	err = filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if d.IsDir() {
+			if d.Name() == ".git" {
+				return filepath.SkipDir
+			}
+			return nil
+		}
+		name := d.Name()
+		if !strings.HasSuffix(name, ".go") || strings.HasSuffix(name, "_test.go") {
+			return nil
+		}
+		f, err := parser.ParseFile(fset, path, nil, 0)
+		if err != nil {
+			return err
+		}
+		if f.Name.Name == "main" {
+			return nil // main and tools/ may abort
+		}
+		scanned++
+		rel, _ := filepath.Rel(root, path)
+		ast.Inspect(f, func(n ast.Node) bool {
+			sel, ok := n.(*ast.SelectorExpr)
+			if !ok {
+				return true
+			}
+			pkg, ok := sel.X.(*ast.Ident)
+			if !ok {
+				return true
+			}
+			// os.Exit is the same sin under another name.
+			bad := (pkg.Name == "log" && strings.HasPrefix(sel.Sel.Name, "Fatal")) ||
+				(pkg.Name == "os" && sel.Sel.Name == "Exit")
+			if bad {
+				t.Errorf("%s:%d calls %s.%s in package %s: library packages return errors "+
+					"to their caller (T-027)",
+					rel, fset.Position(sel.Pos()).Line, pkg.Name, sel.Sel.Name, f.Name.Name)
+			}
+			return true
+		})
+		return nil
+	})
+	if err != nil {
+		t.Fatalf("Walking %s: %v", root, err)
+	}
+	if scanned == 0 {
+		t.Fatal("Scanned no non-main .go files; the check is not doing anything")
+	}
+}
