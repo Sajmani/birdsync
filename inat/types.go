@@ -95,8 +95,13 @@ type Observations struct {
 }
 
 type Result struct {
-	CreatedAt            string    `json:"created_at,omitempty"`
-	Description          string    `json:"description,omitempty"`
+	CreatedAt   string `json:"created_at,omitempty"`
+	Description string `json:"description,omitempty"`
+	// ID is the numeric observation id. It is the cursor for paging: the API
+	// refuses to page past 10,000 results by page number, so DownloadObservations
+	// walks the set with id_above (T-036). Unlike UUID, the v2 API only returns
+	// it when "id" is named in the fields parameter.
+	ID                   int       `json:"id,omitempty"`
 	IdentificationsCount int       `json:"identifications_count,omitempty"`
 	ObservedOn           string    `json:"observed_on,omitempty"`
 	Ofvs                 []Ofv     `json:"ofvs,omitempty"`

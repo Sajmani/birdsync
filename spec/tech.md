@@ -118,10 +118,12 @@ warns that persistent offenders may be IP-blocked. Status: **not satisfied** —
 requests as fast as they complete. A first sync of a media-heavy account is thousands of
 writes: reads are not the exposure.*
 
-**T-036** — An observation download that would exceed the API's 10,000-result paging limit
-uses `id_above` with an ascending id sort instead of page numbers.
-*Rationale: `inat-api/R3`, and [CR-011](decisions.md#cr-011--the-download-cannot-page-past-10000-results).
-Status: **not satisfied**.*
+**T-036** — The observation download pages with `id_above` and an ascending id sort, never
+with page numbers, and stops when a page comes back short.
+*Rationale: `inat-api/R3` and [CR-011](decisions.md#cr-011--the-download-cannot-page-past-10000-results).
+`total_results` shrinks as the cursor advances, so it cannot decide when to stop. The client
+requires the cursor to advance on every page: without that check, a server ignoring `id_above`
+makes the loop re-fetch one page forever.*
 
 ## Data format handling
 

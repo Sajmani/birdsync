@@ -624,7 +624,24 @@ it is purely about request volume and can be judged on that alone. It should not
 as a fix for this, because it leaves a ceiling and reintroduces a duplicate risk to buy back
 two requests per run.
 
-**Status: escalated — awaiting the owner.**
+**Resolved 2026-08-09: option A.** `DownloadObservations` pages by `id_above` with an
+ascending id sort, and stops on a short page — `total_results` cannot be used to decide when
+to stop, because it shrinks as the cursor advances. `Result` gains the numeric `ID`, and the
+client adds `id` to the fields list itself, since the v2 API returns `uuid` unasked but not
+`id`, and no caller should have to know that paging depends on it.
+
+Verified against the live API before implementing: `id_above=240459987` on the maintainer's
+account returned the next record rather than the first, and `total_results` fell from 1482 to
+1481. An earlier probe with `id_above=100000000` proved nothing, since that threshold is below
+every id in the account — a test whose result is the same whether or not the feature works.
+
+Mutation-testing the change turned up a second defect. Removing the cursor did not fail the
+test, it **hung**: a full page always looks like there is more to fetch, so the loop
+re-requested the same page forever. In production a stripped parameter or an unsupported
+future API version would make birdsync download the same page indefinitely and hammer a
+service that asks for one request per second. The client now requires the cursor to advance
+and errors out if it doesn't, with a test that caps requests so a regression fails fast rather
+than wedging the suite.
 
 ## Work arising
 

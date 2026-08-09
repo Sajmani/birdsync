@@ -65,6 +65,7 @@ All are level `code` unless stated otherwise. "Command" is the `-run` pattern un
 | AC-031 | `TestPermanentUploadFailureIsNotRetried`, `TestTransientUploadFailureIsRetried`, `TestStatusErrorPermanence` | Integration + unit, both directions mutation-tested | P-063, P-064 | verified |
 | AC-032 | `TestStatusErrorIncludesBody`, `TestStatusErrorDropsHTMLBody`, `TestStatusErrorCollapsesWhitespace` | Integration, `httptest` | T-034 | verified |
 | AC-033 | `TestMediaChange` — the three failed-asset cases | Unit, table-driven | P-064 | verified |
+| AC-034 | `TestDownloadObservationsPagesByID`, `TestDownloadObservationsCursorMustAdvance` | Integration, `httptest` fake honouring `per_page` | P-065, T-036 | verified |
 
 ### Criteria that do not bite
 
@@ -85,6 +86,7 @@ failing. Three checks were mutation-tested while writing this document:
 | AC-027 | restore a `log.Fatal` in `inat` | fails, as intended |
 | AC-028 | a scratch tool calling `DeleteObservation` | fails, as intended |
 | AC-031 | `Permanent()` forced to `true`, then to `false` | fails both ways, as intended |
+| AC-034 | `id_above` removed from the request | **hung instead of failing** — fixed by the cursor-advance guard, which now makes it fail in two requests |
 | AC-008 | `IgnorePhotos: true` → `false` | fails, as intended |
 | AC-005 | added a scratch `_test.go` naming the live API host | fails, as intended |
 
