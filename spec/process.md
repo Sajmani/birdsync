@@ -408,6 +408,10 @@ humans who own the project.
    never do. Batch the questions rather than dripping them out one at a time.
 6. Record what you could not resolve under "Open questions" in the relevant file. An unresolved
    question is a legitimate output of this phase; a guess dressed up as a requirement is not.
+7. **Record which inputs were actually consulted**, by name, in the spec. Listing inputs in a
+   method does not cause anyone to read them, and a skipped one is invisible afterwards — the
+   spec looks equally complete either way. The issue tracker is the one most often missed and
+   the most likely to contain a defect already diagnosed by the person who reported it.
 
 ### Compose
 
@@ -657,6 +661,7 @@ project's copy diverge.
 | --- | --- |
 | 2026-08-09 | Initial version. Three phases; `P-###`/`T-###`/`AC-###` IDs cited in code comments; criteria in a separate `acceptance.md`; human gates after context2spec and spec2test; per-project details isolated as bindings. |
 | 2026-08-09 | Added composition and conflict resolution: source provenance and qualified IDs; four precedence tiers; `sources.md` manifest with pinned, vendored imports; `decisions.md` conflict-resolution log; optional subject/value structure on value-setting requirements; spec-level acceptance criteria for emergent conflicts; the rule that spec2code never resolves a conflict; blocking treatment of unsatisfiable mandatory requirements. |
+| 2026-08-09 | Required phase 1 to record which inputs it actually consulted, after a retrofit skipped the issue tracker and spent a day rediscovering a bug the maintainer had already diagnosed there, while also mistaking a workaround for an optimization by trusting a commit message over the discussion that prompted it. |
 | 2026-08-09 | Added guidance for a source that cannot be fetched: a human retrieves it, the block is not worked around, and the requirement is left unwritten rather than filled in from memory. Prompted by iNaturalist answering automated requests for its own API guidance with a bot challenge. |
 | 2026-08-09 | Warned against deriving a check's expected value from a run rather than from the requirement, after a two-month-old defect survived a test whose allowlist had been built from the buggy output. Distinct from "a criterion must be able to fail": that test would have failed if the code broke, but could never report that the code was already wrong. |
 | 2026-08-09 | Required decision records to separate checked evidence from inference, after a retrofit cited a cleanup tool's existence as support for a bug the tool predated by five months. Version control would have settled it in one command. |

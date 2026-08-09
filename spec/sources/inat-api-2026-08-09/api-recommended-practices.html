@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xml:lang="en-US"
+    lang="en-US"
+      dir="ltr"
+    xmlns:fb="http://www.facebook.com/2008/fbml"
+    xmlns:og="http://ogp.me/ns#">
+  <head prefix="og: http://ogp.me/ns# fb: http://ogp.me/ns/fb# inaturalist: http://ogp.me/ns/fb/inaturalist#">
+    <meta http-equiv="content-type" content="text/html;charset=UTF-8" />
+    <meta http-equiv="Content-Language" content="en-US">
+    <title>API Recommended Practices
+ ·  iNaturalist </title>
+    <link rel="shortcut icon" type="image/x-icon" href="https://static.inaturalist.org/sites/1-favicon.png?1573071870" />
+    <link rel="stylesheet" media="screen" href="https://www.inaturalist.org/assets/blueprint_bundle-abd97b0ec0a543c55a469b107f90fae8827d94e1c9d42f99ebb28fed992d69c6.css" />
+      <meta name="viewport" content="width=980">
+     <link rel="stylesheet" media="screen" href="https://www.inaturalist.org/assets/font-awesome-990f381a2419ee6705e676495f996801f42447fbd5ecc045aff9837a3ed5bbea.css" />
+<link rel="stylesheet" media="screen" href="https://www.inaturalist.org/assets/application_bundle-339f9b77aa936242a88202ff256ab9da0914c58b374e6887427de0e11969fc4b.css" />
+  <link rel="stylesheet" media="screen" href="https://static.inaturalist.org/sites/1-stylesheet.css?1573579729" />
+<!--[if lte IE 7]>
+  <link rel="stylesheet" media="screen" href="https://www.inaturalist.org/assets/ie-8b3a4b99429f63a6660eb4243b740658672a467d477f4cb9e80ecad24a22f1d5.css" />
+<![endif]-->
+
+    <link rel="stylesheet" media="screen" href="https://www.inaturalist.org/assets/blueprint-inat-a92a250c2621b3a050e84155be6270c453c6f883af0da327ab1340cdcf4a0b5a.css" />
+    <link rel="stylesheet" media="screen" href="https://www.inaturalist.org/assets/blueprint-bootstrap-bcc84cce067ee4d97b95ab789f560eafbe00954421d70871fa15eb7482888866.css" />
+    <script src="https://www.inaturalist.org/assets/jquery/jquery-1.9.1.min-a45feb0ae4fb8dbc947dc4616d1bffc997dea3e68d86d17c7e71be4d5e0a3ca7.js"></script>
+    <script src="https://www.inaturalist.org/assets/jquery/jquery-ui-1.9.1.min-5724f98b0e9b24a44ffd1ea573de4fb72b34ce39e8ecc756aa80698880854250.js"></script>
+    <script src="https://www.inaturalist.org/assets/bootstrap.min-de4d24b0afda2fba676de7a31e9c20aeeca988062aa428d329a221a553cd663e.js"></script>
+    
+    <script type="text/javascript">
+  //<![CDATA[
+    I18n = { }
+    I18n.defaultLocale = "en";
+    I18n.locale = "en-US";
+    I18n.fallbacks = true;
+  //]]>
+</script>
+<script src="https://www.inaturalist.org/assets/i18n/translations/en-US-b9face7e012371cc911d5bc42455eb165140e5b8affed29d81efa48be94ed9f1.js"></script>
+
+    <script type="text/javascript">
+        var SITE = {
+          name: "iNaturalist",
+          short_name: "iNat",
+          logo_square: "https://static.inaturalist.org/sites/1-logo_square.png?1573071870"
+        };
+      var PREFERRED_PLACE;
+      PREFERRED_PLACE = {"id":1,"name":"United States","place_type":12,"ancestor_place_ids":[97394,1],"created_at_utc":"2009-06-30T04:46:15.000Z","updated_at_utc":"2018-09-06T14:34:21.635Z","place_type_name":"Country"}
+        var CURRENT_USER = {
+          id: 8543312,
+          login: 'sameerajmani',
+          email: "ajmani@gmail.com",
+          icon_url: 'https://static.inaturalist.org/attachments/users/icons/8543312/medium.jpg?1726101619',
+          roles: [],
+          prefers_scientific_name_first: false,
+          preferred_observations_search_map_type: "hybrid"
+        };
+      var CONTROLLER_ACTION = "WikiPagesController::show";
+      var CONFIG = {
+        content_freeze_enabled: false
+      };
+    </script>
+    <script src="https://www.inaturalist.org/assets/application_bundle-4e6c012068145b3b0d55073f6312f4d4a1c19a149fb044ac478496f9bef8190c.js"></script>
+    <meta name="csrf-param" content="authenticity_token" />
+<meta name="csrf-token" content="1UXKd/B1wLCNlkki8dv1lA60nqIRl21U1U2u0l6vOJlIMRCEgSUxq7ga9ZGgjWxwn5F4r3R6GLujmhC0hMzO8g==" />
+    <meta name="config:inaturalist_api_url" content="https://api.inaturalist.org/v1">
+    <meta property="og:type" content="website"/>
+      <meta name="inaturalist-api-token" content="eyJhbGciOiJIUzUxMiJ9.eyJ1c2VyX2lkIjo4NTQzMzEyLCJleHAiOjE3ODYzOTc2NDJ9.3bgJjQSiepqBfLm_PdO-3MRPFGix7aGRU_u1v0Dus0VNHn_kKy-PjDAQ5BfKUKDbPTX_opRrLrZCZHbboXFPXA" />
+      <meta property="og:site_name" content="iNaturalist"/>
+    
+    <link rel="stylesheet" media="screen" href="https://www.inaturalist.org/assets/wiki-fa3bb980ebe3cd34ae5e6b13b2751bed06f0eadd807ad2b9a67c3bf11a38213e.css" />
+<style>
+  #wrapper li { font-size: 125%; }
+  code { padding: 3px; background: #ffbbaa;}
+</style>
+    <script src="https://maps.google.com/maps/api/js?key=AIzaSyDsHVgl1tZrI_tlyI8Rg6n6SUEvSHQjfkE&amp;language=en-US&amp;libraries=&amp;region=US&amp;v=3.51"></script>
+<script src="https://www.inaturalist.org/assets/map_bundle-a024a722883de351080d633ee38204b0709a7baaf211ce6f86cdef73883f19b0.js"></script>
+<script type="text/javascript">
+  //<![CDATA[
+    $( function( ) {
+      $( "#tabs, .tabs").tabs( )
+    } )
+  //]]>
+</script>
+
+      <meta property="og:image" content="https://static.inaturalist.org/sites/1-shareable_image.png?1573071871"/>
+  <script async src='https://www.googletagmanager.com/gtag/js?id=G-TV5BYME7B4'></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments)};
+  gtag('js', new Date());
+
+  
+
+  
+    
+    gtag('config', 'G-TV5BYME7B4', {"anonymize_ip":true});
+  
+
+  
+</script>
+</head>
+<body class="browser">
+  <div id="bodywrapper">
+    
+      <div class="bootstrap search-open" id="header">
+<div class="navtabs" id="narrow-menu">
+<div class="dropdown">
+<div aria-expanded="false" aria-haspopup="true" class="dropdown-toggle" data-toggle="dropdown" id="header-narrow-dropdown-toggle">
+<i class="fa fa-bars"></i>
+</div>
+<ul aria-labelledby="header-narrow-dropdown-toggle" class="dropdown-menu">
+<li><a href="/search">Search</a></li>
+<li><a href="/observations">Explore</a></li>
+<li><a rel="nofollow" href="/observations?place_id=any&amp;user_id=sameerajmani&amp;verifiable=any">Your Observations</a></li>
+<li class="submenu community closed">
+<a href="/people">
+Community
+<i class="submenu-toggle-indicator fa fa-angle-right"></i>
+</a>
+<ul>
+<li><a href="/people">People</a></li>
+<li><a href="/projects">Projects</a></li>
+<li><a href="/journal">Journal Posts</a></li>
+<li><a href="https://forum.inaturalist.org">Forum</a></li>
+</ul>
+</li>
+<li><a href="/observations/identify">Identify</a></li>
+<li class="submenu community closed">
+<a href="https://help.inaturalist.org">
+More
+<i class="submenu-toggle-indicator fa fa-angle-right"></i>
+</a>
+<ul>
+<li><a href="/taxa">Taxa Info</a></li>
+<li><a href="/guides">Guides</a></li>
+<li><a href="/places">Places</a></li>
+<li><a href="/stats">Site Stats</a></li>
+<li><a href="https://help.inaturalist.org">Help</a></li>
+<li><a href="https://help.inaturalist.org/en/support/solutions/folders/151000552105">Getting Started</a></li>
+<li><a href="https://help.inaturalist.org/en/support/solutions/articles/151000176472-understanding-projects-on-inaturalist">Understanding Projects</a></li>
+<li><a href="https://help.inaturalist.org/en/support/solutions/articles/151000170805-inaturalist-educator-s-guide">Educator&#39;s Guide</a></li>
+<li><a href="https://help.inaturalist.org/en/support/solutions/folders/151000547795">Video Tutorials</a></li>
+<li><a href="https://www.inaturalist.org/pages/curator+guide">Curator Guide</a></li>
+<li><a rel="nofollow" href="https://www.inaturalist.org/donate?utm_content=header-more">Donate</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="navtabs" id="logonav">
+<a class="logolink innertab" href="/" title="iNaturalist">
+<img alt="iNaturalist" src="https://static.inaturalist.org/sites/1-logo.svg?1573071870" />
+</a>
+</div>
+<div class="search navtabs form-group open" id="headersearch">
+<div class="searchwrapper">
+<input class="form-control" placeholder="Search" type="text" />
+</div>
+<button class="btn btn-default btn-inat btn-focus show-btn">
+<i class="fa fa-search"></i>
+</button>
+<button class="btn btn-link hide-btn">
+<i class="fa fa-times-circle"></i>
+</button>
+</div>
+<ul class="navtabs" id="mainnav">
+<li class="navtab">
+<a href="/observations">Explore</a>
+</li>
+<li class="navtab">
+<a rel="nofollow" href="/observations?place_id=any&amp;user_id=sameerajmani&amp;verifiable=any">Your Observations</a>
+</li>
+<li class="navtab communitytab menutab">
+<div class="dropdown">
+<div aria-expanded="false" aria-haspopup="true" class="dropdown-toggle" data-toggle="dropdown" id="header-community-dropdown-toggle">
+<a href="/people">Community</a>
+<i class="fa fa-angle-down"></i>
+</div>
+<ul aria-labelledby="header-community-dropdown-toggle" class="dropdown-menu dropdown-menu-left">
+<li><a href="/people">People</a></li>
+<li><a href="/projects">Projects</a></li>
+<li><a href="/journal">Journal Posts</a></li>
+<li><a href="https://forum.inaturalist.org">Forum</a></li>
+</ul>
+</div>
+</li>
+<li class="navtab header-md header-lg">
+<a href="/observations/identify">Identify</a>
+</li>
+<li class="navtab moretab menutab active">
+<div class="dropdown">
+<div aria-expanded="false" aria-haspopup="true" class="dropdown-toggle" data-toggle="dropdown" id="header-more-dropdown-toggle">
+More
+<i class="fa fa-angle-down"></i>
+</div>
+<ul aria-labelledby="header-more-dropdown-toggle" class="dropdown-menu">
+<li class="header-xs header-sm"><a href="/observations/identify">Identify</a></li>
+<li><a href="/taxa">Taxa Info</a></li>
+<li><a href="/guides">Guides</a></li>
+<li><a href="/places">Places</a></li>
+<li><a href="/stats">Site Stats</a></li>
+<li class="divider" role="separator"></li>
+<li><a href="https://help.inaturalist.org">Help</a></li>
+<li><a href="https://help.inaturalist.org/en/support/solutions/folders/151000552105">Getting Started</a></li>
+<li><a href="https://help.inaturalist.org/en/support/solutions/articles/151000176472-understanding-projects-on-inaturalist">Understanding Projects</a></li>
+<li><a href="https://help.inaturalist.org/en/support/solutions/articles/151000170805-inaturalist-educator-s-guide">Educator&#39;s Guide</a></li>
+<li><a href="https://help.inaturalist.org/en/support/solutions/folders/151000547795">Video Tutorials</a></li>
+<li><a href="https://www.inaturalist.org/pages/curator+guide">Curator Guide</a></li>
+<li class="divider" role="separator"></li>
+<li><a rel="nofollow" href="https://www.inaturalist.org/donate?utm_content=header-more">Donate</a></li>
+</ul>
+</div>
+</li>
+</ul>
+<div class="navtabs add-obs">
+<a class="btn btn-default btn-inat btn-focus" href="/observations/upload"><i class="fa fa-arrow-circle-up"></i>
+<span class="header-md header-lg">Upload</span>
+</a></div>
+<ul class="navtabs" id="usernav">
+<li class="navtab messages" id="messagesnav">
+<div class="dropdown">
+<div aria-expanded="false" aria-haspopup="true" class="dropdown-toggle" id="header-messages-dropdown-toggle">
+<i class="fa fa-envelope"></i>
+<span class="count">0</span>
+</div>
+<div aria-labelledby="header-messages-dropdown-toggle" class="dropdown-menu dropdown-menu-right" id="messagessubnav">
+<div class="loadingwrapper"><span class=" loading status">Loading...</span></div>
+</div>
+</div>
+</li>
+<li class="navtab updates" id="updatesnav">
+<div class="dropdown">
+<div aria-expanded="false" aria-haspopup="true" class="dropdown-toggle" id="header-updates-dropdown-toggle">
+<i class="fa fa-comment"></i>
+<span class="count">0</span>
+</div>
+<div aria-labelledby="header-updates-dropdown-toggle" class="dropdown-menu dropdown-menu-right" id="updatessubnav">
+<div class="loadingwrapper"><span class=" loading status">Loading...</span></div>
+</div>
+</div>
+</li>
+<li class="navtab user menutab">
+<div class="dropdown">
+<div aria-expanded="false" aria-haspopup="true" class="dropdown-toggle" data-toggle="dropdown" id="header-user-menu-dropdown-toggle">
+<a href="/home"><div class="user_image inlineblock usericon inlineblock" style="width: 48px; height: 48px;  max-width: 48px; background-image: url(https://static.inaturalist.org/attachments/users/icons/8543312/medium.jpg?1726101619), url(https://static.inaturalist.org/attachments/users/icons/8543312/thumb.jpg?1726101619);"> </div>
+</a><i class="fa fa-angle-down"></i>
+</div>
+<ul aria-labelledby="header-user-menu-dropdown-toggle" class="dropdown-menu dropdown-menu-right">
+<li><a href="/home">Dashboard</a></li>
+<li><a class="observations_link" href="/observations/sameerajmani">Edit Observations</a></li>
+<li class="header-xs header-sm">
+<a href="/observations/upload">Add Observations</a>
+</li>
+<li><a class="calendar_link" href="/calendar/sameerajmani">Calendar</a></li>
+<li><a class="identifications_link" href="/identifications/sameerajmani">Identifications</a></li>
+<li><a class="lists_link" href="/lists/sameerajmani">Lists</a></li>
+<li><a class="journal_link" href="/journal/sameerajmani">Journal</a></li>
+<li><a class="votes_link" href="/faves/sameerajmani">Favorites</a></li>
+<li><a class="projects_link" href="/projects/user/sameerajmani">Projects</a></li>
+<li class="divider" role="separator"></li>
+<li><a class="profile_link" href="/people/8543312">Profile</a></li>
+<li><a class="profile_link" href="/people/8543312/edit">Account Settings</a></li>
+<li class="divider" role="separator"></li>
+<li class="signout"><a href="/logout">Sign Out</a></li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+
+    
+    
+
+
+    <div id="wrapper" class="container clear">
+      
+<h2>API Recommended Practices</h2>
+<h3>Intro</h3>
+
+<ul>
+<li>  iNaturalist has for a long time offered an API through the website, documented at <a href="https://www.inaturalist.org/pages/api+reference">https://www.inaturalist.org/pages/api+reference</a></li>
+<li>  A few years ago we released a newer API at <a href="https://api.inaturalist.org/">https://api.inaturalist.org/</a>, which was designed to be more consistent with faster response times, and to be the scalable API to use going forward. We recommend using the new API and consider the old one deprecated</li>
+<li>  The new API is used by the iNaturalist mobile applications and the iNaturalist website. Since our own applications rely on the new API functioning, it will be better supported and we’ll be more responsive to fixing and improving it</li>
+<li>  If there are methods implemented in the old API that aren’t present in the new API, and this is preventing you from using the new API, please let us know. Posting to <a href="https://forum.inaturalist.org/">https://forum.inaturalist.org/</a> is a good way to make feature requests</li>
+<li>  The new API does not re-implement the OAuth authentication endpoints in the older API, and those are the only non-deprecated endpoints in the old API</li>
+</ul>
+
+<h3>Authentication</h3>
+
+<ul>
+<li>  The preferred way to make an authenticated request in the newer API is to use a JSON Web Token (JWT), available at <a href="https://www.inaturalist.org/users/api_token">https://www.inaturalist.org/users/api_token</a></li>
+<li>  These tokens expire in 24 hours, and you’ll need to fetch a new token when it expires</li>
+<li>  Include the JWT in an HTTP <code>Authorization</code> header, e.g. <code>Authorizaton: YOUR_JWT</code></li>
+<li>  OAuth tokens from the older API must be used to fetch JWTs</li>
+<li>  Authenticate API requests only when required. Since the data returned from authenticated requests might contain private information, these requests are not cached, therefore they can require more server time to process</li>
+<li>  Simplifying and unifying authentication is on our development wish list</li>
+</ul>
+
+<h3>Pagination</h3>
+
+<ul>
+<li>  The <code>page</code> and <code>per_page</code> parameters can be used to fetch up to (for many endpoints) 10k results. An error will be thrown if results beyond 10k are requested. This is due to database memory implications of paging through large result sets</li>
+<li>  Any change the search parameters, like adding date filters, or filtering by taxon, will be a new search. So try changing filters instead of paging through a huge result set</li>
+<li>  Be sure to use enough search filters so that you’re only fetching the data you plan to use</li>
+<li>  If more than 10k results are needed, that would be considered a bulk request, which are not best handled by the API. See the “Bulk Requests” section below</li>
+<li>  One way to use the API and fetch more than 10k records is to sort by id ascending (e.g. <code>&amp;order_by=id&amp;order=asc</code>) and use the <code>id_above</code> parameter set to the ID of the record in the last batch. <code>id_above</code> is a search parameter, so this is essentially the same recommendation as above to change search parameters, but by using a parameter that doesn’t affect the nature of the results</li>
+</ul>
+
+<h3>Bulk Requests</h3>
+
+<ul>
+<li>  To fetch a lot of observation data efficiently, we recommend using observation exports <a href="https://www.inaturalist.org/observations/export">https://www.inaturalist.org/observations/export</a></li>
+<li>  We hope to expand exports in the future to include more core data types to export (identifications, taxa, etc), and to have more pre-packaged large datasets available</li>
+<li>  Another recommended way to get a lot of data at once is to use the dataset of research grade observations that we submit weekly to GBIF <a href="https://www.gbif.org/dataset/50c9509d-22c7-4a22-a47d-8c48425ef4a7">https://www.gbif.org/dataset/50c9509d-22c7-4a22-a47d-8c48425ef4a7</a></li>
+<li>  A benefit to using this dataset is it has a DOI (<a href="https://doi.org/10.15468/ab3s5x">https://doi.org/10.15468/ab3s5x</a>) that can be used to cite iNaturalist data use, and <a href="https://www.gbif.org/dataset/50c9509d-22c7-4a22-a47d-8c48425ef4a7/activity">these citations can be tracked</a></li>
+<li>  You can also export subsets of this data on GBIF itself. Custom exports on GBIF also come with their own citable DOI, which help both GBIF and iNat track which records were used in a particular publication, which taxa receive more research attention, etc.</li>
+<li>  If using the API to fetch a lot of results, please use the highest supported <code>per_page</code> value. For example you can get up to 200 observations in a single request, which would be faster and more efficient than fetching the default 30 results at a time</li>
+<li>  If fetching multiple records by ID, please send a concatenated list of multiple IDs to fetch many records in a single request as opposed to fetching each record individually, e.g. <a href="https://api.inaturalist.org/v1/observations/10000,10001,10002">https://api.inaturalist.org/v1/observations/10000,10001,10002</a></li>
+<li>  If you’re looking for even more data, contact us directly at <a href="/cdn-cgi/l/email-protection#48202d2438082126293c3d3a2924213b3c66273a2f"><span class="__cf_email__" data-cfemail="046c616874446d6a6570717665686d77702a6b7663">[email&#160;protected]</span></a></li>
+</ul>
+
+<h3>Query Rate</h3>
+
+<ul>
+<li>  Please keep requests to about 1 per second, and around 10k API requests a day</li>
+<li>  The API is meant to be used for building applications and for fetching small to medium batches of data. It is not meant to be a way to download data in bulk</li>
+<li>  Requests exceeding this limit might be throttled, and will return an HTTP 429 exception “Too Many Requests”</li>
+<li>  Please add delays into your code to keep under these limits, and especially if you’re getting 429 errors</li>
+<li>  We may block IPs that consistently exceed these limits</li>
+<li>  Please use a single IP address for fetching data. If we think multiple IPs are being used in coordination to bypass rate limits, we may block those IPs regardless of query rate</li>
+<li>  Downloading over 5 GB of media per hour or 24 GB of media per day may result in a permanent block</li>
+<li>  If writing software to interact with the API, please consider using a custom <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/User-Agent">User Agent</a> to identify your application if your development environment allows it; this could be set to the name of your app, an iNaturalist username, or anything we might use to differentiate your requests</li>
+<li>  The User Agent can be set with an HTTP header, e.g. <code>User-Agent: [[application or user name]</code></li>
+</ul>
+
+<h3>Building software using the API</h3>
+
+<ul>
+<li>  If you are creating an application that will allow users to post data to iNaturalist, please do not do it using a group account (i.e. many individuals submitting data under a single username).</li>
+<li>  Use one of the various <a href="https://www.inaturalist.org/pages/api+reference#auth">OAuth authentication flows</a> to allow users to log in to iNaturalist as themselves</li>
+</ul>
+
+<h3>Feature Requests / Suggestions</h3>
+
+<ul>
+<li>  Please post any API-related feature requests, bug reports, or suggestions to the forum <a href="https://forum.inaturalist.org/">https://forum.inaturalist.org/</a></li>
+<li>  We’re beginning to think about the next major release of the API. What would you like to see added, changed, or removed?</li>
+</ul>
+
+<div class="meta ui">
+<div class="wiki_page_info">
+  Revised on February 27, 2025 06:23 PM by <a href="/users/1"><img alt="kueda" title="kueda" srcset="https://static.inaturalist.org/attachments/users/icons/1/mini.jpg?1475527316 1x, https://static.inaturalist.org/attachments/users/icons/1/thumb.jpg?1475527316 2x" style=" max-width: 16px" class="user_image  usericon " src="https://static.inaturalist.org/attachments/users/icons/1/mini.jpg?1475527316" /></a> <a title="kueda" href="https://www.inaturalist.org/people/kueda">kueda</a>
+</div>
+</div>
+
+    </div><!-- end wrapper -->
+    
+    <div id="modal_image_box" class="modalbox" style="display:none"></div>
+    <div id="comment_preview" class="modalbox" style="display: none"></div>
+  </div>
+  
+  <div class="bootstrap" id="footer">
+<div class="container">
+<div class="row">
+<div class="col-sm-3 links-col">
+<p>
+<a href="/pages/about">About</a>
+</p>
+<p>
+<a href="https://help.inaturalist.org">Help</a>
+</p>
+<p>
+<a href="https://forum.inaturalist.org">Forum</a>
+</p>
+<p>
+<a href="/pages/press">Press</a>
+</p>
+<p>
+<a href="/pages/jobs">Jobs</a>
+</p>
+<p>
+<a href="https://www.inaturalist.org/blog">Our Blog</a>
+</p>
+<p>
+<a href="/pages/community+guidelines">Community Guidelines</a>
+</p>
+<p>
+<a href="/pages/terms">Terms of Use</a>
+</p>
+<p>
+<a href="/pages/privacy">Privacy</a>
+</p>
+</div>
+<div class="col-sm-3 buttons-col short-text">
+<div class="one-line">
+<a class="btn btn-inat btn-primary btn-block btn-donate" title="DONATE" rel="nofollow" href="/donate?utm_campaign=default&amp;utm_content=footer-button&amp;utm_medium=web">DONATE</a>
+<a class="btn btn-inat btn-primary btn-block btn-donate" title="Store" href="https://store.inaturalist.org">STORE</a>
+</div>
+<div class="social-media">
+<a class="social-media-link facebook" title="Facebook" href="https://www.facebook.com/inaturalist/"><img aria-hidden="true" src="https://www.inaturalist.org/assets/facebook-f-logo-white-2f1726246d88d13949d648abb4b66ed4c212b86b2bacaf483f02bebf806eb0f3.svg" />
+</a><a class="social-media-link instagram" title="Instagram" href="https://instagram.com/inaturalistorg">Instagram</a>
+<a class="social-media-link bluesky" title="Bluesky" href="https://bsky.app/profile/inaturalist.bsky.social"><img aria-hidden="true" src="https://www.inaturalist.org/assets/bluesky-logo-9b9fb2e3b0ad68edc4484143276bd159333123d0a755a7c11ab7e7a82ba6d34e.svg" />
+</a></div>
+</div>
+<div class="col-sm-6">   <div style="display: flex; justify-content: space-evenly">     <a href="https://apps.apple.com/app/apple-store/id6475737561?pt=475606&ct=Web:%20iNaturalist%20footer&mt=8" onclick="javascript:window.location = (window.navigator.userAgent.indexOf('Android') >= 0 ? 'https://play.google.com/store/apps/details?id=org.inaturalist.android' : 'https://apps.apple.com/app/apple-store/id6475737561?pt=475606&ct=Web:%20iNaturalist%20footer&mt=8'); return false;">       <img alt="iNaturalist app icon" src="https://static.inaturalist.org/wiki_page_attachments/3154-medium.png" style="display:block; max-height: 95.95px; max-width: 100%; margin: 0 auto; margin-inline-end: 0px;"/>     </a>     <div style="display: flex; flex-direction: column">       <a href="https://play.google.com/store/apps/details?id=org.inaturalist.android">         <img alt="Android app on Google Play" src="https://static.inaturalist.org/wiki_page_attachments/412-original.png" style="display:block; max-height: 42px; max-width: 100%; margin: 0 auto 18px;"/>       </a>       <a href="https://apps.apple.com/app/apple-store/id6475737561?pt=475606&ct=Web:%20iNaturalist%20footer&mt=8">         <img alt="iPhone app in the Apple App Store" src="https://static.inaturalist.org/wiki_page_attachments/414-original.png" style="display:block; max-height: 42px; max-width: 100%; margin: 0 auto;"/>       </a>     </div>     <a href="https://www.inaturalist.org/pages/seek_app">       <img alt="Seek app icon" src="https://static.inaturalist.org/wiki_page_attachments/3153-medium.png" style="display:block; max-height: 95.95px; max-width: 100%; margin: 0 auto 18px; margin-inline-start: 0px"/>     </a>   </div> </div>
+</div>
+</div>
+</div>
+
+<div class="bootstrap" id="inatnotice">
+<div class="container">
+<div class="row">
+<div class="col-xs-12">
+<div class="links inlineblock">
+<div class="footer-link">
+Member of the <a href="/sites/network">iNaturalist Network</a>
+
+</div>
+<div class="footer-link-separator">
+&nbsp;
+|
+&nbsp;
+</div>
+<div class="footer-link">
+Powered by <a href="https://github.com/inaturalist/inaturalist" target="_new" >iNaturalist open source software</a>
+</div>
+<div class="footer-link-separator">
+&nbsp;
+|
+&nbsp;
+</div>
+<div class="footer-link">
+Documentation for <a href="/pages/developers">developers</a>
+</div>
+</div>
+<div class="btn-group dropup pull-right" id="footer-locale-chooser">
+<button aria-haspopup="aria-haspopup" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+<i class="icon-ios-world"></i>
+English
+<span class="caret"></span>
+<span class="sr-only">Toggle Dropdown</span>
+</button>
+<ul class="dropdown-menu">
+<li>
+<a title="Breton" rel="nofollow" href="/set_locale?locale=br">Breton</a>
+</li>
+<li>
+<a title="Catalan" rel="nofollow" href="/set_locale?locale=ca">Català</a>
+</li>
+<li>
+<a title="Danish" rel="nofollow" href="/set_locale?locale=da">Dansk</a>
+</li>
+<li>
+<a title="German" rel="nofollow" href="/set_locale?locale=de">Deutsch</a>
+</li>
+<li>
+<a title="Estonian" rel="nofollow" href="/set_locale?locale=et">Eesti</a>
+</li>
+<li>
+<a title="English" rel="nofollow" href="/set_locale?locale=en">English</a>
+</li>
+<li>
+<a title="English (UK)" rel="nofollow" href="/set_locale?locale=en-GB">English (UK)</a>
+</li>
+<li>
+<a title="Spanish" rel="nofollow" href="/set_locale?locale=es">Español</a>
+</li>
+<li>
+<a title="Spanish (Argentina)" rel="nofollow" href="/set_locale?locale=es-AR">Español (Argentina)</a>
+</li>
+<li>
+<a title="Spanish (Colombia)" rel="nofollow" href="/set_locale?locale=es-CO">Español (Colombia)</a>
+</li>
+<li>
+<a title="Spanish (Costa Rica)" rel="nofollow" href="/set_locale?locale=es-CR">Español (Costa Rica)</a>
+</li>
+<li>
+<a title="Spanish (Mexico)" rel="nofollow" href="/set_locale?locale=es-MX">Español (México)</a>
+</li>
+<li>
+<a title="Esperanto" rel="nofollow" href="/set_locale?locale=eo">Esperanto</a>
+</li>
+<li>
+<a title="Basque" rel="nofollow" href="/set_locale?locale=eu">Euskara</a>
+</li>
+<li>
+<a title="French" rel="nofollow" href="/set_locale?locale=fr">Français</a>
+</li>
+<li>
+<a title="French (Canada)" rel="nofollow" href="/set_locale?locale=fr-CA">Français (Canada)</a>
+</li>
+<li>
+<a title="Galician" rel="nofollow" href="/set_locale?locale=gl">Galego</a>
+</li>
+<li>
+<a title="Georgian" rel="nofollow" href="/set_locale?locale=ka">Georgian</a>
+</li>
+<li>
+<a title="Croatian" rel="nofollow" href="/set_locale?locale=hr">Hrvatski</a>
+</li>
+<li>
+<a title="Indonesian" rel="nofollow" href="/set_locale?locale=id">Indonesia</a>
+</li>
+<li>
+<a title="Italian" rel="nofollow" href="/set_locale?locale=it">Italiano</a>
+</li>
+<li>
+<a title="Latvian" rel="nofollow" href="/set_locale?locale=lv">Latviešu</a>
+</li>
+<li>
+<a title="Lithuanian" rel="nofollow" href="/set_locale?locale=lt">Lietuvių</a>
+</li>
+<li>
+<a title="Luxembourgish" rel="nofollow" href="/set_locale?locale=lb">Lëtzebuergesch</a>
+</li>
+<li>
+<a title="Hungarian" rel="nofollow" href="/set_locale?locale=hu">Magyar</a>
+</li>
+<li>
+<a title="Malayalam" rel="nofollow" href="/set_locale?locale=ml">Malayalam</a>
+</li>
+<li>
+<a title="Dutch" rel="nofollow" href="/set_locale?locale=nl">Nederlands</a>
+</li>
+<li>
+<a title="Norwegian Bokmål" rel="nofollow" href="/set_locale?locale=nb">Norsk Bokmål</a>
+</li>
+<li>
+<a title="Occitan" rel="nofollow" href="/set_locale?locale=oc">Occitan</a>
+</li>
+<li>
+<a title="Polish" rel="nofollow" href="/set_locale?locale=pl">Polski</a>
+</li>
+<li>
+<a title="Portuguese" rel="nofollow" href="/set_locale?locale=pt">Portuguese</a>
+</li>
+<li>
+<a title="Portuguese (Brazil)" rel="nofollow" href="/set_locale?locale=pt-BR">Português (Brasil)</a>
+</li>
+<li>
+<a title="Santali" rel="nofollow" href="/set_locale?locale=sat">Santali</a>
+</li>
+<li>
+<a title="Albanian" rel="nofollow" href="/set_locale?locale=sq">Shqip</a>
+</li>
+<li>
+<a title="Slovak" rel="nofollow" href="/set_locale?locale=sk">Slovenský</a>
+</li>
+<li>
+<a title="Slovenian" rel="nofollow" href="/set_locale?locale=sl">Slovenščina</a>
+</li>
+<li>
+<a title="Serbian" rel="nofollow" href="/set_locale?locale=sr">Srpski</a>
+</li>
+<li>
+<a title="Finnish" rel="nofollow" href="/set_locale?locale=fi">Suomi</a>
+</li>
+<li>
+<a title="Swedish" rel="nofollow" href="/set_locale?locale=sv">Svenska</a>
+</li>
+<li>
+<a title="Maori" rel="nofollow" href="/set_locale?locale=mi">Te reo Māori</a>
+</li>
+<li>
+<a title="Turkish" rel="nofollow" href="/set_locale?locale=tr">Türkçe</a>
+</li>
+<li>
+<a title="Czech" rel="nofollow" href="/set_locale?locale=cs">Česky</a>
+</li>
+<li>
+<a title="Greek" rel="nofollow" href="/set_locale?locale=el">Ελληνικά</a>
+</li>
+<li>
+<a title="Belarusian" rel="nofollow" href="/set_locale?locale=be">Беларуская</a>
+</li>
+<li>
+<a title="Bulgarian" rel="nofollow" href="/set_locale?locale=bg">Български</a>
+</li>
+<li>
+<a title="Macedonian" rel="nofollow" href="/set_locale?locale=mk">Македонски</a>
+</li>
+<li>
+<a title="Russian" rel="nofollow" href="/set_locale?locale=ru">Русский</a>
+</li>
+<li>
+<a title="Ukrainian" rel="nofollow" href="/set_locale?locale=uk">Українська</a>
+</li>
+<li>
+<a title="Kazakh" rel="nofollow" href="/set_locale?locale=kk">Қазақша</a>
+</li>
+<li>
+<a title="Hebrew" rel="nofollow" href="/set_locale?locale=he">עברית</a>
+</li>
+<li>
+<a title="Arabic" rel="nofollow" href="/set_locale?locale=ar">العربية</a>
+</li>
+<li>
+<a title="Marathi" rel="nofollow" href="/set_locale?locale=mr">मराठी</a>
+</li>
+<li>
+<a title="Tamil" rel="nofollow" href="/set_locale?locale=ta">தமிழ்</a>
+</li>
+<li>
+<a title="Kannada" rel="nofollow" href="/set_locale?locale=kn">ಕನ್ನಡ</a>
+</li>
+<li>
+<a title="Thai" rel="nofollow" href="/set_locale?locale=th">ภาษาไทย</a>
+</li>
+<li>
+<a title="Japanese" rel="nofollow" href="/set_locale?locale=ja">日本語</a>
+</li>
+<li>
+<a title="Chinese (simplified)" rel="nofollow" href="/set_locale?locale=zh-CN">简体中文</a>
+</li>
+<li>
+<a title="Chinese (traditional)" rel="nofollow" href="/set_locale?locale=zh-TW">繁體中文</a>
+</li>
+<li>
+<a title="Korean" rel="nofollow" href="/set_locale?locale=ko">한국어</a>
+</li>
+<li class="divider" role="separator"></li>
+<li><a href="/pages/translate">Help Translate!</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
+  <div id="inat-universal-autocomplete"></div>
+  
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script type="text/javascript" charset="utf-8">
+      setUpdatesCount(0)
+      setMessagesCount(0)
+      setTimeout( getHeaderCounts, 1000 )
+    </script>
+  <script type="text/javascript">
+    if (typeof(ga) != 'undefined') {
+      ga('set', 'dimension1', 'true');
+    }
+  </script>
+  <script src="https://www.inaturalist.org/assets/webpack/runtime-webpack-7087601a8f9d45bfd892ae2deabf5c6cb22ead639ddbe93f05404c67fdae235a.js"></script>
+  <script src="https://www.inaturalist.org/assets/webpack/react-main-webpack-3c38e5a7d7167794bf0174f3e081c0f516e26b428ce15bc077126e27f9d874a9.js"></script>
+  <script src="https://www.inaturalist.org/assets/webpack/users-confirmation-banner-webpack-9ab3dbd398b03801d74bd13abf984e81fd0c9ed5a220559440cf22256bd02850.js"></script>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a289e1ef6a50a0bb',t:'MTc4NjMxMTI0Mg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

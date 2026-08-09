@@ -88,6 +88,23 @@ No pair of these contradicts. Together they do:
 4. It is therefore absent from `previouslySynced`, and the same eBird record is created
    again — violating P-020.
 
+**Corrected 2026-08-09.** Two claims in this entry were wrong, both because the retrofit never
+read the issue tracker — an input [process.md](process.md#gather) names and this analysis
+skipped.
+
+1. **The conflict was already known.** [Issue #5](https://github.com/Sajmani/birdsync/issues/5)
+   carries the maintainer's own statement of it, from January 2026: *"I tried restricting to
+   Aves, but this introduces a subtle bug: if someone changes the taxon for a birdsync-created
+   observation to non-Aves, then subsequent birdsync runs won't see it and will just recreate
+   it."* The composition analysis below rederived, at considerable cost, a bug that was
+   already written down in public.
+2. **The filter was not a download-volume optimization.** It came from PR #4, submitted to
+   work around issue #5 — a hard failure past 10,000 results. The commit message describing it
+   as reducing downloads records the mechanism, not the motive. The cost/benefit below
+   therefore understated what removing it gives up: not two requests, but the only mitigation
+   that existed for P-065.
+
+
 ~~Circumstantial support: `tools/dedupe` exists specifically to delete observations sharing
 a sync key, and the `Aves` filter was added later as a download-volume optimization
 (commit `6f3b826`, "Only download Aves to reduce number of downloads") — after the
@@ -563,6 +580,51 @@ assets. The evidence above supports it and `ml-terms/R4` explains why it should 
 
 Reopen on a counter-example: an asset in someone's export whose `userDisplayName` is not
 theirs. Option B is then a few lines, since the API returns the contributor.
+
+## CR-011 — The download cannot page past 10,000 results
+
+- **Kind:** requirement violated by implementation; a governing source's limit
+- **Subject:** `inat.download.paging`
+- **Involves:** P-023, P-061, P-065, `inat-api/R3`
+- **Found:** reported by a user as [issue #5](https://github.com/Sajmani/birdsync/issues/5) on
+  2026-01-19; missed by the retrofit, which did not read the issue tracker
+
+iNaturalist's recommended practices state it plainly:
+
+> "The `page` and `per_page` parameters can be used to fetch up to (for many endpoints) 10k
+> results. An error will be thrown if results beyond 10k are requested."
+
+`inat.Client.DownloadObservations` pages with `page`/`per_page` and stops when it has
+`totalResults`. For an account with more than 10,000 observations it never gets there: the
+API fails — reported as HTTP 500 in the issue — and the run dies. birdsync is unusable for
+those users, and has been since before the retrofit.
+
+Removing the `Aves` filter under [CR-003](#cr-003--aves-only-download-can-defeat-duplicate-detection)
+made this worse, and CR-003's analysis did not know it: the filter was PR #4's workaround for
+exactly this failure, not the download-volume optimization its commit message described. So
+the two conflicts are coupled, and the coupling was invisible while the issue tracker went
+unread.
+
+| Option | Effect |
+| --- | --- |
+| **A. Page with `id_above`**, sorting by id ascending | The method iNaturalist recommends for exactly this case; no ceiling; works whatever the taxon mix, including an account with 10,000 birds |
+| B. Restore the `Aves` filter | Postpones the ceiling for users who record non-birds; reinstates CR-003's duplicate bug; no help to a birder with 10,000 bird observations |
+| C. Restore the filter as `Aves` + `unknown` | Postpones the ceiling and covers the unresolvable-name case, since `unknown` is a documented `iconic_taxa` value; still fails a disputed ID that resolves to `Animalia`, and still has a ceiling |
+| D. Narrow the download by date window | Already available via `--after`; a workaround the user must know to apply, not a fix |
+
+**Recommendation: A.** It removes the ceiling rather than moving it, and it is what the
+governing source tells clients to do:
+
+> "One way to use the API and fetch more than 10k records is to sort by id ascending (e.g.
+> `&order_by=id&order=asc`) and use the `id_above` parameter set to the ID of the record in
+> the last batch."
+
+C is worth keeping in reserve as a bandwidth optimization once A is in place, at which point
+it is purely about request volume and can be judged on that alone. It should not be adopted
+as a fix for this, because it leaves a ceiling and reintroduces a duplicate risk to buy back
+two requests per run.
+
+**Status: escalated — awaiting the owner.**
 
 ## Work arising
 

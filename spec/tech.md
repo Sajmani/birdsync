@@ -110,6 +110,19 @@ the status code, but the human reading the log needs the reason.*
 *An HTML body is dropped rather than included: it comes from a proxy rather than the API, and
 a 413 arrives as a seven-line nginx page. A message that is kept is collapsed onto one line.*
 
+**T-035** — Requests to the iNaturalist API are paced to the rate its recommended practices
+ask for: about one per second, and about 10,000 per day.
+Subject: `inat.request_rate` · Value: `1/second, 10000/day`
+*Rationale: `inat-api/R1`, a governing source. Exceeding it returns HTTP 429, and the page
+warns that persistent offenders may be IP-blocked. Status: **not satisfied** — birdsync issues
+requests as fast as they complete. A first sync of a media-heavy account is thousands of
+writes: reads are not the exposure.*
+
+**T-036** — An observation download that would exceed the API's 10,000-result paging limit
+uses `id_above` with an ascending id sort instead of page numbers.
+*Rationale: `inat-api/R3`, and [CR-011](decisions.md#cr-011--the-download-cannot-page-past-10000-results).
+Status: **not satisfied**.*
+
 ## Data format handling
 
 **T-018** — The eBird CSV is read by header name, never by column position, with
@@ -136,6 +149,10 @@ scale (tens of thousands of records) and is a known ceiling, not a design goal.
 ends.
 *The file belongs to the caller once `DownloadMLAsset` returns it, so `birdsync()` removes
 it after the upload attempt, successful or not — at most one asset is on disk at a time.*
+*The download's own error paths do not yet honour this: if `io.Copy` or the rename fails, the
+temp file is left behind, and on Windows the handle is left open too — which is what
+[issue #1](https://github.com/Sajmani/birdsync/issues/1) reported as "The process cannot
+access the file because it is being used by another process".*
 
 ## Code conventions
 

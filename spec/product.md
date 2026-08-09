@@ -245,6 +245,17 @@ CR-005.*
 **P-059** — There is no rollback. Observations created before an abort remain in the
 user's account, and re-running is safe because of P-020.
 
+**P-065** — birdsync works for an account with more than 10,000 iNaturalist observations.
+*Status: **not satisfied**. The API refuses to page past 10,000 results, so the download fails
+outright. Reported as [issue #5](https://github.com/Sajmani/birdsync/issues/5) in January 2026
+and still open; see [CR-011](decisions.md#cr-011--the-download-cannot-page-past-10000-results).*
+
+**P-066** — Given a path that is not a readable CSV — a directory, an unextracted zip — birdsync
+says so in terms the user can act on.
+*Rationale: [issue #1](https://github.com/Sajmani/birdsync/issues/1), where a user passed the
+extracted download folder and got `Error reading CSV records from ...: Incorrect function.`, an
+operating-system message that explains nothing. Status: **not satisfied**.*
+
 **P-063** — An upload that fails permanently — the service rejected the file itself, rather
 than the attempt — is recorded in the description as failed and is not attempted again. A
 failure that may be transient is not recorded, and is retried on the next run.
