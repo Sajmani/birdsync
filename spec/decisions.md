@@ -505,7 +505,7 @@ earlier — an expected value derived from something other than reality — and 
 quickly says the warning is worth keeping.
 
 **Resolved 2026-08-09:** the map is keyed on content types verified against the CDN, and
-`fileExtension` can no longer fail: an unrecognised type falls back to what the endpoint
+`fileExtension` can no longer fail: an unrecognized type falls back to what the endpoint
 implies, since the photo URL serves images and the sound URL serves audio. Naming a file
 slightly wrong is a far smaller harm than refusing to download it.
 
@@ -535,7 +535,7 @@ described as their own backup — and `ml-terms/R1` confirms they keep copyright
 birdsync's intended case and it is squarely allowed.
 
 `ml-terms/R3` says another contributor's media "may not be downloaded... without permission
-from the author". birdsync has no way to honour that distinction: it fetches
+from the author". birdsync has no way to honor that distinction: it fetches
 `cdn.download.ams.birds.cornell.edu/api/v2/asset/<id>/2400` unauthenticated, and **the CDN
 serves any asset to anyone** — verified 2026-08-09 with HEAD requests for two assets belonging
 to other contributors, both HTTP 200. Nothing in the pipeline checks, or can check, that an

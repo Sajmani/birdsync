@@ -16,7 +16,7 @@ preserve. Each entry quotes the source so the reading can be checked. See
 > — Cornell Media Licensing Agreement, §1 Rights and Responsibility
 
 **For birdsync:** a user re-publishing their own photo or recording to iNaturalist is
-exercising their own copyright. Nothing in the agreement restricts it — the licence granted
+exercising their own copyright. Nothing in the agreement restricts it — the license granted
 to Cornell is explicitly *non-exclusive*.
 
 ### `ml-terms/R2` — A user may download their own media

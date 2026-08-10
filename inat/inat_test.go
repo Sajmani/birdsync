@@ -164,7 +164,7 @@ func TestDownloadObservationsError(t *testing.T) {
 // is to sort by id ascending and pass the last id seen as id_above, which has
 // no ceiling.
 //
-// The fake honours per_page, as the real API does, and serves 450 results so
+// The fake honors per_page, as the real API does, and serves 450 results so
 // the cursor has to advance twice and then stop on a short page. An earlier
 // version of this test imposed its own page size and so made the client look
 // broken when it was the fake breaking the contract.

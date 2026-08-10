@@ -291,13 +291,13 @@ permitted side of that rule to the prohibited side. Recorded from
 
 **P-068** — The documentation explains that birdsync-created observations are identifiable —
 by the attribution line and the two eBird observation fields — so that identifiers who would
-rather not work on synced records can recognise them.
+rather not work on synced records can recognize them.
 *Rationale: raised on the forum thread in CR-012 as a mitigation for identifier burden. It is
 already true (P-019, P-040); it is simply not written down anywhere a reader would find it.*
 
 ## Amendments from Gate 1
 
-**P-060** — Under `--dryrun`, the observation counters are labelled as hypothetical:
+**P-060** — Under `--dryrun`, the observation counters are labeled as hypothetical:
 `Would create N` and `Would update N`.
 *Rationale: [CR-001](decisions.md#cr-001--a-dry-run-reports-observations-it-did-not-create). The count is
 worth reporting; claiming the work happened is not.*

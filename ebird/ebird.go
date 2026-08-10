@@ -290,7 +290,7 @@ var canonicalExtensions = map[string]string{
 // fileExtension returns the filename extension for an asset served with the
 // given Content-Type. isPhoto says which endpoint answered.
 //
-// It cannot fail. An unrecognised content type falls back to what the endpoint
+// It cannot fail. An unrecognized content type falls back to what the endpoint
 // implies, because the photo URL serves images and the sound URL serves audio;
 // getting the extension slightly wrong is a much smaller harm than refusing to
 // download a user's media over it, which is what the previous version did to

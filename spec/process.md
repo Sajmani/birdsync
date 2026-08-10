@@ -163,7 +163,7 @@ Subject: page.text.color
 Value:   #D3D3D3
 Status:  Superseded by brand/P-009 (CR-007)
 
-Body text on content pages is light grey.
+Body text on content pages is light gray.
 
 Rationale: reduces glare against large light areas in the reading view.
 ```
@@ -317,7 +317,7 @@ so does how you find them:
 | Conditional | The conflict appears only in dark mode, a locale, or a deployment tier | Enumerating the configurations the spec declares |
 | Over-constraint | No value satisfies every applicable constraint | Attempting resolution and failing |
 
-The emergent row is why conflict detection can't be careful reading alone. "Text is light grey"
+The emergent row is why conflict detection can't be careful reading alone. "Text is light gray"
 does not contradict "background is teal"; the violation exists only in a rule computed over both.
 Catching that class requires [spec-level criteria](#spec-level-criteria).
 
@@ -353,7 +353,7 @@ requirement involved, and any follow-up owed to a source owner.
 Sources are never edited to resolve a conflict. Vendored copies stay byte-identical to upstream;
 local requirements are annotated in place, never rewritten to pretend the conflict didn't happen.
 
-**Evidence and inference are labelled separately, and evidence is checked before it is cited.**
+**Evidence and inference are labeled separately, and evidence is checked before it is cited.**
 A plausible causal story — *this cleanup tool exists, so the bug it cleans up must be
 happening* — is a hypothesis. It belongs in the record as one, next to the check that would
 settle it. Most such stories are settled in one command, because version control knows when
@@ -379,14 +379,14 @@ Sources:  brand/    governing   pinned v4.2
           wcag/     mandatory   2.2, Level AAA, adopted in full
 Local:    P-012  page.background.color = blue
           P-013  page.background.color = green
-          P-020  page.text.color       = #D3D3D3   (light grey)
+          P-020  page.text.color       = #D3D3D3   (light gray)
 ```
 
 - Subject `page.background.color` has three active values: `P-012`, `P-013`, and `brand/P-009`
   (teal `#008080`). Brand is governing, so teal wins and both local requirements are superseded —
   **and the `P-012` / `P-013` contradiction is still reported**, because two local requirements
   disagreeing means a shared misunderstanding.
-- A spec-level criterion for `wcag/1.4.6` computes contrast over the resolved values: light grey
+- A spec-level criterion for `wcag/1.4.6` computes contrast over the resolved values: light gray
   on teal is roughly 3.2:1 against a required 7:1. Mandatory tier, so the standard cannot yield.
 - No tier ordering resolves the remainder, so it escalates with candidates:
 

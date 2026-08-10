@@ -17,8 +17,8 @@ IDs are assigned by this transcription. Each entry quotes the source. See
 > — Terms of Use, Responsibility of Contributors
 
 **For birdsync:** uploading a user's own Macaulay Library media applies that user's own
-default licence to their own work. Note birdsync never sets a licence explicitly, so every
-upload takes the account default — worth knowing, since Macaulay and iNaturalist licences are
+default license to their own work. Note birdsync never sets a license explicitly, so every
+upload takes the account default — worth knowing, since Macaulay and iNaturalist licenses are
 chosen separately and need not agree.
 
 ### `inat-terms/R2` — The account holder is responsible for everything done under the account
@@ -68,7 +68,7 @@ falls on the user: an account that syncs hundreds of observations and never answ
 identifier's comment looks exactly like the thing this describes. birdsync cannot discharge
 that for them, but it can say so — currently it does not.
 
-### `inat-terms/R6` — Duplicates are undesirable but not an offence
+### `inat-terms/R6` — Duplicates are undesirable but not an offense
 
 > "Duplicate observations. They're not ideal, but they're usually due to oversight or bugs.
 > Politely ask people to remove them but if they don't, it's not a big deal unless it becomes

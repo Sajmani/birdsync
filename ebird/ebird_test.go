@@ -261,7 +261,7 @@ func TestObservationID_Valid(t *testing.T) {
 // TestFileExtension covers the mapping directly, including the cases the two
 // download tests can't reach. The extension has to be the same on every
 // machine, and the function must never fail: refusing to download a user's
-// sound file because its content type wasn't recognised is a far worse outcome
+// sound file because its content type wasn't recognized is a far worse outcome
 // than naming it slightly wrong (T-004, P-045).
 //
 // Verifies: P-045, T-004.
@@ -281,7 +281,7 @@ func TestFileExtension(t *testing.T) {
 		// Parameters are legal on the header and must not defeat the lookup.
 		{contentType: "image/jpeg; charset=binary", isPhoto: true, want: ".jpg"},
 		{contentType: "IMAGE/JPEG", isPhoto: true, want: ".jpg"},
-		// Unrecognised: fall back to what the endpoint implies rather than
+		// Unrecognized: fall back to what the endpoint implies rather than
 		// failing, which is what lost every sound file.
 		{contentType: "audio/x-something-new", want: ".mp3", wantFallback: true},
 		{contentType: "image/webp", isPhoto: true, want: ".jpg", wantFallback: true},
@@ -380,7 +380,7 @@ func TestRecordsRejectsBadInput(t *testing.T) {
 // Verifies: T-023.
 func TestDownloadMLAssetCleansUpOnError(t *testing.T) {
 	tmp := t.TempDir()
-	t.Setenv("TMPDIR", tmp) // os.CreateTemp("") honours this on Unix
+	t.Setenv("TMPDIR", tmp) // os.CreateTemp("") honors this on Unix
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "image/jpeg")

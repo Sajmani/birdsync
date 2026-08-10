@@ -65,7 +65,7 @@ All are level `code` unless stated otherwise. "Command" is the `-run` pattern un
 | AC-031 | `TestPermanentUploadFailureIsNotRetried`, `TestTransientUploadFailureIsRetried`, `TestStatusErrorPermanence` | Integration + unit, both directions mutation-tested | P-063, P-064 | verified |
 | AC-032 | `TestStatusErrorIncludesBody`, `TestStatusErrorDropsHTMLBody`, `TestStatusErrorCollapsesWhitespace` | Integration, `httptest` | T-034 | verified |
 | AC-033 | `TestMediaChange` — the three failed-asset cases | Unit, table-driven | P-064 | verified |
-| AC-034 | `TestDownloadObservationsPagesByID`, `TestDownloadObservationsCursorMustAdvance` | Integration, `httptest` fake honouring `per_page` | P-065, T-036 | verified |
+| AC-034 | `TestDownloadObservationsPagesByID`, `TestDownloadObservationsCursorMustAdvance` | Integration, `httptest` fake honoring `per_page` | P-065, T-036 | verified |
 | AC-035 | `TestClientPacesRequests`, `TestDefaultMinRequestIntervalMatchesGuidance` | Integration + unit | T-035 | verified — the per-day cap is not checked |
 | AC-036 | `TestRecordsRejectsBadInput` | Unit, temp files | P-066 | verified |
 | AC-037 | README carries the community-obligations section | Human review | P-067, P-068 | verified |

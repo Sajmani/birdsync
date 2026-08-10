@@ -44,9 +44,9 @@ belongs where the decision is made, not in a client that other callers reuse.*
 
 **T-007** — A dry run's counters must not report work that did not happen. Where a dry
 run cannot know something, it counts it as unknown rather than guessing.
-*Status: **not yet satisfied** — the created and updated counters are labelled as though
+*Status: **not yet satisfied** — the created and updated counters are labeled as though
 the work happened. [CR-001](decisions.md#cr-001--a-dry-run-reports-observations-it-did-not-create) resolved this
-in favour of relabelling; implements P-060.*
+in favour of relabeling; implements P-060.*
 
 **T-008** — `inat.Client`'s methods mutate unconditionally and know nothing about
 `--dryrun`. This is deliberate, not an oversight.
@@ -131,7 +131,7 @@ per upload and three per download page, roughly 0.2 requests per second.*
 spacing that made it true disappears. And it is **load-bearing on slowness** — the first
 change that adds concurrency, or that makes uploads faster, silently removes the guarantee
 with nothing to notice. An explicit limiter inverts that: compliance stops depending on the
-code staying slow, which is what makes it safe to parallelise later.*
+code staying slow, which is what makes it safe to parallelize later.*
 
 **T-036** — The observation download pages with `id_above` and an ascending id sort, never
 with page numbers, and stops when a page comes back short.
@@ -166,7 +166,7 @@ scale (tens of thousands of records) and is a known ceiling, not a design goal.
 ends.
 *The file belongs to the caller once `DownloadMLAsset` returns it, so `birdsync()` removes
 it after the upload attempt, successful or not — at most one asset is on disk at a time.*
-*The download's error paths honour it too: `downloadMLAsset` closes and removes the temp file
+*The download's error paths honor it too: `downloadMLAsset` closes and removes the temp file
 on every path but success. Leaving it behind — and on Windows leaving the handle open — is what
 [issue #1](https://github.com/Sajmani/birdsync/issues/1) reported as "The process cannot access
 the file because it is being used by another process" on a later attempt.*

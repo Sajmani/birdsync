@@ -33,15 +33,15 @@ That third one is the interesting one, and it's what the next ninety seconds is 
 
 ## 0:45 – 2:15 · Why composition needs a process
 
-[![Three stacked renderings of the same web page. Top: light grey text on strong blue,
-legible. Middle: the same light grey text on the pale brand blue, barely readable. Bottom:
-dark grey text on the pale brand blue, legible again.](sdd-example.png)](sdd-example.png)
+[![Three stacked renderings of the same web page. Top: light gray text on strong blue,
+legible. Middle: the same light gray text on the pale brand blue, barely readable. Bottom:
+dark gray text on the pale brand blue, legible again.](sdd-example.png)](sdd-example.png)
 
 *Click to open full size. Three renderings of one page: product requirements, then brand
 guidelines applied, then accessibility resolved.*
 
 **Say:** Suppose I'm building a web page. I write two product requirements: the background is
-blue, and the text is light grey. That's the top box. It's legible — **7.41:1** contrast,
+blue, and the text is light gray. That's the top box. It's legible — **7.41:1** contrast,
 comfortably past both WCAG thresholds, AA at 4.5 and AAA at 7. Good design, and I checked.
 
 Now two things arrive that I didn't write.
@@ -68,11 +68,11 @@ than something you hope falls out of code review.
 | **Advisory** | House style guide | Applies wherever local is silent |
 
 Work it through: accessibility cannot yield, brand outranks me, so the only thing that *may*
-move is my text colour. Bottom box — dark grey on the brand blue, **7.84:1**. Passes, with
+move is my text color. Bottom box — dark gray on the brand blue, **7.84:1**. Passes, with
 room to spare.
 
 **The punchline:** the tiers didn't just detect the conflict, they determined *which
-requirement had to change*. And that dark grey on my *original* blue would have been
+requirement had to change*. And that dark gray on my *original* blue would have been
 **1.65:1** — so no single edit fixes it either. The resolution only exists in the composition
 too.
 
@@ -80,7 +80,7 @@ too.
 
 ---
 
-## 2:15 – 3:00 · birdsync, and formalising what it already did
+## 2:15 – 3:00 · birdsync, and formalizing what it already did
 
 **Say:** birdsync copies bird sightings from my eBird account into iNaturalist, with the
 photos and sound recordings. About 2,000 lines of Go. **I wrote it by hand**, and I did the
@@ -242,7 +242,7 @@ concrete changes, each traceable to a rule I had read once and half-remembered.
 
 | New requirement | New criterion | Code change |
 | --- | --- | --- |
-| `T-035` pacing | `AC-035` — three requests must take at least two intervals | A minimum interval in `roundTrip`, the one place any request is made. Compliance no longer depends on the code staying slow — which is what makes it safe to parallelise later |
+| `T-035` pacing | `AC-035` — three requests must take at least two intervals | A minimum interval in `roundTrip`, the one place any request is made. Compliance no longer depends on the code staying slow — which is what makes it safe to parallelize later |
 | `T-036` `id_above` paging | `AC-034` — no `page` parameter; the cursor must advance | Rewrote the download loop; birdsync now works for accounts over 10,000 observations |
 | `P-067`, `P-068` user obligations | `AC-037` — human review | A new [README section](https://github.com/Sajmani/birdsync/blob/main/README.md#being-a-good-inaturalist-citizen) telling users to review what was created and to answer identifiers |
 
@@ -271,7 +271,7 @@ where fidelity is the entire point.
 **1. It skipped an input its own method names.** Phase 1 lists "issues" as a source. It never
 opened the issue tracker — where a user had reported the paging limit seven months earlier,
 and where the reason an existing filter existed was written down. It read the commit message
-instead, and so recorded that filter as a bandwidth optimisation when it was a workaround for
+instead, and so recorded that filter as a bandwidth optimization when it was a workaround for
 that very bug. I had to point at the issue myself before any of it surfaced.
 
 **2. Inference dressed as evidence — twice, in the same entry.** A conflict record cited a
@@ -324,7 +324,7 @@ You need both.
 | Is the method reusable? | [process.md](https://github.com/Sajmani/birdsync/blob/main/spec/process.md) is project-independent; per-project detail is confined to [bindings](https://github.com/Sajmani/birdsync/blob/main/spec/tech.md#project-bindings) |
 | Why not just ask a lawyer? | The transcriptions say plainly they are not legal advice. The value is knowing *which* questions need one |
 | What did resolving CR-012 cost? | Two web fetches, one forum thread, one human with a browser |
-| Where did the colour numbers come from? | Sampled from `talks/sdd-example.png` (`#EEEEEE` on `#0000FF`, then on `#9FC5E8`, then `#2B2B2B` on `#9FC5E8`) and computed with the WCAG relative-luminance formula. Recompute if the slide is edited |
+| Where did the color numbers come from? | Sampled from `talks/sdd-example.png` (`#EEEEEE` on `#0000FF`, then on `#9FC5E8`, then `#2B2B2B` on `#9FC5E8`) and computed with the WCAG relative-luminance formula. Recompute if the slide is edited |
 
 ## Cut list, in order
 
