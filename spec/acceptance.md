@@ -144,10 +144,14 @@ only show that one function returns an error, never that no function calls `log.
 
 ## Traceability
 
-Every requirement, and what verifies it. This table is the honest accounting: **54 of 95
-requirements have an automated check** (52 verified outright, 2 preserved by being used),
-up from 33 of 93 when this document was written. Phase 3 added the rest, mostly as a side
-effect: implementing a fix well means checking it.
+Every requirement, and what verifies it. This table is the honest accounting: **64 of 103 live
+requirements have an automated check**, two more are verified by human review, four are
+partial, and 33 are gaps — up from 33 of 93 when this document was written. Three requirements
+are withdrawn and excluded from the count.
+
+Most of the growth was a side effect rather than a coverage drive: implementing a fix properly
+means checking it. Recount with the script in this file's history rather than editing the
+number by hand, since it has already gone stale once.
 
 | Requirement | Criteria | Status |
 | --- | --- | --- |
