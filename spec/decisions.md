@@ -792,7 +792,6 @@ CR-012 turned on. Note that `www.inaturalist.org/pages/*` answers automated requ
 | Credentials-never-logged has no check at all | P-018, T-012; [acceptance.md](acceptance.md#gaps-worth-naming) |
 | `inat.Client.UploadMedia` is exercised only through a mock | tech.md open questions |
 | `main`'s flag and argument handling is untested | [acceptance.md](acceptance.md#gaps-worth-naming) |
-| `DownloadMLAsset` leaks the temp file, and on Windows its handle, on error paths | T-023; [issue #1](https://github.com/Sajmani/birdsync/issues/1) |
 | A download failure is always transient, so a deleted asset is retried every run | [CR-008](#cr-008--a-permanently-rejected-asset-was-retried-forever) |
 | The per-day request cap is not enforced | T-035 |
 | T-022's memory ceiling is unmeasured, and grew when P-061 dropped the taxon filter | tech.md open questions |

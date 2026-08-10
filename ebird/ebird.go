@@ -235,6 +235,19 @@ func downloadMLAsset(baseURL, mlAssetID string) (string, bool, error) {
 	if err != nil {
 		return "", isPhoto, fmt.Errorf("DownloadMLAsset(%s): CreateTemp: %w", mlAssetID, err)
 	}
+	tmpName := tmpFile.Name()
+	// Clean up on every path but success. A failed download used to abandon the
+	// file, and on Windows its open handle with it — the reported symptom being
+	// "The process cannot access the file because it is being used by another
+	// process" on a later attempt (issue #1, T-023).
+	renamed := false
+	defer func() {
+		tmpFile.Close() // no-op once already closed below
+		if !renamed {
+			os.Remove(tmpName)
+		}
+	}()
+
 	_, err = io.Copy(tmpFile, resp.Body)
 	if err != nil {
 		return "", isPhoto, fmt.Errorf("DownloadMLAsset(%s): failed to copy asset data to file: %w", mlAssetID, err)
@@ -242,13 +255,17 @@ func downloadMLAsset(baseURL, mlAssetID string) (string, bool, error) {
 
 	// Detect the file extension from the Content-Type response header.
 	ext := fileExtension(resp.Header.Get("Content-Type"), isPhoto)
-	tmpFile.Close() // Close the file before renaming it.
+	// Close before renaming: Windows refuses to rename a file that is still
+	// open, which is how issue #1 first surfaced.
+	if err := tmpFile.Close(); err != nil {
+		return "", isPhoto, fmt.Errorf("DownloadMLAsset(%s): closing temp file: %w", mlAssetID, err)
+	}
 
-	newPath := tmpFile.Name() + ext
-	err = os.Rename(tmpFile.Name(), newPath)
-	if err != nil {
+	newPath := tmpName + ext
+	if err := os.Rename(tmpName, newPath); err != nil {
 		return "", isPhoto, fmt.Errorf("DownloadMLAsset(%s): failed to rename file: %w", mlAssetID, err)
 	}
+	renamed = true
 	return newPath, isPhoto, nil
 }
 

@@ -2,6 +2,7 @@ package ebird
 
 import (
 	"bytes"
+	"io"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -364,5 +365,46 @@ func TestRecordsRejectsBadInput(t *testing.T) {
 					err, tt.want)
 			}
 		})
+	}
+}
+
+// TestDownloadMLAssetCleansUpOnError checks that a failed download leaves
+// nothing behind. Every early return used to abandon the temp file, and on
+// Windows its open handle too — which is what issue #1 reported as "The process
+// cannot access the file because it is being used by another process".
+//
+// The failure is forced by promising more body than the server delivers, so
+// io.Copy fails partway: the path where a file has been created and partly
+// written is exactly the one that leaked.
+//
+// Verifies: T-023.
+func TestDownloadMLAssetCleansUpOnError(t *testing.T) {
+	tmp := t.TempDir()
+	t.Setenv("TMPDIR", tmp) // os.CreateTemp("") honours this on Unix
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "image/jpeg")
+		w.Header().Set("Content-Length", "10000")
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("truncated"))
+		// Flush before aborting. Without this the response never reaches the
+		// client, which then fails during Do() before any temp file exists —
+		// and the test passes while exercising nothing.
+		w.(http.Flusher).Flush()
+		panic(http.ErrAbortHandler) // cut the connection mid-body
+	}))
+	defer server.Close()
+	server.Config.ErrorLog = log.New(io.Discard, "", 0) // the abort is expected
+
+	if _, _, err := downloadMLAsset(server.URL, "12345"); err == nil {
+		t.Fatal("downloadMLAsset() with a truncated body returned no error")
+	}
+
+	left, err := os.ReadDir(tmp)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, e := range left {
+		t.Errorf("Left %s behind in the temp directory after a failed download (T-023)", e.Name())
 	}
 }

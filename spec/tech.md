@@ -153,10 +153,10 @@ scale (tens of thousands of records) and is a known ceiling, not a design goal.
 ends.
 *The file belongs to the caller once `DownloadMLAsset` returns it, so `birdsync()` removes
 it after the upload attempt, successful or not — at most one asset is on disk at a time.*
-*The download's own error paths do not yet honour this: if `io.Copy` or the rename fails, the
-temp file is left behind, and on Windows the handle is left open too — which is what
-[issue #1](https://github.com/Sajmani/birdsync/issues/1) reported as "The process cannot
-access the file because it is being used by another process".*
+*The download's error paths honour it too: `downloadMLAsset` closes and removes the temp file
+on every path but success. Leaving it behind — and on Windows leaving the handle open — is what
+[issue #1](https://github.com/Sajmani/birdsync/issues/1) reported as "The process cannot access
+the file because it is being used by another process" on a later attempt.*
 
 ## Code conventions
 
@@ -184,6 +184,9 @@ the most valuable comments in the repository and are preserved through refactors
 
 **T-030** — CI runs build, vet, gofmt, and the test suite under the race detector, on
 every push to `main` and every pull request, using the toolchain declared in `go.mod`.
+*The actions it depends on are kept current: GitHub retires the Node runtime older versions
+target, and a deprecation warning today is a broken build later. `actions/checkout` and
+`actions/setup-go` moved to Node 24 at v5 and v6 respectively; both are pinned at v7.*
 
 **T-031** — CI additionally runs against the latest stable Go as an early warning, and
 that job may fail without blocking a pull request.
