@@ -71,6 +71,7 @@ All are level `code` unless stated otherwise. "Command" is the `-run` pattern un
 | AC-037 | README carries the community-obligations section | Human review | P-067, P-068 | verified |
 | AC-038 | `TestDownloadMLAssetCleansUpOnError` | Integration, truncated response into a redirected `TMPDIR` | T-023 | verified |
 | AC-039 | `TestTranscribedQuotesAppearInSources` | Static analysis over `spec/sources/` | every `<source>/R#` transcription | verified — 29 passages |
+| AC-040 | `TestTalkLinksResolve` | Static analysis over `talks/` | links from `talks/` into the repo | verified — 18 links |
 
 ### Criteria that do not bite
 

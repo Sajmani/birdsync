@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 	"testing"
 )
@@ -318,4 +319,82 @@ func TestTranscribedQuotesAppearInSources(t *testing.T) {
 		t.Fatal("Checked no quotations; the check is not doing anything")
 	}
 	t.Logf("verified %d quoted passages against their vendored sources", checked)
+}
+
+// TestTalkLinksResolve checks every github.com link in talks/ against the
+// working tree: the file must exist, a line range must be within it, and a
+// heading anchor must match a real heading.
+//
+// A talk narrates the repository, so its links rot as the repository changes —
+// and they rot silently, since nobody clicks them until they are on a screen in
+// front of an audience. Line numbers are the worst offender: an edit anywhere
+// above the target moves it, and the link still resolves, just to the wrong
+// place. Anchors survive that, which is why the talk prefers them.
+func TestTalkLinksResolve(t *testing.T) {
+	const prefix = "https://github.com/Sajmani/birdsync/blob/main/"
+	linkRE := regexp.MustCompile(regexp.QuoteMeta(prefix) + `([^)\s]+)`)
+	lineRE := regexp.MustCompile(`^L(\d+)(?:-L(\d+))?$`)
+	// GitHub's heading slug: lowercase, drop punctuation, each space a hyphen.
+	slugPunct := regexp.MustCompile(`[^\w\s-]`)
+	slugify := func(h string) string {
+		h = strings.ToLower(strings.TrimSpace(h))
+		h = strings.NewReplacer("`", "", "*", "", "_", "").Replace(h)
+		return strings.ReplaceAll(slugPunct.ReplaceAllString(h, ""), " ", "-")
+	}
+
+	talks, err := filepath.Glob(filepath.Join("talks", "*.md"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(talks) == 0 {
+		return
+	}
+	var checked int
+	for _, talk := range talks {
+		b, err := os.ReadFile(talk)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, m := range linkRE.FindAllStringSubmatch(string(b), -1) {
+			target := strings.TrimRight(m[1], ".,)>")
+			path, frag, _ := strings.Cut(target, "#")
+			checked++
+
+			content, err := os.ReadFile(path)
+			if err != nil {
+				t.Errorf("%s links to %s, which does not exist", talk, path)
+				continue
+			}
+			lines := strings.Split(string(content), "\n")
+
+			switch {
+			case frag == "":
+			case lineRE.MatchString(frag):
+				g := lineRE.FindStringSubmatch(frag)
+				last := g[1]
+				if g[2] != "" {
+					last = g[2]
+				}
+				n, _ := strconv.Atoi(last)
+				if n > len(lines) {
+					t.Errorf("%s links to %s#%s but the file has %d lines", talk, path, frag, len(lines))
+				}
+			default:
+				var found bool
+				for _, line := range lines {
+					if strings.HasPrefix(line, "#") && slugify(strings.TrimLeft(line, "# ")) == frag {
+						found = true
+						break
+					}
+				}
+				if !found {
+					t.Errorf("%s links to %s#%s, but no heading there has that anchor", talk, path, frag)
+				}
+			}
+		}
+	}
+	if checked == 0 {
+		t.Fatal("Found no links to check in talks/; the check is not doing anything")
+	}
+	t.Logf("verified %d links from %d talk(s)", checked, len(talks))
 }
