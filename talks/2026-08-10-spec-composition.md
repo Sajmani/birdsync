@@ -80,9 +80,11 @@ single edit fixes it. The resolution only exists in the composition too.
 ## 2:15 – 3:00 · birdsync, and formalising what it already did
 
 **Say:** birdsync copies bird sightings from my eBird account into iNaturalist, with the
-photos and sound recordings. About 2,000 lines of Go. **I wrote it by hand**, and I did try to
-be a good citizen — I read the API guidance and the terms of service at the time and followed
-what I remembered of them.
+photos and sound recordings. About 2,000 lines of Go. **I wrote it by hand**, and I did the
+homework — years ago, when I started, I read the API guidance, the terms of service, the rules
+about media copyright and about automated posting. I made decisions based on them.
+
+What I never did was write any of it down.
 
 The first step wasn't to write new requirements. It was to **recover the ones already implicit**
 in the code, the README, and the command-line help, and write them down with identifiers.
@@ -134,23 +136,39 @@ tier, an owner, and a scope.
 **Say:** Two details worth pausing on. **Rejected sources are recorded too** —
 [considered and not adopted](https://github.com/Sajmani/birdsync/blob/main/spec/sources.md#considered-and-not-adopted),
 so "we're not subject to GDPR, and here's why" isn't re-litigated every year. And each source
-is **vendored and hashed**, because a rule you can't quote is a rule you'll misremember —
-which is precisely what I had been doing.
+is **vendored and hashed** — because until now there was no way to notice that a document I'd
+read once had since changed.
 
 ---
 
 ## 4:45 – 6:15 · Resolving the sources against what I'd built
 
-**Say:** Each source became numbered requirements that quote the original verbatim, then say
-what it means here. Composing those against my requirements and my code changed the spec in
-four ways.
+**Say:** Here is what that omission actually costs, in one file.
 
-**1. It answered a question I should have asked years ago.** The Macaulay terms say a
-contributor keeps copyright in their own media and may download it freely — birdsync's core
-operation is squarely permitted. But they also say you may *not* download another
-contributor's media, and birdsync fetches by asset ID from an unauthenticated CDN that will
-serve anyone's asset. I checked 39 assets from the checklists most likely to be shared; none
-belonged to anyone else. That is now a **documented assumption with evidence**, not a hope.
+**Show:** [inat/inat.go, the comment at line 31](https://github.com/Sajmani/birdsync/blob/main/inat/inat.go#L31-L34)
+
+**Say:** I wrote that in July 2025. It quotes iNaturalist's API recommended practices by URL,
+and right below it the code does what that page asks about page size. So I read the page, I
+agreed with it, I implemented it, and I left the citation for the next person.
+
+**The rate limit is on the same page.** One request per second. It was not implemented until
+yesterday.
+
+That's the failure mode, and it isn't carelessness. Reading a document and acting on it leaves
+no record of *which parts you acted on*, *why you decided what you decided*, or *whether it's
+still true*. The knowledge was real; it just lived in one head and in a handful of comments.
+
+So composition didn't discover that I should care about these rules. It did four things I had
+never done:
+
+**1. It turned conclusions into requirements that can be checked.** I had decided years ago
+that re-uploading my own Macaulay photos was fine. The terms confirm it — a contributor keeps
+copyright and may download their own media. But composing that against the code surfaced
+something I hadn't considered: birdsync fetches by asset ID from an unauthenticated CDN that
+will serve *anyone's* asset, so the whole thing rests on an assumption about what an eBird
+export contains. I sampled 39 assets from the checklists most likely to be shared. None
+belonged to anyone else. That assumption is now written down **with its evidence**, where
+before it was a conclusion I'd reached and forgotten reaching.
 
 **2. It nearly stopped the project.** The community guidelines, under a heading marked as
 grounds for immediate suspension:
@@ -163,17 +181,21 @@ not on mine.
 
 **Show:** [CR-012](https://github.com/Sajmani/birdsync/blob/main/spec/decisions.md#cr-012--is-birdsync-machine-generated-content)
 
-**Say:** We resolved it by fetching the definition page that rule links to, which lists
-*acceptable* examples — one of them nearly a description of birdsync: "writing a script to
-create observations from a manually curated local folder of your images and metadata on your
-desktop." Permitted. But the resolution **added two requirements**, `P-067` and `P-068`,
-because the guidelines place an obligation on the *user* that birdsync had never mentioned.
+**Say:** I had thought about this one too, back at the start. What I couldn't produce on my
+own was the answer's *durability*. We resolved it by fetching the definition page that rule
+links to, which lists *acceptable* examples — one nearly a description of birdsync: "writing a
+script to create observations from a manually curated local folder of your images and metadata
+on your desktop." Permitted, and now permitted **on the record, with the text quoted**.
 
-**3. It changed the meaning of a default I already had.** `--verifiable` skips observations
-with no photo. I had justified that as quality — avoid junk in my own account. A moderator's
-comment on the forum reframed it: an observation with no media gives an identifier nothing to
-identify, so it is pure cost to other people. Same default, different reason, now written down
-so nobody flips it for convenience.
+And it **added two requirements**, `P-067` and `P-068`, because the guidelines place an
+obligation on the *user* — review what was created, answer identifiers — that I had understood
+and never passed on to anyone using the tool.
+
+**3. It gave an existing decision a second reason.** `--verifiable` skips observations with
+no photo — a deliberate choice I made for data quality. A moderator's comment reframed it: an
+observation with no media gives an identifier nothing to identify, so it is pure cost to other
+people. Same default, now with both reasons attached, so the next person to find it
+inconvenient knows what they'd be trading away.
 
 **4. It produced two technical requirements I simply did not have.** `T-035`: about one
 request per second. `T-036`: page with `id_above`, because page numbers stop working past
@@ -265,10 +287,15 @@ method. That's the honest status: it is being written by being used, and it is n
 **Close:** Twelve conflicts found and resolved, and a seven-month-old user-reported bug
 closed as a side effect of resolving one of them properly.
 
-But be careful about credit — the specs found some; **CI found one, a `curl` against the real
-service found another, and the issue tracker had a third all along.** Composition made the
-decisions *findable and durable*: each has evidence, a date, and a check that fails if it is
-undone. Running the thing against reality is what *found* them. You need both.
+But I want to end on the thing that surprised me. I had read these documents. I had made
+defensible decisions from them. What I had no way to do was **prove which decisions I'd made,
+show why, notice when the rules changed, or tell my users what the rules asked of them.** That
+is what composition added — not the reading, the *residue* of the reading.
+
+And be careful about credit: the specs found some of these; **CI found one, a `curl` against
+the real service found another, and the issue tracker had a third all along.** Composition
+made the decisions findable and durable. Running the thing against reality is what found them.
+You need both.
 
 ---
 
