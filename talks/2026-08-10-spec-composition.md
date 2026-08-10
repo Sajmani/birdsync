@@ -177,8 +177,24 @@ so nobody flips it for convenience.
 
 **4. It produced two technical requirements I simply did not have.** `T-035`: about one
 request per second. `T-036`: page with `id_above`, because page numbers stop working past
-10,000 results — which a user had reported as a bug seven months earlier, and which I would
-have found sooner by reading my own issue tracker.
+10,000 results.
+
+That second one is the whole story in miniature, so it's worth the thirty seconds:
+
+- **January.** A user hits a hard failure — more than 10,000 observations and the download
+  dies. He files it, *and* sends a pull request that filters the download to birds only, which
+  makes it fail later rather than never. He says so explicitly in the issue.
+- **June.** I merge it. Reasonable: it's an improvement, from a contributor, for a real problem.
+- **August.** Composition finds that the filter causes birdsync to lose track of its own
+  observations and silently duplicate them.
+
+And here's the part I want to land: **the rollback couldn't stand on its own.** Reverting the
+filter would have handed that user his original bug back. Removing the mitigation obliged us
+to remove the limit — so `id_above` went in, the ceiling disappeared, and the January report
+was finally fixed. His reply on the issue was "Good catch."
+
+A well-intentioned workaround, merged in good faith, quietly traded one failure for a subtler
+one. That's the class of thing composition is *for*.
 
 ---
 
@@ -246,11 +262,13 @@ scanning found it.
 **Say:** Ten entries, all from this work. Every one is a real incident that changed the
 method. That's the honest status: it is being written by being used, and it is not finished.
 
-**Close:** Twelve conflicts found and resolved. But be careful about credit — the specs found
-some; **CI found one, a `curl` against the real service found another, and the issue tracker
-had a third all along.** Composition made the decisions *findable and durable*: each has
-evidence, a date, and a check that fails if it is undone. Running the thing against reality is
-what *found* them. You need both.
+**Close:** Twelve conflicts found and resolved, and a seven-month-old user-reported bug
+closed as a side effect of resolving one of them properly.
+
+But be careful about credit — the specs found some; **CI found one, a `curl` against the real
+service found another, and the issue tracker had a third all along.** Composition made the
+decisions *findable and durable*: each has evidence, a date, and a check that fails if it is
+undone. Running the thing against reality is what *found* them. You need both.
 
 ---
 

@@ -109,11 +109,21 @@ and is struck through.
    settled the other. Twice in the same entry, at two levels.
 
    **CR-003 stands as an original finding of the composition analysis.**
-2. **The filter was not a download-volume optimization.** It came from PR #4, submitted to
-   work around issue #5 — a hard failure past 10,000 results. The commit message describing it
-   as reducing downloads records the mechanism, not the motive. The cost/benefit below
-   therefore understated what removing it gives up: not two requests, but the only mitigation
-   that existed for P-065.
+2. **The filter was more than a download-volume optimization** — though it was also that,
+   and this entry's first attempt to correct itself overstated the point. The full chronology,
+   checked 2026-08-10:
+
+   | When | What |
+   | --- | --- |
+   | 2026-01-19 00:23 | `gbabineau` opens [PR #4](https://github.com/Sajmani/birdsync/pull/4): *"downloading the observations takes a while. To reduce the number of downloads, the query can be set to only download Birds."* |
+   | 2026-01-19 00:24 | The same author opens [issue #5](https://github.com/Sajmani/birdsync/issues/5): *"As a way to help this, I submitted PR #4 ... but someone with more than 10,000 bird observations in inaturalist will still see an error."* |
+   | 2026-06-23 | The maintainer merges PR #4 (`88b46f3`) |
+
+   So it was a speed improvement that its author also offered as partial mitigation for a hard
+   failure, and he said plainly it was not a complete fix. The retrofit saw only the commit
+   message, concluded "bandwidth optimization", and therefore priced removing it at two HTTP
+   requests. The real price was the only mitigation P-065 had — which is why removing it
+   obliged us to fix the underlying limit rather than simply revert.
 
 
 ~~Circumstantial support: `tools/dedupe` exists specifically to delete observations sharing
@@ -634,6 +644,14 @@ C is worth keeping in reserve as a bandwidth optimization once A is in place, at
 it is purely about request volume and can be judged on that alone. It should not be adopted
 as a fix for this, because it leaves a ceiling and reintroduces a duplicate risk to buy back
 two requests per run.
+
+**Outcome for the person who reported it.** PR #4's author filed this in January, contributed
+a partial workaround in the same minute, and said it would not help anyone with more than
+10,000 *bird* observations. That workaround was merged in June and rolled back here in August
+for causing [CR-003](#cr-003--aves-only-download-can-defeat-duplicate-detection)'s duplicates
+— which meant the rollback could not stand on its own: removing the mitigation obliged us to
+remove the limit. `id_above` does that, and closed the original report seven months after it
+was filed.
 
 **Resolved 2026-08-09: option A.** `DownloadObservations` pages by `id_above` with an
 ascending id sort, and stops on a short page — `total_results` cannot be used to decide when
