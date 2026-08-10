@@ -10,202 +10,239 @@ guard_test.go verifies every link in this directory against the working tree.
 
 **Repo:** <https://github.com/Sajmani/birdsync>
 Links point at `main` and are checked by `TestTalkLinksResolve`. Timings are cumulative; the
-last beat is the one to cut if you are running long.
+[cut list](#cut-list-in-order) is at the end.
 
 ---
 
-## 0:00 – 1:00 · The problem
+## 0:00 – 0:45 · The problem
 
-**Say:** Every project imports rules it did not write — brand guidelines, language style
-guides, platform policies, law. Nobody writes those down as requirements, so they live in
-people's heads, and you find out you violated one when a user account gets suspended.
+**Say:** You write requirements for your product. But your product is also governed by rules
+you did not write — brand guidelines, platform terms of service, API usage policies,
+accessibility law. Nobody writes those down as requirements, so they live in whoever read them
+last, and you find out you violated one when a user's account gets suspended.
 
-Three things break when requirements come from more than one author:
+Composing requirements from several authors raises three questions no single document answers:
 
-1. **You don't know what applies.** Nobody enumerated the sources.
-2. **You can't tell who wins.** Your requirement says one thing, the platform's says another.
-3. **The conflicts aren't visible in any single document** — they only exist in the
-   combination.
+1. **Which sources apply to us?**
+2. **When they disagree, who wins?**
+3. **What breaks only in the combination?**
 
-birdsync copies bird sightings from eBird into iNaturalist. Small tool, ~2000 lines. It turns
-out to be governed by four external rule sets, and I found that out the hard way.
-
-**Show:** <https://github.com/Sajmani/birdsync/blob/main/spec/process.md#sources-and-composition>
-— *Sources and composition*, and the four precedence tiers.
-
-> The tier is a property of the adoption, not of the source.
+That third one is the interesting one, and it's what the next ninety seconds is about.
 
 ---
 
-## 1:00 – 2:00 · (1) Discovering the sources
+## 0:45 – 2:15 · Why composition needs a process
 
-**Say:** The agent's first pass produced a manifest of what governs this project — with a
-tier, an owner, and a scope for each. The interesting entries are the ones nobody would have
-thought to ask about.
+*No slides — draw this, or just talk it.*
 
-**Show:** <https://github.com/Sajmani/birdsync/blob/main/spec/sources.md>
+**Say:** Suppose I'm building a web page. I write two requirements:
 
-Three points to land while it's on screen:
+- The home page background is blue — `#1F4E9C`
+- The body text is light grey — `#D3D3D3`
 
-- **`ml-terms` came from a question, not a checklist.** birdsync downloads photos from the
-  Macaulay Library and re-uploads them to iNaturalist. Is that allowed? Nobody had asked.
-- **Rejected sources are recorded too** —
-  [Considered and not adopted](https://github.com/Sajmani/birdsync/blob/main/spec/sources.md#considered-and-not-adopted).
-  "We are not subject to GDPR, and here's why" is a decision that otherwise gets re-litigated
-  annually.
-- **Tiers do real work.** Go best practice is *advisory* — local rules beat it. iNaturalist's
-  terms are *mandatory* — nothing local overrides them.
+I check it. **5.34:1 contrast** — comfortably above the WCAG AA threshold of 4.5:1. Good
+design.
+
+Now two things arrive that I didn't write.
+
+**Brand guidelines** say backgrounds must use the lighter brand blue, `#BBD8F2`. A perfectly
+reasonable requirement. Fine on its own.
+
+**Accessibility governance** says text must meet 4.5:1 against its background. Also fine on
+its own. Also not negotiable.
+
+Compose the three and the page is **1.01:1**. Light grey on light blue. The text is
+invisible. And notice: **no two of those requirements contradict each other.** Read any pair
+and you'd approve it. The defect exists only in the combination — which is why composition has
+to be a step someone performs, not something you hope falls out of code review.
+
+**Resolution needs a rule for who yields.** That's what tiers are for:
+
+| Tier | Example here | On conflict |
+| --- | --- | --- |
+| **Mandatory** | Accessibility | Always wins; nobody local may override it |
+| **Governing** | Brand guidelines | Beats local requirements; the brand owner may grant an exception |
+| **Local** | My two requirements | Mine to change |
+| **Advisory** | House style guide | Applies wherever local is silent |
+
+Work it through: accessibility cannot yield, brand outranks me, so the only thing that *may*
+move is my text colour. Dark grey `#333333` on the brand blue is **8.55:1** — passes AA and
+AAA.
+
+**The punchline:** the tiers didn't just detect the conflict, they determined *which
+requirement had to change*. And dark grey on my *original* blue would have been 1.58:1 — so no
+single edit fixes it. The resolution only exists in the composition too.
+
+**Show:** [the four tiers, as specified](https://github.com/Sajmani/birdsync/blob/main/spec/process.md#sources-and-composition)
 
 ---
 
-## 2:00 – 3:00 · (2) Extracting requirements
+## 2:15 – 3:00 · birdsync, and formalising what it already did
 
-**Say:** Each source becomes numbered requirements that quote the original verbatim, then say
-what it means *for this project*. The transcription is treated as an artifact that can be
-wrong — it records who produced it, from what, on what date, and that it is not legal advice.
+**Say:** birdsync copies bird sightings from my eBird account into iNaturalist, with the
+photos and sound recordings. About 2,000 lines of Go. **I wrote it by hand**, and I did try to
+be a good citizen — I read the API guidance and the terms of service at the time and followed
+what I remembered of them.
 
-**Show:** <https://github.com/Sajmani/birdsync/blob/main/spec/sources/inat-terms/requirements.md#inat-termsr4--machine-generated-content-is-prohibited-hard-rule>
-— `inat-terms/R4`, the one that mattered.
+The first step wasn't to write new requirements. It was to **recover the ones already implicit**
+in the code, the README, and the command-line help, and write them down with identifiers.
 
-**Say:** Note the shape: the quote, then the consequence. That separation is what lets someone
-check my reading against the source without trusting me.
+**Show:** [spec/product.md](https://github.com/Sajmani/birdsync/blob/main/spec/product.md)
+— 68 product requirements, reverse-engineered from a tool that already worked.
 
-**Optional, if time:**
-<https://github.com/Sajmani/birdsync/blob/main/spec/sources/ml-terms/PROVENANCE.md>
-— hashes, retrieval method, and an explicit "this is not legal advice and has not been
-reviewed by a lawyer."
+**Say:** Each one is individually testable, and each says *why*. That "why" earns its keep
+later: it's the difference between a deliberate constraint and an accident nobody remembers
+making.
 
 ---
 
-## 3:00 – 4:45 · (3) Discovering conflicts — two kinds
+## 3:00 – 3:45 · Acceptance criteria, and the first thing they found
 
-### 3:00 – 3:50 · The emergent kind
+**Say:** Then every requirement gets a check that would fail if it were violated. And a check
+you have not watched fail is not yet a check — so I broke the code deliberately, one
+requirement at a time, to confirm each one goes red.
 
-**Show:** <https://github.com/Sajmani/birdsync/blob/main/spec/decisions.md#cr-003--aves-only-download-can-defeat-duplicate-detection> — CR-003.
+birdsync's most important promise is `--dryrun`: it reads, it never writes. That's the
+guarantee you rely on before pointing a tool at your own data. It had a test.
 
-**Say:** Three requirements, no two of which contradict:
+I changed the code so `--dryrun` wrote to the live account. **The test stayed green.**
 
-- Download only bird observations (added to work around an unrelated API limit).
-- Never create a duplicate.
-- An eBird name iNaturalist can't resolve produces an observation with **no taxon**.
+**Show:** [Criteria that do not bite](https://github.com/Sajmani/birdsync/blob/main/spec/acceptance.md#criteria-that-do-not-bite)
 
-Each is fine. Together: the untaxoned observation isn't returned by a bird-filtered query, so
-birdsync can't see its own work and creates it again. **Silent, permanent duplicates.**
+**Say:** It only ever inspected counters — and the counters were incremented outside the
+safety gate. The fake clients discarded everything handed to them, so nothing *could* observe
+whether a write happened. Fixing that meant recording the calls; only then was the guarantee
+checkable at all. That's `AC-006`, and it's why I now believe `--dryrun` rather than hope.
 
-This is the argument for composition as a distinct step. No amount of careful reading of any
-one requirement finds it.
+---
 
-### 3:50 – 4:45 · The source-versus-purpose kind
+## 3:45 – 4:45 · Discovering the sources
 
-**Show:** <https://github.com/Sajmani/birdsync/blob/main/spec/decisions.md#cr-012--is-birdsync-machine-generated-content> — CR-012.
+**Say:** Only then did we go looking for the rules I hadn't written. Four sources, each with a
+tier, an owner, and a scope.
 
-**Say:** iNaturalist's community guidelines, marked `(!)` — grounds for immediate suspension:
+**Show:** [spec/sources.md](https://github.com/Sajmani/birdsync/blob/main/spec/sources.md)
+
+- **eBird / Macaulay Library** — *mandatory*. birdsync downloads my photos from the Macaulay
+  Library and re-uploads them to iNaturalist. Is that allowed? I had never asked it in those
+  terms.
+- **iNaturalist terms and community guidelines** — *mandatory*.
+- **iNaturalist API recommended practices** — *governing*. Rate limits, paging, client
+  identification.
+- **Go practice** — *advisory*, so my local rules beat it.
+
+**Say:** Two details worth pausing on. **Rejected sources are recorded too** —
+[considered and not adopted](https://github.com/Sajmani/birdsync/blob/main/spec/sources.md#considered-and-not-adopted),
+so "we're not subject to GDPR, and here's why" isn't re-litigated every year. And each source
+is **vendored and hashed**, because a rule you can't quote is a rule you'll misremember —
+which is precisely what I had been doing.
+
+---
+
+## 4:45 – 6:15 · Resolving the sources against what I'd built
+
+**Say:** Each source became numbered requirements that quote the original verbatim, then say
+what it means here. Composing those against my requirements and my code changed the spec in
+four ways.
+
+**1. It answered a question I should have asked years ago.** The Macaulay terms say a
+contributor keeps copyright in their own media and may download it freely — birdsync's core
+operation is squarely permitted. But they also say you may *not* download another
+contributor's media, and birdsync fetches by asset ID from an unauthenticated CDN that will
+serve anyone's asset. I checked 39 assets from the checklists most likely to be shared; none
+belonged to anyone else. That is now a **documented assumption with evidence**, not a hope.
+
+**2. It nearly stopped the project.** The community guidelines, under a heading marked as
+grounds for immediate suspension:
 
 > "We do not allow machines to generate and post content on iNat with no human oversight
 > curating each piece of content."
 
 birdsync is a machine that posts observations. The penalty falls on **the user's account**,
-not on the tool. A person could lose their observations for using software the README
-recommends — and this had been shipping for a year without anyone asking.
+not on mine.
+
+**Show:** [CR-012](https://github.com/Sajmani/birdsync/blob/main/spec/decisions.md#cr-012--is-birdsync-machine-generated-content)
+
+**Say:** We resolved it by fetching the definition page that rule links to, which lists
+*acceptable* examples — one of them nearly a description of birdsync: "writing a script to
+create observations from a manually curated local folder of your images and metadata on your
+desktop." Permitted. But the resolution **added two requirements**, `P-067` and `P-068`,
+because the guidelines place an obligation on the *user* that birdsync had never mentioned.
+
+**3. It changed the meaning of a default I already had.** `--verifiable` skips observations
+with no photo. I had justified that as quality — avoid junk in my own account. A moderator's
+comment on the forum reframed it: an observation with no media gives an identifier nothing to
+identify, so it is pure cost to other people. Same default, different reason, now written down
+so nobody flips it for convenience.
+
+**4. It produced two technical requirements I simply did not have.** `T-035`: about one
+request per second. `T-036`: page with `id_above`, because page numbers stop working past
+10,000 results — which a user had reported as a bug seven months earlier, and which I would
+have found sooner by reading my own issue tracker.
 
 ---
 
-## 4:45 – 6:00 · (4) Resolving
+## 6:15 – 7:45 · Criteria, then code
 
-**Say:** Three resolution mechanisms, in order of cost.
+**Say:** Those requirements generated criteria, and the criteria drove the code. Three
+concrete changes, each traceable to a rule I had read once and half-remembered.
 
-**Mechanically, by tier.** Most conflicts never reach a human: the higher tier wins and the
-loser is marked superseded. But the override is always *reported* — silently voiding
-someone's requirement is the worst outcome, because its author still believes it holds.
+| New requirement | New criterion | Code change |
+| --- | --- | --- |
+| `T-035` pacing | `AC-035` — three requests must take at least two intervals | A minimum interval in `roundTrip`, the one place any request is made |
+| `T-036` `id_above` paging | `AC-034` — no `page` parameter; the cursor must advance | Rewrote the download loop; birdsync now works for accounts over 10,000 observations |
+| `P-067`, `P-068` user obligations | `AC-037` — human review | A new [README section](https://github.com/Sajmani/birdsync/blob/main/README.md#being-a-good-inaturalist-citizen) telling users to review what was created and to answer identifiers |
 
-**By escalation with options.** The agent computes; the human decides. Never fewer than two
-options, each with what it satisfies and what it costs.
+**Show:** [the traceability table](https://github.com/Sajmani/birdsync/blob/main/spec/acceptance.md#traceability)
 
-**By going and finding out.** CR-012 was resolved by fetching the definition page the rule
-links to, which turned out to list *acceptable* examples — one of which is nearly a
-description of birdsync.
+**Say:** Every requirement and what verifies it — including the ones with nothing verifying
+them, listed as gaps rather than quietly omitted.
 
-**Show:** <https://github.com/Sajmani/birdsync/blob/main/spec/decisions.md#cr-012--is-birdsync-machine-generated-content>
+**And the criteria caught the spec drifting too.** The transcriptions are the highest-stakes
+artifacts here — legal text, transcribed by an agent — so a test checks that every quoted
+passage still appears in the vendored document.
 
-> "Writing a script to create observations from a manually curated local folder of your
-> images and metadata on your desktop."
+**Show:** [`TestTranscribedQuotesAppearInSources`](https://github.com/Sajmani/birdsync/blob/main/guard_test.go#L238-L262)
 
-**The rule that makes this work — say it explicitly:**
-[spec2code never resolves a conflict](https://github.com/Sajmani/birdsync/blob/main/spec/process.md#phase-3--spec2code).
-If code generation hits a contested value it stops and goes back. Otherwise the decision gets
-made by whichever requirement the generator read last, and no record survives.
-
----
-
-## 6:00 – 7:15 · (5) Criteria that stop regressions
-
-**Say:** A conflict resolution is worthless if the next change quietly undoes it. Every
-resolution ships with a check — and the check has to be *watched failing first*.
-
-**Show:** <https://github.com/Sajmani/birdsync/blob/main/spec/acceptance.md#criteria-that-do-not-bite>
-— *Criteria that do not bite.*
-
-**Say:** This is the finding I'd most like people to take away. The tool's central safety
-guarantee — `--dryrun` writes nothing — had a test. Mutating the code so `--dryrun` wrote to
-the live account left that test **green**. It only ever checked counters. Every criterion in
-this table was mutation-tested, and the table records the one that failed to fail.
-
-**Then show:** <https://github.com/Sajmani/birdsync/blob/main/guard_test.go#L238-L262>
-— `TestTranscribedQuotesAppearInSources`.
-
-**Say:** Because the transcriptions are the highest-stakes artifacts here and an agent wrote
-them, a test checks that all 29 quoted passages actually appear in the vendored documents. It
-caught two places where the agent had "improved" the text it was quoting: swapped quotation
-marks, and joined two bullet points with a full stop the source doesn't contain.
+**Say:** All 29 passages. It immediately caught two places where the transcription had
+*improved* the text it was quoting — swapped quotation marks, and two bullet points joined
+with a full stop the source does not contain. Small infidelities, in exactly the documents
+where fidelity is the entire point.
 
 ---
 
-## 7:15 – 8:45 · (6) What went wrong with the process
+## 7:45 – 9:00 · What went wrong with the process
 
-**Say:** Six things, and they're the most useful part.
+**Say:** Four honest ones.
 
-**1. The agent skipped an input its own method names.** Phase 1 lists "issues" as a source.
-It never opened the issue tracker — where the maintainer had *already diagnosed* CR-003, in
+**1. It skipped an input its own method names.** Phase 1 lists "issues" as a source. It never
+opened the issue tracker — where I had already diagnosed one of these conflicts myself, in
 public, months earlier. A day of analysis rediscovered a known bug.
-→ <https://github.com/Sajmani/birdsync/blob/main/spec/decisions.md#cr-003--aves-only-download-can-defeat-duplicate-detection>
 
-**2. Inference presented as evidence.** CR-003 cited a cleanup tool's existence as support
-for a bug — a tool that predated the bug by five months. One `git log` would have settled it.
-The retraction is in the same entry.
+**2. Inference dressed as evidence.** A conflict record cited a cleanup tool's existence as
+proof of a bug — a tool that predated the bug by five months. One `git log` would have settled
+it. The retraction now sits above the claim.
 
-**3. Checks that pass for the wrong reason — repeatedly.** A content-type map built from a
-test fixture nobody had verified against the real service. A paging probe with a threshold
-below every record in the account. A test whose expected error text matched macOS's own
-message. Same failure each time: the expected value came from something other than reality.
+**3. Checks that pass for the wrong reason, repeatedly.** A content-type map built from a test
+fixture nobody had checked against the real service. A paging probe with a threshold below
+every record in the account. An error-message test that matched macOS's own wording and would
+have failed on the platform that reported the bug. The same shape every time: the expected
+value came from something other than reality.
 
-**4. Sources that refuse to be fetched.** Three iNaturalist pages return 403 with a
-JavaScript challenge. The agent can't vendor them, shouldn't work around the block, and must
-not fill the gap from memory — a plausible invented rate limit is indistinguishable from a
-real one.
+**4. Vendoring published someone else's secret.** Pages saved from a browser carry inline
+scripts, and those carried iNaturalist's Google Maps API key into a public repo, where secret
+scanning found it.
 
-**5. Vendoring leaked someone else's secret.** Browser-saved pages carry inline scripts;
-those carried iNaturalist's Google Maps API key straight into a public repo and tripped
-secret scanning.
+**Show:** [the revision log](https://github.com/Sajmani/birdsync/blob/main/spec/process.md#revising-this-process)
 
-**6. The process changed nine times in one session.**
-→ <https://github.com/Sajmani/birdsync/blob/main/spec/process.md#revising-this-process>
-Every row is a real incident. That's the honest state of the methodology: it is being written
-by being used, and it isn't finished.
+**Say:** Ten entries, all from this work. Every one is a real incident that changed the
+method. That's the honest status: it is being written by being used, and it is not finished.
 
----
-
-## 8:45 – 9:00 · Close
-
-**Say:** Twelve conflicts found and resolved. Five defects in one subsystem, three of them
-from a single well-intentioned commit.
-
-But be honest about attribution: the specs found CR-003 and CR-007. **CI found the extension
-bug. A `curl` against the real CDN found the broken sound downloads. The issue tracker had
-the paging limit all along.**
-
-The composition process made things *findable and durable* — every decision has evidence, a
-date, and a check. Running the thing against reality is what *found* them. You need both, and
-the process should say so.
+**Close:** Twelve conflicts found and resolved. But be careful about credit — the specs found
+some; **CI found one, a `curl` against the real service found another, and the issue tracker
+had a third all along.** Composition made the decisions *findable and durable*: each has
+evidence, a date, and a check that fails if it is undone. Running the thing against reality is
+what *found* them. You need both.
 
 ---
 
@@ -213,16 +250,17 @@ the process should say so.
 
 | Question | Where |
 | --- | --- |
-| What does a resolution record contain? | [decisions.md CR-011](https://github.com/Sajmani/birdsync/blob/main/spec/decisions.md#cr-011--the-download-cannot-page-past-10000-results) |
-| How complete is the coverage? | [acceptance.md traceability](https://github.com/Sajmani/birdsync/blob/main/spec/acceptance.md#traceability) — ~60 of 100, gaps listed |
-| What's still open? | [Open work](https://github.com/Sajmani/birdsync/blob/main/spec/decisions.md#open-work-as-of-2026-08-09) |
-| Is this reusable? | [process.md](https://github.com/Sajmani/birdsync/blob/main/spec/process.md) is project-independent; per-project detail is confined to [bindings](https://github.com/Sajmani/birdsync/blob/main/spec/tech.md#project-bindings) |
-| What did a conflict cost to resolve? | CR-012: two web fetches, one forum thread, one human with a browser |
-| Why not just ask a lawyer? | The transcriptions say plainly they aren't legal advice; the point is knowing *which* questions need one |
+| What does a resolution record contain? | [CR-011](https://github.com/Sajmani/birdsync/blob/main/spec/decisions.md#cr-011--the-download-cannot-page-past-10000-results) |
+| What is still open? | [Open work](https://github.com/Sajmani/birdsync/blob/main/spec/decisions.md#open-work-as-of-2026-08-09) |
+| How complete is coverage? | ~60 of 100 requirements have an automated check; gaps are [named](https://github.com/Sajmani/birdsync/blob/main/spec/acceptance.md#gaps-worth-naming) |
+| Is the method reusable? | [process.md](https://github.com/Sajmani/birdsync/blob/main/spec/process.md) is project-independent; per-project detail is confined to [bindings](https://github.com/Sajmani/birdsync/blob/main/spec/tech.md#project-bindings) |
+| Why not just ask a lawyer? | The transcriptions say plainly they are not legal advice. The value is knowing *which* questions need one |
+| What did resolving CR-012 cost? | Two web fetches, one forum thread, one human with a browser |
+| Where did the colour numbers come from? | Computed with the WCAG relative-luminance formula, not estimated |
 
 ## Cut list, in order
 
-1. The optional PROVENANCE link at 2:00
-2. The second conflict kind (3:50) — CR-003 alone carries the argument
-3. Backup material
-4. Limitation 5 (the leaked key) — the best story, but limitations 1–3 are the substantive ones
+1. Backup material
+2. Failure 4, the leaked key — the best story, but 1–3 are the substantive ones
+3. Resolution point 3, the `--verifiable` reframing
+4. The `TestTranscribedQuotesAppearInSources` beat at 7:15 — keep the traceability table
