@@ -190,6 +190,19 @@ checked too, being the same thing under another name.*
 **T-028** — User-visible progress goes through `log.Printf`; verbose detail goes through
 `debugf`, gated on `--debug`.
 
+**T-037** — Prose in this repository — documentation, comments, commit messages — uses
+American spellings.
+Subject: `docs.spelling` · Value: `en-US`
+*Rationale: consistency, and the maintainer's preference. It is the weakest requirement here
+on its own; it is written down for the exception below.*
+
+**T-038** — A spelling change never touches a quotation or a vendored document.
+*Rationale: this is the part with consequences. A bulk find-and-replace across `spec/` would
+silently rewrite text quoted from someone else's terms of service, turning a verbatim citation
+into a paraphrase that still looks verbatim, and would break the hashes recorded in each
+source's `PROVENANCE.md`. The rule is not "be careful"; the check skips blockquote lines and
+never opens `spec/sources/**`.*
+
 **T-029** — Comments explain *why*. The explanations of eBird and iNaturalist quirks are
 the most valuable comments in the repository and are preserved through refactors.
 

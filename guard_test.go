@@ -408,3 +408,122 @@ func TestTalkLinksResolve(t *testing.T) {
 	}
 	t.Logf("verified %d links from %d talk(s)", checked, len(talks))
 }
+
+// britishSpellings maps a British spelling to its American equivalent.
+//
+// The regular -ise/-isation families are generated rather than listed, because
+// listing them by hand is how a word list ends up with "recognise" and
+// "recognised" but not "recognises" — which is exactly what mutation-testing
+// this check found. Only the irregulars are enumerated.
+//
+// Matching is on whole words. An earlier throwaway version matched prefixes and
+// flagged "realistic" for "realise". Words genuinely ambiguous between the
+// dialects, such as "analyses" — a noun plural in both, a verb only in one —
+// are deliberately absent.
+var britishSpellings = map[string]string{
+	"acknowledgement": "acknowledgment", "amongst": "among", "analyse": "analyze",
+	"analysed": "analyzed", "analyses": "analyzes", "analysing": "analyzing",
+	"behaviour": "behavior", "behavioural": "behavioral", "behaviours": "behaviors",
+	"cancelled": "canceled", "cancelling": "canceling", "catalogue": "catalog",
+	"catalogues": "catalogs", "centre": "center", "centred": "centered",
+	"centres": "centers", "colour": "color", "coloured": "colored",
+	"colouring": "coloring", "colours": "colors", "defence": "defense",
+	"fulfil": "fulfill", "grey": "gray", "greyed": "grayed",
+	"honour": "honor", "honoured": "honored", "honouring": "honoring",
+	"honours": "honors", "judgement": "judgment", "labelled": "labeled",
+	"labelling": "labeling", "labour": "labor", "licence": "license",
+	"licences": "licenses", "manoeuvre": "maneuver", "modelled": "modeled",
+	"modelling": "modeling", "offence": "offense", "practise": "practice",
+	"programme": "program", "relabelling": "relabeling", "sceptic": "skeptic",
+	"sceptical": "skeptical", "signalled": "signaled", "signalling": "signaling",
+	"travelled": "traveled", "travelling": "traveling", "whilst": "while",
+}
+
+// iseStems take the regular -ise/-ises/-ised/-ising and -isation endings.
+var iseStems = []string{
+	"apolog", "author", "categor", "character", "critic", "digit", "emphas",
+	"familiar", "final", "formal", "general", "initial", "jeopard", "margin",
+	"material", "maxim", "mobil", "modern", "normal", "optim", "organ",
+	"parallel", "penal", "priorit", "real", "recogn", "scrutin", "serial",
+	"special", "stabil", "standard", "summar", "unrecogn", "util", "visual",
+}
+
+func init() {
+	for _, stem := range iseStems {
+		for brit, amer := range map[string]string{
+			"ise": "ize", "ises": "izes", "ised": "ized", "ising": "izing",
+			"isation": "ization", "isations": "izations",
+		} {
+			britishSpellings[stem+brit] = stem + amer
+		}
+	}
+}
+
+// TestAmericanSpellings enforces T-037 and T-038 together, and the second is
+// the reason the first is worth a test at all.
+//
+// Spelling on its own is taste. But a bulk find-and-replace across spec/ would
+// rewrite text quoted from somebody else's terms of service — turning a
+// verbatim citation into a paraphrase that still looks verbatim, and breaking
+// the hashes recorded in each source's PROVENANCE.md. So this check skips two
+// things by construction rather than by care: blockquote lines, which are
+// quotations, and everything under spec/sources/, which is either a vendored
+// document or a transcription of one.
+//
+// Verifies: T-037, T-038.
+func TestAmericanSpellings(t *testing.T) {
+	word := regexp.MustCompile(`[A-Za-z]+`)
+	var scanned, flagged int
+
+	err := filepath.WalkDir(".", func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if d.IsDir() {
+			switch {
+			case d.Name() == ".git":
+				return filepath.SkipDir
+			// Vendored sources and their transcriptions quote publishers
+			// verbatim. Their spelling is not ours to correct (T-038).
+			case path == filepath.Join("spec", "sources"):
+				return filepath.SkipDir
+			}
+			return nil
+		}
+		ext := filepath.Ext(d.Name())
+		if ext != ".md" && ext != ".go" {
+			return nil
+		}
+		if d.Name() == "guard_test.go" {
+			// This file lists the British spellings in order to forbid them,
+			// exactly as the live-hostname check names the hosts it bans.
+			return nil
+		}
+		b, err := os.ReadFile(path)
+		if err != nil {
+			return err
+		}
+		scanned++
+		for i, line := range strings.Split(string(b), "\n") {
+			if strings.HasPrefix(strings.TrimSpace(line), ">") {
+				continue // a quotation: reproduce it as published (T-038)
+			}
+			for _, w := range word.FindAllString(line, -1) {
+				if american, bad := britishSpellings[strings.ToLower(w)]; bad {
+					flagged++
+					t.Errorf("%s:%d: %q should be %q (T-037)", path, i+1, w, american)
+				}
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		t.Fatalf("Walking the tree: %v", err)
+	}
+	if scanned == 0 {
+		t.Fatal("Scanned no files; the check is not doing anything")
+	}
+	if flagged == 0 {
+		t.Logf("scanned %d files", scanned)
+	}
+}

@@ -72,6 +72,7 @@ All are level `code` unless stated otherwise. "Command" is the `-run` pattern un
 | AC-038 | `TestDownloadMLAssetCleansUpOnError` | Integration, truncated response into a redirected `TMPDIR` | T-023 | verified |
 | AC-039 | `TestTranscribedQuotesAppearInSources` | Static analysis over `spec/sources/` | every `<source>/R#` transcription | verified — 29 passages |
 | AC-040 | `TestTalkLinksResolve` | Static analysis over `talks/` | links from `talks/` into the repo | verified — 18 links |
+| AC-041 | `TestAmericanSpellings` | Static analysis over prose and comments, 258 words | T-037, T-038 | verified — five behaviors mutation-tested |
 
 ### Criteria that do not bite
 
@@ -93,6 +94,7 @@ failing. Three checks were mutation-tested while writing this document:
 | AC-028 | a scratch tool calling `DeleteObservation` | fails, as intended |
 | AC-031 | `Permanent()` forced to `true`, then to `false` | fails both ways, as intended |
 | AC-034 | `id_above` removed from the request | **hung instead of failing** — fixed by the cursor-advance guard, which now makes it fail in two requests |
+| AC-041 | a British word in prose; a generated inflection; an irregular; the same word inside a quotation; the same word in a vendored transcription | first three fail, last two correctly pass |
 | AC-008 | `IgnorePhotos: true` → `false` | fails, as intended |
 | AC-005 | added a scratch `_test.go` naming the live API host | fails, as intended |
 
@@ -249,6 +251,8 @@ effect: implementing a fix well means checking it.
 | T-034 errors include the response body | AC-032 | verified |
 | T-035 request pacing | AC-035 | partial — the per-second rate is enforced and checked; the per-day cap is not |
 | T-036 `id_above` paging | AC-034 | verified |
+| T-037 American spellings | AC-041 | verified |
+| T-038 quotations never re-spelled | AC-041 | verified — the check skips blockquotes and `spec/sources/` by construction |
 | T-028 `log.Printf` vs `debugf` | — | gap (human review) |
 | T-029 comments explain why | — | gap (human review) |
 | T-030 CI runs the standing checks | AC-022 | verified |

@@ -108,6 +108,12 @@ one.
 
 ## Conventions
 
+**American spellings** in prose, comments, and commit messages (T-037) — but **never edit a
+quotation or a vendored document to match** (T-038). Quoted terms of service are verbatim
+citations whose hashes are recorded; "fixing" a publisher's spelling falsifies the quote and
+breaks the record. `TestAmericanSpellings` enforces both halves.
+
+
 Stated as requirements in [spec/tech.md](spec/tech.md#code-conventions) (T-024 – T-029):
 `gofmt`, no import aliasing, standard library grouped first; errors wrapped with the calling
 function's name; `log.Fatal` in `main` and `tools/` only; `log.Printf` for progress and
