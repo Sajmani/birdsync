@@ -803,10 +803,12 @@ CR-012 turned on. Note that `www.inaturalist.org/pages/*` answers automated requ
 - `inat-api/R7` (authenticate only when required) is a knowing departure, with its reason in
   [the transcription](sources/inat-api/requirements.md).
 
-**Housekeeping:** [issue #5](https://github.com/Sajmani/birdsync/issues/5) is fixed by CR-011
-but still open, and [issue #1](https://github.com/Sajmani/birdsync/issues/1) is partly
-addressed — the date parsing and the CSV-path message are fixed, the temp-file handling on
-Windows is not. Neither has been updated to say so.
+**Awaiting a reporter:** [issue #1](https://github.com/Sajmani/birdsync/issues/1) is fixed on
+all three counts — date parsing, the CSV-path message (P-066), and the temp-file handling that
+produced the original Windows error — but is left open until the reporter confirms, because
+none of it has been run on Windows. [Issue #5](https://github.com/Sajmani/birdsync/issues/5) is
+closed; nobody here has an account over 10,000 observations, so CR-011 is verified against a
+fake rather than against the real limit.
 
 ## Deferred items
 
