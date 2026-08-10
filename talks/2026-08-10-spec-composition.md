@@ -33,28 +33,25 @@ That third one is the interesting one, and it's what the next ninety seconds is 
 
 ## 0:45 – 2:15 · Why composition needs a process
 
-*No slides — draw this, or just talk it.*
+**Slide:** `talks/sdd-example.png` — three stacked boxes, each a rendering of the same page.
 
-**Say:** Suppose I'm building a web page. I write two requirements:
-
-- The home page background is blue — `#1F4E9C`
-- The body text is light grey — `#D3D3D3`
-
-I check it. **5.34:1 contrast** — comfortably above the WCAG AA threshold of 4.5:1. Good
-design.
+**Say:** Suppose I'm building a web page. I write two product requirements: the background is
+blue, and the text is light grey. That's the top box. It's legible — **7.41:1** contrast,
+which passes WCAG AA *and* the stricter AAA. Good design, and I checked.
 
 Now two things arrive that I didn't write.
 
-**Brand guidelines** say backgrounds must use the lighter brand blue, `#BBD8F2`. A perfectly
-reasonable requirement. Fine on its own.
+**Brand guidelines** say the background must be the lighter brand blue. Perfectly reasonable
+requirement. Fine on its own — that's the middle box, and notice **the text hasn't changed**.
+Only the background has.
 
 **Accessibility governance** says text must meet 4.5:1 against its background. Also fine on
 its own. Also not negotiable.
 
-Compose the three and the page is **1.01:1**. Light grey on light blue. The text is
-invisible. And notice: **no two of those requirements contradict each other.** Read any pair
-and you'd approve it. The defect exists only in the combination — which is why composition has
-to be a step someone performs, not something you hope falls out of code review.
+Middle box: **1.56:1**. You can barely read it. And here's the thing — **no two of those
+requirements contradict each other.** Read any pair and you'd approve it. The defect exists
+only in the combination, which is why composition has to be a step someone performs rather
+than something you hope falls out of code review.
 
 **Resolution needs a rule for who yields.** That's what tiers are for:
 
@@ -66,12 +63,12 @@ to be a step someone performs, not something you hope falls out of code review.
 | **Advisory** | House style guide | Applies wherever local is silent |
 
 Work it through: accessibility cannot yield, brand outranks me, so the only thing that *may*
-move is my text colour. Dark grey `#333333` on the brand blue is **8.55:1** — passes AA and
-AAA.
+move is my text colour. Bottom box — dark grey on the brand blue, **5.48:1**. Passes.
 
 **The punchline:** the tiers didn't just detect the conflict, they determined *which
-requirement had to change*. And dark grey on my *original* blue would have been 1.58:1 — so no
-single edit fixes it. The resolution only exists in the composition too.
+requirement had to change*. And that dark grey on my *original* blue would have been
+**1.15:1** — so no single edit fixes it either. The resolution only exists in the composition
+too.
 
 **Show:** [the four tiers, as specified](https://github.com/Sajmani/birdsync/blob/main/spec/process.md#sources-and-composition)
 
@@ -321,7 +318,7 @@ You need both.
 | Is the method reusable? | [process.md](https://github.com/Sajmani/birdsync/blob/main/spec/process.md) is project-independent; per-project detail is confined to [bindings](https://github.com/Sajmani/birdsync/blob/main/spec/tech.md#project-bindings) |
 | Why not just ask a lawyer? | The transcriptions say plainly they are not legal advice. The value is knowing *which* questions need one |
 | What did resolving CR-012 cost? | Two web fetches, one forum thread, one human with a browser |
-| Where did the colour numbers come from? | Computed with the WCAG relative-luminance formula, not estimated |
+| Where did the colour numbers come from? | Sampled from `talks/sdd-example.png` (`#EEEEEE` on `#0000FF`, then on `#9FC5E8`, then `#434343` on `#9FC5E8`) and computed with the WCAG relative-luminance formula. Recompute if the slide is edited |
 
 ## Cut list, in order
 
