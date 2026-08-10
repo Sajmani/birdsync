@@ -151,12 +151,24 @@ read once had since changed.
 and right below it the code does what that page asks about page size. So I read the page, I
 agreed with it, I implemented it, and I left the citation for the next person.
 
-**The rate limit is on the same page.** One request per second. It was not implemented until
-yesterday.
+**The rate limit is on the same page.** One request per second. There was no rate limiter in
+the code until yesterday — and I want to be precise about why, because "he didn't read it" is
+the wrong lesson.
+
+I *had* read it. I'd reasoned that birdsync stays under a request per second on its own: it
+fetches observations in large pages, and between each write it downloads a photo. Slow
+operations, naturally spaced. That reasoning was correct — a real run measures about 0.2
+requests per second.
+
+But look at what kind of guarantee that is. It was never written down, so no reviewer could
+check it. It's **conditional** — turn off `--verifiable` and there's no photo to download
+between creates, and the spacing evaporates. And it's **load-bearing on the code being slow**,
+so the first person to add concurrency deletes the guarantee without touching anything that
+mentions it.
 
 That's the failure mode, and it isn't carelessness. Reading a document and acting on it leaves
 no record of *which parts you acted on*, *why you decided what you decided*, or *whether it's
-still true*. The knowledge was real; it just lived in one head and in a handful of comments.
+still true*. The knowledge was real; it lived in one head.
 
 So composition didn't discover that I should care about these rules. It did four things I had
 never done:
@@ -227,7 +239,7 @@ concrete changes, each traceable to a rule I had read once and half-remembered.
 
 | New requirement | New criterion | Code change |
 | --- | --- | --- |
-| `T-035` pacing | `AC-035` — three requests must take at least two intervals | A minimum interval in `roundTrip`, the one place any request is made |
+| `T-035` pacing | `AC-035` — three requests must take at least two intervals | A minimum interval in `roundTrip`, the one place any request is made. Compliance no longer depends on the code staying slow — which is what makes it safe to parallelise later |
 | `T-036` `id_above` paging | `AC-034` — no `page` parameter; the cursor must advance | Rewrote the download loop; birdsync now works for accounts over 10,000 observations |
 | `P-067`, `P-068` user obligations | `AC-037` — human review | A new [README section](https://github.com/Sajmani/birdsync/blob/main/README.md#being-a-good-inaturalist-citizen) telling users to review what was created and to answer identifiers |
 

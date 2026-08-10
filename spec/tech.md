@@ -120,6 +120,19 @@ thousands of writes: reads are not the exposure.*
 reason a single choke point suffices. The daily cap is not enforced: birdsync keeps no state
 between runs, so it cannot know how many requests today has already seen.*
 
+*This limit was already being met before the limiter existed, by an argument the maintainer
+had reasoned through and not written down: observations are fetched in large pages, and
+between writes birdsync downloads a media file, so the operations are slow enough to stay
+under one per second on their own. Measurement agrees — a real run averaged about five seconds
+per upload and three per download page, roughly 0.2 requests per second.*
+
+*The argument is nonetheless worth replacing with a mechanism, for two reasons. It is
+**conditional**: with `--verifiable=false` there is no media to fetch between creates, so the
+spacing that made it true disappears. And it is **load-bearing on slowness** — the first
+change that adds concurrency, or that makes uploads faster, silently removes the guarantee
+with nothing to notice. An explicit limiter inverts that: compliance stops depending on the
+code staying slow, which is what makes it safe to parallelise later.*
+
 **T-036** — The observation download pages with `id_above` and an ascending id sort, never
 with page numbers, and stops when a page comes back short.
 *Rationale: `inat-api/R3` and [CR-011](decisions.md#cr-011--the-download-cannot-page-past-10000-results).
