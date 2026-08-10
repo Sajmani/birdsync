@@ -13,11 +13,11 @@ Whose requirements apply to this project, and who outranks whom. Written per
 | Field | Value |
 | --- | --- |
 | Origin | <https://www.inaturalist.org/pages/api+recommended+practices> |
-| Version | Retrieved 2026-08-09 by the maintainer from a browser; hash in [PROVENANCE.md](sources/inat-api-2026-08-09/PROVENANCE.md) |
+| Version | Retrieved 2026-08-09 by the maintainer from a browser; hash in [PROVENANCE.md](sources/inat-api/PROVENANCE.md) |
 | Tier | **Governing** |
-| Import style | By reference, vendored at `sources/inat-api-2026-08-09/` |
+| Import style | By reference, vendored at `sources/inat-api/` |
 | Scope | All requests to the iNaturalist API |
-| Adopted parts | `inat-api/R1`–`R8`, in [requirements.md](sources/inat-api-2026-08-09/requirements.md) |
+| Adopted parts | `inat-api/R1`–`R8`, in [requirements.md](sources/inat-api/requirements.md) |
 | Exclusions | Bulk access routes — observation exports, the GBIF dataset — which serve consumers of iNaturalist data, not a user syncing their own |
 | Owner | iNaturalist |
 
@@ -31,11 +31,11 @@ departure**, recorded with its reason rather than left as an oversight.
 | Field | Value |
 | --- | --- |
 | Origin | <https://www.inaturalist.org/pages/terms>, <https://www.inaturalist.org/pages/community+guidelines> |
-| Version | Retrieved 2026-08-09 by the maintainer from a browser; hashes in [PROVENANCE.md](sources/inat-terms-2026-08-09/PROVENANCE.md) |
+| Version | Retrieved 2026-08-09 by the maintainer from a browser; hashes in [PROVENANCE.md](sources/inat-terms/PROVENANCE.md) |
 | Tier | **Mandatory** |
-| Import style | By reference, vendored at `sources/inat-terms-2026-08-09/` |
+| Import style | By reference, vendored at `sources/inat-terms/` |
 | Scope | Everything birdsync writes to a user's account, and the manner of writing it |
-| Adopted parts | `inat-terms/R1`–`R6`, in [requirements.md](sources/inat-terms-2026-08-09/requirements.md) |
+| Adopted parts | `inat-terms/R1`–`R6`, in [requirements.md](sources/inat-terms/requirements.md) |
 | Exclusions | Conduct rules birdsync cannot reach: harassment, sockpuppets, explicit content, commercial AI training |
 | Owner | iNaturalist |
 | Also vendored | The definition of machine generated content, which the guidelines link to and CR-012 turns on |
@@ -54,12 +54,12 @@ became P-067.
 
 | Field | Value |
 | --- | --- |
-| Origin | Three eBird Help Center pages; see [PROVENANCE.md](sources/ml-terms-2026-08-09/PROVENANCE.md) |
+| Origin | Three eBird Help Center pages; see [PROVENANCE.md](sources/ml-terms/PROVENANCE.md) |
 | Version | Retrieved 2026-08-09; SHA-256 of each page recorded in PROVENANCE.md |
 | Tier | **Mandatory** |
-| Import style | By reference, vendored at `sources/ml-terms-2026-08-09/` |
+| Import style | By reference, vendored at `sources/ml-terms/` |
 | Scope | Downloading assets from the Macaulay Library CDN and re-uploading them |
-| Adopted parts | `ml-terms/R1`–`R5`, in [requirements.md](sources/ml-terms-2026-08-09/requirements.md) |
+| Adopted parts | `ml-terms/R1`–`R5`, in [requirements.md](sources/ml-terms/requirements.md) |
 | Exclusions | The media request and licensing process: birdsync never requests assets it lacks IDs for, and makes no commercial use |
 | Owner | Cornell Lab of Ornithology |
 

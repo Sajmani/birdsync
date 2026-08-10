@@ -704,7 +704,7 @@ treated it as a question of data quality and community burden, not of prohibited
 
 **Resolved 2026-08-09: birdsync is not machine generated content, on the rule's own text.**
 The definition page was retrieved later the same day (revised 2026-05-20 by `tiwane`, vendored
-at `sources/inat-terms-2026-08-09/machine-generated-content.html`) and answers the question
+at `sources/inat-terms/machine-generated-content.html`) and answers the question
 directly. The principle:
 
 > "It's ok for humans to use machines as tools for arriving at their choice **or to facilitate
@@ -802,7 +802,7 @@ CR-012 turned on. Note that `www.inaturalist.org/pages/*` answers automated requ
 - Restoring an `Aves` + `unknown` download filter is now purely a bandwidth question, since
   T-036 removed the ceiling it used to work around. Judge it on request volume alone.
 - `inat-api/R7` (authenticate only when required) is a knowing departure, with its reason in
-  [the transcription](sources/inat-api-2026-08-09/requirements.md).
+  [the transcription](sources/inat-api/requirements.md).
 
 **Housekeeping:** [issue #5](https://github.com/Sajmani/birdsync/issues/5) is fixed by CR-011
 but still open, and [issue #1](https://github.com/Sajmani/birdsync/issues/1) is partly

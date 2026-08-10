@@ -92,8 +92,31 @@ spec/
   acceptance.md
   arch.md
   sources/           vendored copies of by-reference external sources
-    <name>-<pin>/
+    <name>/
+      PROVENANCE.md    where each file came from, its hash, who fetched it
+      requirements.md  the transcription, as <name>/R1, R2, …
+      *.html           the documents, exactly as served
 ```
+
+### Inside a vendored source
+
+One directory per **adopted source** — a named body of rules with one tier, one owner and one
+scope — not one per document. A source often spans several pages, and how many says nothing
+about it: a publisher may put its rules on one page or split them across three and a linked
+definition.
+
+| File | Contents |
+| --- | --- |
+| `PROVENANCE.md` | Every file's origin URL, its SHA-256, the retrieval date, **who or what retrieved it and how**, any upstream revision date, and what is deliberately *not* vendored |
+| `requirements.md` | The transcription: `<name>/R1`, `R2`, … each quoting the source verbatim, then saying what it means for this project. Ends with what was considered and not adopted |
+| the documents | Exactly as served. Never reformatted, never tidied, never partially quoted — the hash has to mean something |
+
+**The directory name carries no version.** Put the pin in `PROVENANCE.md`, as a hash and a
+date. Naming the directory for its vintage seems tidy and quietly defeats the purpose:
+refreshing then adds one directory and deletes another, so the diff — the thing vendoring
+exists to produce — becomes unreadable, and stale copies pile up. An unversioned directory
+makes a refresh an in-place change whose diff is exactly what the publisher altered. Git keeps
+the old bytes.
 
 Four reasons to group rather than scatter these at the root:
 
@@ -231,8 +254,8 @@ someone will otherwise re-litigate every year.
 
 ### Import style
 
-**By reference** — vendor a pinned copy into the repository (`spec/sources/<name>-<pin>/`) and
-cite its requirements with their native IDs. Upstream changes arrive only when
+**By reference** — vendor a pinned copy into the repository (`spec/sources/<name>/`) and cite
+its requirements with their native IDs. Upstream changes arrive only when
 someone deliberately refreshes the pin, and they arrive as a reviewable diff. This is the default
 for mandatory and governing sources, where you want to know about updates.
 
@@ -661,6 +684,7 @@ project's copy diverge.
 | --- | --- |
 | 2026-08-09 | Initial version. Three phases; `P-###`/`T-###`/`AC-###` IDs cited in code comments; criteria in a separate `acceptance.md`; human gates after context2spec and spec2test; per-project details isolated as bindings. |
 | 2026-08-09 | Added composition and conflict resolution: source provenance and qualified IDs; four precedence tiers; `sources.md` manifest with pinned, vendored imports; `decisions.md` conflict-resolution log; optional subject/value structure on value-setting requirements; spec-level acceptance criteria for emergent conflicts; the rule that spec2code never resolves a conflict; blocking treatment of unsatisfiable mandatory requirements. |
+| 2026-08-09 | Documented what a vendored source directory contains, and dropped the version from its name: dating the directory turned a refresh into an add-plus-delete and hid the upstream diff that vendoring exists to produce. |
 | 2026-08-09 | Required phase 1 to record which inputs it actually consulted, after a retrofit skipped the issue tracker and spent a day rediscovering a bug the maintainer had already diagnosed there, while also mistaking a workaround for an optimization by trusting a commit message over the discussion that prompted it. |
 | 2026-08-09 | Added guidance for a source that cannot be fetched: a human retrieves it, the block is not worked around, and the requirement is left unwritten rather than filled in from memory. Prompted by iNaturalist answering automated requests for its own API guidance with a bot challenge. |
 | 2026-08-09 | Warned against deriving a check's expected value from a run rather than from the requirement, after a two-month-old defect survived a test whose allowlist had been built from the buggy output. Distinct from "a criterion must be able to fail": that test would have failed if the code broke, but could never report that the code was already wrong. |
