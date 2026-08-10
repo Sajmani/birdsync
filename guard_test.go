@@ -342,6 +342,9 @@ func TestTalkLinksResolve(t *testing.T) {
 		return strings.ReplaceAll(slugPunct.ReplaceAllString(h, ""), " ", "-")
 	}
 
+	// Relative links and images, e.g. an inline slide: ](sdd-example.png)
+	relRE := regexp.MustCompile(`\]\(([^)#:\s]+)\)`)
+
 	talks, err := filepath.Glob(filepath.Join("talks", "*.md"))
 	if err != nil {
 		t.Fatal(err)
@@ -354,6 +357,13 @@ func TestTalkLinksResolve(t *testing.T) {
 		b, err := os.ReadFile(talk)
 		if err != nil {
 			t.Fatal(err)
+		}
+		for _, m := range relRE.FindAllStringSubmatch(string(b), -1) {
+			rel := filepath.Join(filepath.Dir(talk), m[1])
+			checked++
+			if _, err := os.Stat(rel); err != nil {
+				t.Errorf("%s links to %s, which does not exist", talk, rel)
+			}
 		}
 		for _, m := range linkRE.FindAllStringSubmatch(string(b), -1) {
 			target := strings.TrimRight(m[1], ".,)>")

@@ -33,7 +33,12 @@ That third one is the interesting one, and it's what the next ninety seconds is 
 
 ## 0:45 – 2:15 · Why composition needs a process
 
-**Slide:** `talks/sdd-example.png` — three stacked boxes, each a rendering of the same page.
+[![Three stacked renderings of the same web page. Top: light grey text on strong blue,
+legible. Middle: the same light grey text on the pale brand blue, barely readable. Bottom:
+dark grey text on the pale brand blue, legible again.](sdd-example.png)](sdd-example.png)
+
+*Click to open full size. Three renderings of one page: product requirements, then brand
+guidelines applied, then accessibility resolved.*
 
 **Say:** Suppose I'm building a web page. I write two product requirements: the background is
 blue, and the text is light grey. That's the top box. It's legible — **7.41:1** contrast,
