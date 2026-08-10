@@ -16,18 +16,17 @@ Links point at `main` and are checked by `TestTalkLinksResolve`. Timings are cum
 
 ## 0:00 – 0:45 · The problem
 
-**Say:** You write requirements for your product. But your product is also governed by rules
-you did not write — brand guidelines, platform terms of service, API usage policies,
-accessibility law. Nobody writes those down as requirements, so they live in whoever read them
-last, and you find out you violated one when a user's account gets suspended.
+**Say:** 
+Requirements are how we specify what we want our software to do.
+Requirements come in many forms: product requirements, technical requirements, terms of service, API usage policies, best practices, and regulations for things like accessibility and data governance.
 
-Composing requirements from several authors raises three questions no single document answers:
+In this demo I explore how we might automate managing requirements that come from many different sources. We need to answer questions like:
 
-1. **Which sources apply to us?**
-2. **When they disagree, who wins?**
-3. **What breaks only in the combination?**
+1. **Which requirement sources apply to our software?**
+2. **When requirements conflict, who wins?**
+3. **What breaks when we combine these requirements?**
 
-That third one is the interesting one, and it's what the next ninety seconds is about.
+Let's see an example of the third one.
 
 ---
 
@@ -82,7 +81,7 @@ too.
 
 ## 2:15 – 3:00 · birdsync, and formalizing what it already did
 
-**Say:** birdsync copies bird sightings from my eBird account into iNaturalist, with the
+**Say:** birdsync copies bird sightings from an eBird account into iNaturalist, with the
 photos and sound recordings. About 2,000 lines of Go. **I wrote it by hand**, and I did the
 homework — years ago, when I started, I read the API guidance, the terms of service, the rules
 about media copyright and about automated posting. I made decisions based on them.
