@@ -12,7 +12,7 @@ source so the reading can be checked. See [PROVENANCE.md](PROVENANCE.md).
 > "Please keep requests to about 1 per second, and around 10k API requests a day"
 >
 > "Requests exceeding this limit might be throttled, and will return an HTTP 429 exception
-> 'Too Many Requests'... Please add delays into your code to keep under these limits...
+> “Too Many Requests”... Please add delays into your code to keep under these limits...
 > We may block IPs that consistently exceed these limits"
 
 **Implemented as T-035.** `Client.roundTrip` waits out a minimum interval. The daily cap is
@@ -49,7 +49,7 @@ not enforced: birdsync keeps no state between runs and cannot know what today ha
 ### `inat-api/R5` — JWTs, expiring in 24 hours, in an Authorization header
 
 > "The preferred way to make an authenticated request in the newer API is to use a JSON Web
-> Token (JWT), available at https://www.inaturalist.org/users/api_token. These tokens expire
+> Token (JWT), available at https://www.inaturalist.org/users/api_token... These tokens expire
 > in 24 hours... Include the JWT in an HTTP Authorization header"
 
 **Matches current behavior** and explains P-017: a 401 usually means the token aged out, not

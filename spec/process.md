@@ -109,7 +109,22 @@ definition.
 | --- | --- |
 | `PROVENANCE.md` | Every file's origin URL, its SHA-256, the retrieval date, **who or what retrieved it and how**, any upstream revision date, and what is deliberately *not* vendored |
 | `requirements.md` | The transcription: `<name>/R1`, `R2`, … each quoting the source verbatim, then saying what it means for this project. Ends with what was considered and not adopted |
-| the documents | Exactly as served. Never reformatted, never tidied, never partially quoted — the hash has to mean something |
+| the documents | As served, except that **active content is removed** — `<script>`, `<style>`, `<link>`. Never reformatted, never reworded, never partially quoted |
+
+**Strip active content, and record that you did.** A page saved from a browser carries the
+publisher's scripts, and scripts carry the publisher's secrets: vendoring four iNaturalist
+pages committed their Google Maps API key to a public repository and tripped secret scanning.
+Nothing there was private — the key is in every page they serve — but redistributing another
+party's credential is nobody's idea of good citizenship, and a rules snapshot has no use for
+JavaScript. Record both hashes, as served and as stored, so the removal can be reproduced and
+audited.
+
+**Check that quotations survive.** Once documents are edited at all, a transcription can quote
+something the stored copy no longer contains. An automated check that every quoted passage
+appears in its source costs little and is worth more than it looks: run against the
+transcriptions here it found the stripping to be clean, and found two places where an earlier
+transcription had quietly improved the text it was quoting — swapping quotation marks, and
+joining two bullet points with a full stop that the source does not contain.
 
 **The directory name carries no version.** Put the pin in `PROVENANCE.md`, as a hash and a
 date. Naming the directory for its vintage seems tidy and quietly defeats the purpose:
@@ -684,6 +699,7 @@ project's copy diverge.
 | --- | --- |
 | 2026-08-09 | Initial version. Three phases; `P-###`/`T-###`/`AC-###` IDs cited in code comments; criteria in a separate `acceptance.md`; human gates after context2spec and spec2test; per-project details isolated as bindings. |
 | 2026-08-09 | Added composition and conflict resolution: source provenance and qualified IDs; four precedence tiers; `sources.md` manifest with pinned, vendored imports; `decisions.md` conflict-resolution log; optional subject/value structure on value-setting requirements; spec-level acceptance criteria for emergent conflicts; the rule that spec2code never resolves a conflict; blocking treatment of unsatisfiable mandatory requirements. |
+| 2026-08-09 | Required active content to be stripped from vendored documents, after browser-saved pages committed a publisher's API key to a public repo; and required a check that quoted passages still appear in the stored copy, which immediately found two transcriptions that had tidied the text they quoted. |
 | 2026-08-09 | Documented what a vendored source directory contains, and dropped the version from its name: dating the directory turned a refresh into an add-plus-delete and hid the upstream diff that vendoring exists to produce. |
 | 2026-08-09 | Required phase 1 to record which inputs it actually consulted, after a retrofit skipped the issue tracker and spent a day rediscovering a bug the maintainer had already diagnosed there, while also mistaking a workaround for an optimization by trusting a commit message over the discussion that prompted it. |
 | 2026-08-09 | Added guidance for a source that cannot be fetched: a human retrieves it, the block is not worked around, and the requirement is left unwritten rather than filled in from memory. Prompted by iNaturalist answering automated requests for its own API guidance with a bot challenge. |

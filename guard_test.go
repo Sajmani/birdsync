@@ -4,9 +4,11 @@ import (
 	"go/ast"
 	"go/parser"
 	"go/token"
+	"html"
 	"io/fs"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"testing"
 )
@@ -216,4 +218,104 @@ func TestNoLogFatalInLibraryPackages(t *testing.T) {
 	if scanned == 0 {
 		t.Fatal("Scanned no non-main .go files; the check is not doing anything")
 	}
+}
+
+// TestTranscribedQuotesAppearInSources checks every quotation in a vendored
+// source's requirements.md against the documents in the same directory.
+//
+// A transcription is where an outside rule becomes a requirement, and these
+// were produced by an agent reading terms of service. The worst thing such a
+// file can do is quote something its source does not say — a paraphrase that
+// drifted, a sentence assembled from two places, a passage that was edited
+// after being quoted. None of that is visible on the page; all of it is
+// visible here.
+//
+// Matching ignores whitespace, because stripping tags introduces spaces the
+// document does not contain ("with you , or"), and splits quotations on an
+// ellipsis, because an elided quote is two fragments rather than one string.
+//
+// Verifies: the accuracy of every `<source>/R#` transcription.
+func TestTranscribedQuotesAppearInSources(t *testing.T) {
+	tagRE := regexp.MustCompile(`<[^>]+>`)
+	ellipsisRE := regexp.MustCompile(`\.\.\.|…`)
+	spaceRE := regexp.MustCompile(`\s+`)
+	normalize := func(s string) string {
+		s = html.UnescapeString(s)
+		s = strings.NewReplacer("\u2019", "'", "\u2018", "'", "\u201c", `"`,
+			"\u201d", `"`, "\u2014", "-", "\u2013", "-", "\u00a0", " ").Replace(s)
+		return spaceRE.ReplaceAllString(s, "")
+	}
+
+	dirs, err := filepath.Glob(filepath.Join("spec", "sources", "*"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var checked int
+	for _, dir := range dirs {
+		req := filepath.Join(dir, "requirements.md")
+		if _, err := os.Stat(req); err != nil {
+			continue
+		}
+		docs, _ := filepath.Glob(filepath.Join(dir, "*.html"))
+		var corpus strings.Builder
+		for _, d := range docs {
+			b, err := os.ReadFile(d)
+			if err != nil {
+				t.Fatal(err)
+			}
+			corpus.WriteString(normalize(tagRE.ReplaceAllString(string(b), " ")))
+		}
+		haystack := corpus.String()
+		if haystack == "" {
+			t.Errorf("%s: no vendored documents to check quotations against", dir)
+			continue
+		}
+
+		b, err := os.ReadFile(req)
+		if err != nil {
+			t.Fatal(err)
+		}
+		var quote []string
+		flush := func() {
+			defer func() { quote = nil }()
+			joined := strings.Join(quote, " ")
+			// An attribution line ("— Terms of Use, §1") is not a quotation.
+			if i := strings.Index(joined, "\u2014"); i >= 0 {
+				joined = joined[:i]
+			}
+			joined = strings.ReplaceAll(joined, "**", "")
+			for _, frag := range ellipsisRE.Split(joined, -1) {
+				// Quotation marks and trailing punctuation belong to the
+				// citation, not to the quoted text.
+				frag = strings.Trim(normalize(frag), `"'.,;:`)
+				if len(frag) < 40 { // too short to identify a passage
+					continue
+				}
+				checked++
+				if !strings.Contains(haystack, frag) {
+					t.Errorf("%s quotes a passage absent from its vendored source:\n  %.90s...", req, frag)
+				}
+			}
+		}
+		for _, line := range strings.Split(string(b), "\n") {
+			// A bare ">" separates two blockquote paragraphs, which are two
+			// quotations rather than one passage. Treating it as a
+			// continuation makes the checker hunt for their concatenation,
+			// which no source contains.
+			if strings.TrimSpace(line) == ">" {
+				flush()
+				continue
+			}
+			if after, ok := strings.CutPrefix(line, "> "); ok {
+				quote = append(quote, strings.TrimSpace(after))
+			} else if len(quote) > 0 {
+				flush()
+			}
+		}
+		flush()
+	}
+	if checked == 0 {
+		t.Fatal("Checked no quotations; the check is not doing anything")
+	}
+	t.Logf("verified %d quoted passages against their vendored sources", checked)
 }

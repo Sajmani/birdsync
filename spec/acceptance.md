@@ -70,6 +70,7 @@ All are level `code` unless stated otherwise. "Command" is the `-run` pattern un
 | AC-036 | `TestRecordsRejectsBadInput` | Unit, temp files | P-066 | verified |
 | AC-037 | README carries the community-obligations section | Human review | P-067, P-068 | verified |
 | AC-038 | `TestDownloadMLAssetCleansUpOnError` | Integration, truncated response into a redirected `TMPDIR` | T-023 | verified |
+| AC-039 | `TestTranscribedQuotesAppearInSources` | Static analysis over `spec/sources/` | every `<source>/R#` transcription | verified — 29 passages |
 
 ### Criteria that do not bite
 
