@@ -37,7 +37,7 @@ That third one is the interesting one, and it's what the next ninety seconds is 
 
 **Say:** Suppose I'm building a web page. I write two product requirements: the background is
 blue, and the text is light grey. That's the top box. It's legible — **7.41:1** contrast,
-which passes WCAG AA *and* the stricter AAA. Good design, and I checked.
+comfortably past both WCAG thresholds, AA at 4.5 and AAA at 7. Good design, and I checked.
 
 Now two things arrive that I didn't write.
 
@@ -63,11 +63,12 @@ than something you hope falls out of code review.
 | **Advisory** | House style guide | Applies wherever local is silent |
 
 Work it through: accessibility cannot yield, brand outranks me, so the only thing that *may*
-move is my text colour. Bottom box — dark grey on the brand blue, **5.48:1**. Passes.
+move is my text colour. Bottom box — dark grey on the brand blue, **7.84:1**. Passes, with
+room to spare.
 
 **The punchline:** the tiers didn't just detect the conflict, they determined *which
 requirement had to change*. And that dark grey on my *original* blue would have been
-**1.15:1** — so no single edit fixes it either. The resolution only exists in the composition
+**1.65:1** — so no single edit fixes it either. The resolution only exists in the composition
 too.
 
 **Show:** [the four tiers, as specified](https://github.com/Sajmani/birdsync/blob/main/spec/process.md#sources-and-composition)
@@ -318,7 +319,7 @@ You need both.
 | Is the method reusable? | [process.md](https://github.com/Sajmani/birdsync/blob/main/spec/process.md) is project-independent; per-project detail is confined to [bindings](https://github.com/Sajmani/birdsync/blob/main/spec/tech.md#project-bindings) |
 | Why not just ask a lawyer? | The transcriptions say plainly they are not legal advice. The value is knowing *which* questions need one |
 | What did resolving CR-012 cost? | Two web fetches, one forum thread, one human with a browser |
-| Where did the colour numbers come from? | Sampled from `talks/sdd-example.png` (`#EEEEEE` on `#0000FF`, then on `#9FC5E8`, then `#434343` on `#9FC5E8`) and computed with the WCAG relative-luminance formula. Recompute if the slide is edited |
+| Where did the colour numbers come from? | Sampled from `talks/sdd-example.png` (`#EEEEEE` on `#0000FF`, then on `#9FC5E8`, then `#2B2B2B` on `#9FC5E8`) and computed with the WCAG relative-luminance formula. Recompute if the slide is edited |
 
 ## Cut list, in order
 
