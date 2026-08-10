@@ -449,7 +449,8 @@ humans who own the project.
 7. **Record which inputs were actually consulted**, by name, in the spec. Listing inputs in a
    method does not cause anyone to read them, and a skipped one is invisible afterwards — the
    spec looks equally complete either way. The issue tracker is the one most often missed and
-   the most likely to contain a defect already diagnosed by the person who reported it.
+   the most likely to hold a defect someone has already reported, and the context that
+   explains why the code looks the way it does.
 
 ### Compose
 
@@ -701,7 +702,7 @@ project's copy diverge.
 | 2026-08-09 | Added composition and conflict resolution: source provenance and qualified IDs; four precedence tiers; `sources.md` manifest with pinned, vendored imports; `decisions.md` conflict-resolution log; optional subject/value structure on value-setting requirements; spec-level acceptance criteria for emergent conflicts; the rule that spec2code never resolves a conflict; blocking treatment of unsatisfiable mandatory requirements. |
 | 2026-08-09 | Required active content to be stripped from vendored documents, after browser-saved pages committed a publisher's API key to a public repo; and required a check that quoted passages still appear in the stored copy, which immediately found two transcriptions that had tidied the text they quoted. |
 | 2026-08-09 | Documented what a vendored source directory contains, and dropped the version from its name: dating the directory turned a refresh into an add-plus-delete and hid the upstream diff that vendoring exists to produce. |
-| 2026-08-09 | Required phase 1 to record which inputs it actually consulted, after a retrofit skipped the issue tracker and spent a day rediscovering a bug the maintainer had already diagnosed there, while also mistaking a workaround for an optimization by trusting a commit message over the discussion that prompted it. |
+| 2026-08-09 | Required phase 1 to record which inputs it actually consulted, after a retrofit skipped the issue tracker: it missed an open bug report seven months old, and mistook a workaround for an optimization by trusting a commit message over the issue that prompted it. *(Amended 2026-08-10: this entry originally also claimed the retrofit had rediscovered a conflict already diagnosed in that tracker. It had not — the comment cited was written during the work, not before it. See CR-003.)* |
 | 2026-08-09 | Added guidance for a source that cannot be fetched: a human retrieves it, the block is not worked around, and the requirement is left unwritten rather than filled in from memory. Prompted by iNaturalist answering automated requests for its own API guidance with a bot challenge. |
 | 2026-08-09 | Warned against deriving a check's expected value from a run rather than from the requirement, after a two-month-old defect survived a test whose allowlist had been built from the buggy output. Distinct from "a criterion must be able to fail": that test would have failed if the code broke, but could never report that the code was already wrong. |
 | 2026-08-09 | Required decision records to separate checked evidence from inference, after a retrofit cited a cleanup tool's existence as support for a bug the tool predated by five months. Version control would have settled it in one command. |

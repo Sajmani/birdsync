@@ -90,14 +90,25 @@ No pair of these contradicts. Together they do:
 
 **Corrected 2026-08-09.** Two claims in this entry were wrong, both because the retrofit never
 read the issue tracker — an input [process.md](process.md#gather) names and this analysis
-skipped.
+skipped. What that cost is set out below; note that item 1 was itself corrected on 2026-08-10
+and is struck through.
 
-1. **The conflict was already known.** [Issue #5](https://github.com/Sajmani/birdsync/issues/5)
-   carries the maintainer's own statement of it, from January 2026: *"I tried restricting to
-   Aves, but this introduces a subtle bug: if someone changes the taxon for a birdsync-created
-   observation to non-Aves, then subsequent birdsync runs won't see it and will just recreate
-   it."* The composition analysis below rederived, at considerable cost, a bug that was
-   already written down in public.
+1. ~~**The conflict was already known.** Issue #5 carries the maintainer's own statement of
+   it, from January 2026 — the composition analysis below rederived, at considerable cost, a
+   bug already written down in public.~~
+
+   **Corrected 2026-08-10.** Wrong, and wrong in the same way as the claim it was correcting.
+   The maintainer's comment on [issue #5](https://github.com/Sajmani/birdsync/issues/5) is
+   dated `2026-08-09T21:15:23Z` — during this work, hours *after* the composition analysis
+   found the conflict. He was relaying the finding to the person who had reported the original
+   bug, not recording a prior diagnosis. The issue itself is from January; the comment is not.
+
+   This entry asserted "months earlier" from a comment read without checking its timestamp,
+   which is precisely the inference-presented-as-evidence failure the paragraph below
+   retracts. One `gh issue view` would have settled it, exactly as one `git log` would have
+   settled the other. Twice in the same entry, at two levels.
+
+   **CR-003 stands as an original finding of the composition analysis.**
 2. **The filter was not a download-volume optimization.** It came from PR #4, submitted to
    work around issue #5 — a hard failure past 10,000 results. The commit message describing it
    as reducing downloads records the mechanism, not the motive. The cost/benefit below

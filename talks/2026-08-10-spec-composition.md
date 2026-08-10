@@ -216,12 +216,20 @@ where fidelity is the entire point.
 **Say:** Four honest ones.
 
 **1. It skipped an input its own method names.** Phase 1 lists "issues" as a source. It never
-opened the issue tracker — where I had already diagnosed one of these conflicts myself, in
-public, months earlier. A day of analysis rediscovered a known bug.
+opened the issue tracker — where a user had reported the paging limit seven months earlier,
+and where the reason an existing filter existed was written down. It read the commit message
+instead, and so recorded that filter as a bandwidth optimisation when it was a workaround for
+that very bug. I had to point at the issue myself before any of it surfaced.
 
-**2. Inference dressed as evidence.** A conflict record cited a cleanup tool's existence as
-proof of a bug — a tool that predated the bug by five months. One `git log` would have settled
-it. The retraction now sits above the claim.
+**2. Inference dressed as evidence — twice, in the same entry.** A conflict record cited a
+cleanup tool's existence as proof of a bug; the tool predated the bug by five months, and one
+`git log` would have settled it. Then the *correction* to that claim asserted I had diagnosed
+the conflict myself "months earlier" — read off a comment whose timestamp nobody checked. The
+comment was written during this work, hours after the analysis found the conflict. Same
+failure, one level up, in the paragraph about that failure.
+
+*(If you want one slide from this talk, this is the one: an agent that cites evidence it has
+not verified will do it again inside the correction.)*
 
 **3. Checks that pass for the wrong reason, repeatedly.** A content-type map built from a test
 fixture nobody had checked against the real service. A paging probe with a threshold below
