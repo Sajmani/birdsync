@@ -10,8 +10,63 @@ constraints, language conventions — is confined to a short set of **[project
 bindings](#project-bindings)** recorded elsewhere, leaving this file identical across projects
 and cheap to update from a canonical copy.
 
+> **This is a copy.** The canonical version lives at
+> <https://github.com/Sajmani/specman>, along with an agent skill that applies it. Improve it
+> there and propagate, rather than letting this copy diverge — the revision log below is
+> shared history, not this project's alone.
+
 It is also a living document. When a step stops earning its keep, change this file first and then
 follow the changed version. See [Revising this process](#revising-this-process).
+
+## Adopting this in a project
+
+Six steps. The first three are the ones that get skipped, and skipping any of them produces a
+project that has this document and does not follow it.
+
+1. **Copy this file** to the project as `spec/process.md`. Record where the canonical copy
+   lives so improvements can be propagated rather than diverging.
+
+2. **Point the project's agent instruction file at it.** `AGENTS.md`, `CLAUDE.md`, whatever
+   the tooling reads — with a line saying that changes follow the loop in
+   `spec/process.md`, and that the requirements in `spec/` are normative.
+
+   This step is not optional and it is the one most often missed. Agents read the instruction
+   file automatically; they do not read `spec/process.md` unless something tells them to. A
+   copy of this document sitting unreferenced in a repository changes nothing at all.
+
+3. **Write the [project bindings](#project-bindings) before any requirement.** They go in
+   `tech.md`, which at this point contains nothing else, and that is fine — the standing
+   checks in particular are needed on day one, because everything after this is verified by
+   running them. A binding table and no requirements is a legitimate state.
+
+4. **Then do the cheapest useful pass, which is usually `sources.md`.** Ask what governs this
+   project that the project did not write: platform terms, brand or engineering policy,
+   regulation, language practice. Record each with a tier, and record what you considered and
+   rejected. This is an hour of work and it is where the surprises are — an existing project
+   is far more likely to be quietly violating someone else's rule than its own.
+
+5. **Write product requirements lazily.** Retrofitting a complete `product.md` on day one is
+   the most expensive way to start and rarely the most valuable: most of what you write will
+   be things the team already agreed on. Write the requirements a change actually touches,
+   when it touches them. `acceptance.md` and `decisions.md` appear the first time there is a
+   check to record or a conflict to resolve — creating them empty is ceremony.
+
+6. **Run the loop** from there: [context2spec](#phase-1--context2spec) for changes,
+   [gates](#human-gates) for approval, [criteria](#phase-2--spec2test) before code.
+
+### How much is enough
+
+A small tool's adoption may be `spec/process.md`, a bindings table, and a `sources.md` with
+three entries — and stay that way for months. That is a complete adoption, not a partial one.
+
+The apparatus scales with what is at stake: how expensive a mistake is, how many outside rules
+apply, how many people or agents touch the code. A hundred numbered requirements on a project
+with one contributor and no external obligations is the failure mode this document warns about
+under [over-specification](#failure-modes-to-watch-for), reached by enthusiasm rather than by
+need.
+
+An agent asked to adopt this will tend to produce all five documents at full length because
+that looks like thoroughness. Say how big you want it.
 
 ## Why
 
