@@ -92,6 +92,35 @@ through T-029 as local requirements. Advisory tier means a local requirement win
 the two differ — for example T-027's rule about `log.Fatal`, which is stricter than
 general Go practice, and T-002's dependency ceiling, which is far stricter.
 
+### `specman` — the spec-driven development method
+
+| Field | Value |
+| --- | --- |
+| Origin | <https://github.com/Sajmani/specman>, file `process.md` |
+| Version | Base pin `sha256:919563cda2940e39326dda0159cd25b19b7d84ce28be329bd0a8c3f262d66892`, taken 2026-08-27 |
+| Tier | **Advisory** |
+| Import style | By reference, copied to [process.md](process.md) — **not** under `sources/`, because the copy is amended in place |
+| Scope | How work on this repository is done |
+| Adopted parts | In full |
+| Exclusions | None |
+| Owner | The repository owner |
+| Status | Adopted: pinned and copied. No local amendments staged. No criteria — the meta-checks it describes are not written here yet |
+
+Advisory by the source's own terms: `process.md` says a project's existing agent instruction
+file and contributor guide outrank it, and a source that declares itself to lose to local
+decisions is advisory whatever its author intended. Here that means [AGENTS.md](../AGENTS.md)
+and [CONTRIBUTING.md](../CONTRIBUTING.md) win where they disagree with it.
+
+**Why this entry exists.** Until 2026-08-27 this project recorded the canonical origin in a
+banner at the top of `process.md` and recorded no pin anywhere. That worked only while
+canonical had not moved: a `diff` against canonical was the only way to find local amendments,
+and it silently stopped distinguishing them from upstream changes the moment canonical changed.
+It changed that day. The pin above is what makes the diff meaningful again, and the banner now
+points here rather than trying to be the record itself.
+
+The copy currently differs from the pin by exactly that banner. Anything else the diff reports
+is drift and should be reverted or staged as a `[LOCAL]` amendment.
+
 ## Considered and not adopted
 
 | Source | Why not |

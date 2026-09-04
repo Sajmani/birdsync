@@ -10,10 +10,11 @@ constraints, language conventions — is confined to a short set of **[project
 bindings](#project-bindings)** recorded elsewhere, leaving this file identical across projects
 and cheap to update from a canonical copy.
 
-> **This is a copy.** The canonical version lives at
-> <https://github.com/Sajmani/specman>, along with an agent skill that applies it. Improve it
-> there and propagate, rather than letting this copy diverge — the revision log below is
-> shared history, not this project's alone.
+> **This is a copy.** The canonical version lives at <https://github.com/Sajmani/specman>, along
+> with an agent skill that applies it. Its base pin is recorded in
+> [`sources.md`](sources.md#specman--the-spec-driven-development-method). Improve it there and
+> propagate, rather than letting this copy diverge — the revision log below is shared history,
+> not this project's alone.
 
 It is also a living document. When a step stops earning its keep, change this file first and then
 follow the changed version. See [Revising this process](#revising-this-process).
@@ -23,8 +24,10 @@ follow the changed version. See [Revising this process](#revising-this-process).
 Six steps. The first three are the ones that get skipped, and skipping any of them produces a
 project that has this document and does not follow it.
 
-1. **Copy this file** to the project as `spec/process.md`. Record where the canonical copy
-   lives so improvements can be propagated rather than diverging.
+1. **Copy this file** to the project as `spec/process.md`, and record its provenance — the
+   canonical origin and the base pin — so improvements can be propagated rather than diverging.
+   See [Recording where a copy came from](#recording-where-a-copy-came-from) for the two places
+   that goes.
 
 2. **Point the project's agent instruction file at it.** `AGENTS.md`, `CLAUDE.md`, whatever
    the tooling reads — with a line saying that changes follow the loop in
@@ -109,6 +112,7 @@ maintained by people — or agents — who weren't there when the decisions were
 | `decisions.md` | How was each conflict resolved, by whom? | context2spec | Historical |
 | `acceptance.md` | How do we know each requirement holds? | spec2test | Normative |
 | `arch.md` | How is the code actually put together? | spec2code | Descriptive |
+| `implements.md` | Which spec version does this codebase satisfy, and where does it fall short? | spec2code | Descriptive |
 
 The normative/descriptive split decides who wins an argument:
 
@@ -180,6 +184,16 @@ appears in its source costs little and is worth more than it looks: run against 
 transcriptions here it found the stripping to be clean, and found two places where an earlier
 transcription had quietly improved the text it was quoting — swapping quotation marks, and
 joining two bullet points with a full stop that the source does not contain.
+
+**Keep the repository's formatter away from the bundle.** A project-wide formatter reformats
+vendored documents in place, and it runs on every commit without anyone deciding to. Exclude
+`spec/sources/` — and this file — in whatever the project uses: `.prettierignore`, an
+`.editorconfig` override, a lint config. The damage is not cosmetic. Prettier 3.5.3, run over
+a saved terms-of-service page with a typical project config, re-indented it *and collapsed a
+run of spaces inside a sentence*, changing the stored bytes and invalidating the recorded
+hash. The quotation check above then passes against the formatter's version of what the
+publisher said, and a transcription written afterwards quotes text nobody ever served. The
+same config rewrites this document, which breaks the diff against the canonical copy.
 
 **The directory name carries no version.** Put the pin in `PROVENANCE.md`, as a hash and a
 date. Naming the directory for its vintage seems tidy and quietly defeats the purpose:
@@ -318,6 +332,13 @@ Two observations about this table:
 | Adopted parts | Which sections or conformance level, when adoption is partial |
 | Exclusions | Requirements deliberately not adopted, each with a reason |
 | Owner | Who to ask for an exception |
+| Status | Whether the source is *adopted* or merely *named*: pinned, vendored, transcribed, covered by criteria — or none of those yet |
+
+Record `Status` per source and summarize it across them. A source the project points at but
+has never retrieved is a to-do with provenance, not a compliance posture, and the other fields
+do not reveal the difference — every one of them can be filled in plausibly from a URL alone.
+Making the distinction visible at a glance is what stops a manifest from becoming the
+[adoption by gesture](#failure-modes-to-watch-for) it was meant to prevent.
 
 Also record the sources you considered and rejected. "We are not subject to X" is a decision that
 someone will otherwise re-litigate every year.
@@ -420,6 +441,11 @@ than no evidence, because the next reader cannot tell which is which and will bu
 
 Work stops. There is no local mechanism to override a mandatory source, and "note the gap and
 carry on" is how non-compliance becomes routine bookkeeping.
+
+This is not softened by [decoupling](#decoupling-the-spec-from-the-code). A conformance record
+makes an ordinary gap cheap to state, and a mandatory gap must stay expensive: it is a risk
+acceptance, signed and expiring, or it is a stop. A gap register that quietly absorbs mandatory
+requirements has rebuilt precisely what this section exists to prevent.
 
 Two ways forward: change the other constraints so the requirement can be met (usually by asking a
 governing source's owner for a deviation), or record an explicit **risk acceptance** in
@@ -662,11 +688,80 @@ Not every change needs all three phases. Classify first:
 getting agreement. That converts a bug into a feature by fiat, and it is the main way this kind of
 process rots.
 
+## Decoupling the spec from the code
+
+The [same-commit rule](#drift-control) is the simplest way to keep a spec honest, and it costs
+something: it forbids agreeing on a requirement before you are ready to build it. Approving a
+requirement is cheap, and having to land the implementation alongside it removes that advantage.
+
+The alternative treats the spec the way code treats a release. Code commits land continuously; a
+tag marks the ones approved to ship. Likewise: spec commits land continuously, and **a tag marks
+the spec approved to implement**. The code then owes conformance to that tag, not to the spec's
+moving head.
+
+Recording what is owed is `implements.md`, in the **code** repository:
+
+- The spec tag this codebase targets, and the tag it currently satisfies.
+- Every requirement in the target it does **not** yet satisfy, each with an owner and a date.
+- For each satisfied requirement, the criteria that establish it.
+
+`implements.md` is **descriptive**, like `arch.md`: it states what is true, and where it and the
+code disagree, it is the one that is wrong. It is not a place to negotiate requirements, and a
+gap listed there is a debt, not an exception — the requirement still holds. What decoupling buys
+is the ability to tell a *scheduled* divergence from an *unnoticed* one. The same-commit rule
+cannot: it forbids all divergence, so when divergence happens anyway it arrives unlabeled.
+
+Two consequences, both easy to get wrong:
+
+- **Tier severity is unchanged.** See [unsatisfiable mandatory
+  requirements](#when-a-mandatory-requirement-cannot-be-satisfied). Cheap gap-recording plus a
+  mandatory requirement equals routine non-compliance.
+- **A conformance record needs a staleness bound**, because it replaces a drift defense. A
+  codebase permanently several tags behind has not decoupled from the spec; it has stopped
+  implementing it, and should say so rather than carrying an ever-growing gap list.
+
+### One spec, several codebases
+
+Once the spec is tagged and conformance is recorded per codebase, the spec can live in its own
+repository and more than one implementation can target it. Each keeps its own `implements.md`
+and reports its own conformance — the same shape a standards body uses, with implementation
+reports against a versioned specification.
+
+This is the arrangement that makes a tech-stack migration tractable: `product.md` is what must
+stay true, `tech.md` is per-implementation, and the rewrite is finished when the new codebase's
+`implements.md` matches the old one's rather than when someone judges it done.
+
+What has to move for this to work:
+
+| Artifact | Where it lives |
+| --- | --- |
+| `product.md`, `sources.md`, `decisions.md` | The spec repository — shared |
+| `tech.md` | Per codebase; the [bindings](#project-bindings) are stack-specific by construction |
+| `acceptance.md` | Splits along the `level` field it already carries: `spec`-level criteria are shared, `code`-level criteria belong to the codebase that runs them |
+| `arch.md`, `implements.md` | Per codebase |
+
+Two things that quietly break, both of which assume a single codebase:
+
+- **The subject vocabulary must be stack-neutral.** A vocabulary borrowed from one
+  implementation's configuration schema stops being a shared namespace the moment a second
+  implementation exists with a different one.
+- **A source's tier is a property of the adoption**, so the same source may sit at different
+  tiers for different implementations, and `sources.md` is shared. Either the tier moves into
+  the per-codebase file or the manifest carries a per-implementation overlay.
+
+And one cost that does not go away: with several implementations, partial conformance is the
+steady state rather than an exception, because every spec tag makes every codebase behind until
+it catches up. That is normal for a standards body and it means Gate 1's "no unresolved
+conflicts" applies to the spec alone. Whether the *system* is conformant is what `implements.md`
+answers, and the answer is usually "not entirely."
+
 ## Drift control
 
 Specs decay, and composed specs decay from two directions at once. Four defenses:
 
-- **Same-commit rule.** A change that touches behavior touches the spec in the same commit.
+- **Conformance bound.** Either the spec changes in the same commit as the behavior, or the
+  divergence is recorded in `implements.md` against a spec tag. What is forbidden is behavior
+  that changed with neither. See [Decoupling the spec from the code](#decoupling-the-spec-from-the-code).
 - **Periodic reconciliation.** Re-run context2spec against the current code and diff the result
   against the normative files. Each disagreement is a defect in the code or in the spec; decide
   which, and record the decision.
@@ -748,8 +843,57 @@ process; this document never grants an exception to a project's own safety const
 
 Change this file when the process changes, in the same commit as the change. Record what changed
 and why below, so an improvement can be told apart from a drift. When a project's experience
-suggests an improvement, make it in the canonical copy and propagate it, rather than letting each
-project's copy diverge.
+suggests an improvement, it ends up in the canonical copy and propagates from there, rather than
+each project's copy quietly diverging.
+
+Getting it there usually means **staging it in the project copy first**, because an improvement
+nobody has run is a guess. An amendment is written into the project's `process.md`, its revision
+row prefixed `[LOCAL]`, and the evidence for it recorded — what was observed, in which project,
+by which command. Once it has survived actual use it is upstreamed and the prefix dropped. Three
+things keep this from becoming drift:
+
+- **The base pin is recorded** — the canonical copy's hash at the time it was taken — so
+  `diff` against it separates local amendments from upstream changes, and the diff itself is the
+  patch to upstream.
+- **Every local row says `[LOCAL]`.** An unprefixed row means the canonical copy has it too.
+- **Staged amendments are a debt, not a fork.** A `[LOCAL]` row that has outlived its evidence
+  is either upstreamed or reverted; a project copy that accumulates them permanently has
+  forked the method and should say so.
+
+Amend the project copy only for changes to the *method*. Anything true of one project is a
+[project binding](#project-bindings) and belongs in its `tech.md`, which is the whole reason this
+file can stay identical everywhere.
+
+### Recording where a copy came from
+
+The base pin is useless if nobody can find it, so a project copy records its provenance in two
+linked places:
+
+- **An entry in the project's [`sources.md`](#sources-and-composition)**, carrying the canonical
+  origin, the base pin, and a `Status` — the same fields any other source gets. The pin lives
+  here, and only here.
+- **A short banner at the top of the copy**, saying that this is a copy, naming the canonical
+  origin, and pointing at that entry. Its job is to be seen by whoever is about to edit the file.
+  It does not repeat the pin: a hash written in two places is a hash that will eventually
+  disagree with itself.
+
+Neither half works alone. A banner without a pin can only be checked by diffing against whatever
+canonical happens to be today, which stops distinguishing local amendments from upstream changes
+the moment canonical moves. A pin without a banner is a fact about the file recorded somewhere
+the person editing it will not look.
+
+The banner is itself a difference from canonical, so a project copy is never byte-identical to
+its pin and an empty diff is the wrong thing to check for. What the diff should contain is
+**the banner, and nothing else but `[LOCAL]` amendments**. Anything further is drift: revert it,
+or give it a `[LOCAL]` row and the evidence to justify one.
+
+This file is deliberately **not** vendored under `spec/sources/`, and the exception is worth
+stating because it looks like an inconsistency. Everything in `spec/sources/` must stay
+byte-identical to upstream, and staging an amendment means editing in place — so the copy lives
+at `spec/process.md` and its pin lives in the manifest entry rather than in a `PROVENANCE.md`
+beside the bytes. That is a genuine difference in kind, not a location of convenience: this
+document states how requirements get made rather than stating any, and it produces no numbered
+requirements for criteria to cite.
 
 | Date | Change |
 | --- | --- |
@@ -762,3 +906,8 @@ project's copy diverge.
 | 2026-08-09 | Warned against deriving a check's expected value from a run rather than from the requirement, after a two-month-old defect survived a test whose allowlist had been built from the buggy output. Distinct from "a criterion must be able to fail": that test would have failed if the code broke, but could never report that the code was already wrong. |
 | 2026-08-09 | Required decision records to separate checked evidence from inference, after a retrofit cited a cleanup tool's existence as support for a bug the tool predated by five months. Version control would have settled it in one command. |
 | 2026-08-09 | Collected the bundle under `spec/`, leaving the repository root for entry-point docs. Motivated by vendored sources needing a directory regardless, by CODEOWNERS on one directory being a mechanical enforcement of Gate 1, and by making `process.md` sit at an identical path in every project so it can be propagated. |
+| 2026-08-27 | Required the repository's formatter to be kept off `spec/sources/` and off this file. Observed 2026-08-25 while adopting the method into gemini-cli, whose `npm run format` runs Prettier across the whole tree: `prettier@3.5.3` rewrote a saved terms-of-service page, collapsing a run of spaces *inside a sentence* and changing its hash, which would have made the quotation check verify transcriptions against text the publisher never served. The same run rewrote this document. **Exercised:** the failure was reproduced and then prevented — gemini-cli's vendored copies have matched their recorded hashes ever since, though by hand-check, because the meta-criterion that would enforce it is not written there. |
+| 2026-08-27 | Added a `Status` field to the source manifest, distinguishing an adopted source from a merely named one. Observed 2026-08-25: adopting into gemini-cli produced seven sources of which five were unpinned, untranscribed and uncovered by criteria — and the existing fields hid that completely, since all of them can be filled in plausibly from a URL alone. **Exercised:** in use in two projects. It has not yet caught a mistake its author had not already noticed, so it is so far a clearer way of writing down what someone knew rather than a way of finding out. |
+| 2026-08-27 | Described how an amendment reaches the canonical copy: staged in a project copy behind a `[LOCAL]` marker against a recorded base pin, then upstreamed once it has survived use. Written 2026-08-25, because the previous text told projects to amend the canonical copy directly — which asks them to publish improvements they have not yet run. **Exercised:** this row and the three around it are its first completed cycle, staged in gemini-cli on 2026-08-25, followed there for two days, and upstreamed today against a base pin that still matched. The half not yet tested is the failure case: no staged amendment has yet been *rejected* and reverted. |
+| 2026-08-27 | Decoupled spec commits from code commits: a tag marks the spec approved to implement, and `implements.md` records per-codebase conformance against it. Replaces the same-commit rule with a conformance bound, and states that a spec may serve several codebases. Prompted 2026-08-25 by adopting WCAG into gemini-cli, where the code plainly did not satisfy a newly adopted requirement and the method offered only two moves — stop work, or weaken the tier. Weakening the tier is what happened, and it was the wrong fix: the requirement was not less binding, the implementation was merely behind. Mandatory severity is explicitly preserved. **Exercised:** on 2026-08-26 by a three-repository worked example — a spec-only repository tagged `v1.0` and `v1.1`, two codebases each carrying `implements.md`, and a strengthening bump propagated along the chain. The staleness bound this text requires is the part still unexercised: both conformance records carry a reconciliation date and nothing checks it. |
+| 2026-08-27 | Required a project copy of this file to record its provenance in two linked places: an entry in the project's `sources.md` carrying the canonical origin, the base pin and a `Status`, and a short banner at the top of the copy pointing at that entry. Prompted by two projects inventing half the mechanism each — birdsync carried a banner naming the canonical repository but recorded no pin, so once canonical moved there was nothing to separate upstream change from local amendment; gemini-cli recorded the pin but nothing in the file itself said the pin existed. **Not exercised.** This is reasoned from a failure that had not yet happened at the time of writing, and lands unstaged because birdsync's provenance breaks at the moment canonical next changes, which is this commit. It earns its evidence, or gets reverted, at birdsync's next refresh. |
