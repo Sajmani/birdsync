@@ -83,6 +83,38 @@ largest where mistakes are expensive or hard to see: anything that writes to a u
 handles money or credentials, is hard to roll back, must satisfy an outside authority, or is
 maintained by people — or agents — who weren't there when the decisions were made.
 
+### What the agent is for, and what you are for
+
+The aim is practical, not novel. Three things get streamlined: composing requirements that
+arrive from several sources, generating code that satisfies them, and verifying that code
+against criteria generated from those same requirements.
+
+Managing requirements has always been possible and has rarely been felt to be worth it, because
+the clerical half is enormous. Someone has to keep the traceability current, re-read every
+downstream artifact when a source moves, and re-establish that a hundred requirements still hold
+before each release. Much of what makes the practice unpopular is that cost, and organizations
+abandon it quietly once they feel it — or freeze the product rather than pay to re-certify.
+
+That half is now cheap. An agent can derive the traceability from citations already in the code,
+read a source diff and propose what it breaks, and re-run every criterion on demand. What it
+cannot do is decide anything.
+
+| The agent does | You do |
+| --- | --- |
+| Read the code, the sources and the tracker, and draft the requirements | Say whether they are the right ones |
+| Transcribe an external document into numbered requirements | Approve the transcription, which can be wrong |
+| Surface a conflict and lay out the options | Choose which requirement loses, and record why |
+| Run every criterion and report what fails | Decide whether a gap is acceptable, and sign for it |
+| Notice that a source has moved and propose the change | Judge whether it alters what you owe |
+
+The split is not about capability. It is about accountability: a criterion an agent wrote and an
+agent approved verifies nothing, because the agent will simply have satisfied itself. Every
+[human gate](#human-gates) in this process sits where someone has to be answerable for a
+judgment, and those are the places the work is supposed to be slow.
+
+So use people for what only people have — domain knowledge that is written down nowhere, and the
+authority to accept a risk — and let the agent do the bookkeeping that made this expensive.
+
 ## The loop
 
 ```
@@ -911,3 +943,4 @@ requirements for criteria to cite.
 | 2026-08-27 | Described how an amendment reaches the canonical copy: staged in a project copy behind a `[LOCAL]` marker against a recorded base pin, then upstreamed once it has survived use. Written 2026-08-25, because the previous text told projects to amend the canonical copy directly — which asks them to publish improvements they have not yet run. **Exercised:** this row and the three around it are its first completed cycle, staged in gemini-cli on 2026-08-25, followed there for two days, and upstreamed today against a base pin that still matched. The half not yet tested is the failure case: no staged amendment has yet been *rejected* and reverted. |
 | 2026-08-27 | Decoupled spec commits from code commits: a tag marks the spec approved to implement, and `implements.md` records per-codebase conformance against it. Replaces the same-commit rule with a conformance bound, and states that a spec may serve several codebases. Prompted 2026-08-25 by adopting WCAG into gemini-cli, where the code plainly did not satisfy a newly adopted requirement and the method offered only two moves — stop work, or weaken the tier. Weakening the tier is what happened, and it was the wrong fix: the requirement was not less binding, the implementation was merely behind. Mandatory severity is explicitly preserved. **Exercised:** on 2026-08-26 by a three-repository worked example — a spec-only repository tagged `v1.0` and `v1.1`, two codebases each carrying `implements.md`, and a strengthening bump propagated along the chain. The staleness bound this text requires is the part still unexercised: both conformance records carry a reconciliation date and nothing checks it. |
 | 2026-08-27 | Required a project copy of this file to record its provenance in two linked places: an entry in the project's `sources.md` carrying the canonical origin, the base pin and a `Status`, and a short banner at the top of the copy pointing at that entry. Prompted by two projects inventing half the mechanism each — birdsync carried a banner naming the canonical repository but recorded no pin, so once canonical moved there was nothing to separate upstream change from local amendment; gemini-cli recorded the pin but nothing in the file itself said the pin existed. **Not exercised.** This is reasoned from a failure that had not yet happened at the time of writing, and lands unstaged because birdsync's provenance breaks at the moment canonical next changes, which is this commit. It earns its evidence, or gets reverted, at birdsync's next refresh. |
+| 2026-08-27 | Stated what the agent is for and what the human is for, in `Why`. The section argued only from drift — requirements in someone's head cannot be checked — and never said who does which half, though the whole method assumes an answer. The division is by accountability rather than capability: an agent drafts, transcribes, surfaces conflicts and runs criteria; a person decides whether the requirements are right, which one loses a conflict, and whether a gap may be accepted. A criterion an agent both wrote and approved verifies nothing. **Landed unstaged, deliberately.** The staging workflow exists to find out whether a *practice* survives use, and a statement of purpose has no procedure to run — there is nothing a project could learn by following it for a week. It is falsifiable only by disagreement, which is a review comment, not evidence. |
