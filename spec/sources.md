@@ -97,7 +97,7 @@ general Go practice, and T-002's dependency ceiling, which is far stricter.
 | Field | Value |
 | --- | --- |
 | Origin | <https://github.com/Sajmani/specman>, file `process.md` |
-| Version | Base pin `sha256:a1325d533b60d7457d8063f8dfb368840c710cf6b251fcbc1b7a0a1927fbae31`, taken 2026-08-27 |
+| Version | Base pin `sha256:fe2762837b398a44c6fbf62068774036f65d45557dab75045766647a6d94f556`, taken 2026-08-27 |
 | Tier | **Advisory** |
 | Import style | By reference, copied to [process.md](process.md) — **not** under `sources/`, because the copy is amended in place |
 | Scope | How work on this repository is done |

@@ -138,6 +138,7 @@ authority to accept a risk — and let the agent do the bookkeeping that made th
 | File | Answers | Produced by | Nature |
 | --- | --- | --- | --- |
 | `process.md` | How do we work? | — (this file) | Normative |
+| `goals.md` | Why is any of this wanted? | context2spec | Normative (but see below) |
 | `product.md` | What must the system do, from a user's point of view? | context2spec | Normative |
 | `tech.md` | What constraints must the implementation satisfy? | context2spec | Normative |
 | `sources.md` | Whose requirements apply here, and who outranks whom? | context2spec | Normative |
@@ -145,6 +146,37 @@ authority to accept a risk — and let the agent do the bookkeeping that made th
 | `acceptance.md` | How do we know each requirement holds? | spec2test | Normative |
 | `arch.md` | How is the code actually put together? | spec2code | Descriptive |
 | `implements.md` | Which spec version does this codebase satisfy, and where does it fall short? | spec2code | Descriptive |
+
+**`goals.md` states why the requirements exist.** A goal is an **objective** in the
+OKR sense: directional, aspirational, and deliberately *not* measurable. It is held to the
+opposite standard from a requirement.
+
+| | Goal | Requirement |
+| --- | --- | --- |
+| Answers | Why | What must be true |
+| Standard | Worth wanting | Assessable, and testable where possible |
+| Checked by | A person, at review | A criterion, on every change |
+
+Each requirement cites the goals it serves in a `Goals:` field, alongside `Subject:`. The
+relation is **many-to-many** — a requirement commonly serves several goals and a goal is served
+by several requirements — and the citation is the only link. A goal never lists its
+requirements, so the two files cannot drift apart.
+
+Three things are mechanically checkable and should be: every requirement cites at least one
+goal, every citation resolves to a declared goal, and every goal is cited by something. A
+requirement citing nothing is a demand nobody justified; a goal nothing cites is an intention
+the project is not actually pursuing.
+
+**What is not checkable is whether a requirement genuinely serves the goal it names.** Goals are
+not measurable by construction, so no criterion can read one — that judgment belongs to
+[Gate 1](#human-gates). Say so wherever the check lives, because a green structural run looks
+exactly like a validated one and is not.
+
+Goals are why this method can tell a requirement that is *satisfied* from one that is *working*.
+A requirement can pass every criterion it has and still not serve its purpose — a request log
+that records no timestamp satisfies "every request is logged" and cannot reconstruct an
+incident. Nothing automated catches that. A reviewer reading the goal beside the requirement
+does.
 
 The normative/descriptive split decides who wins an argument:
 
@@ -201,6 +233,30 @@ definition.
 | `PROVENANCE.md` | Every file's origin URL, its SHA-256, the retrieval date, **who or what retrieved it and how**, any upstream revision date, and what is deliberately *not* vendored |
 | `requirements.md` | The transcription: `<name>/R1`, `R2`, … each quoting the source verbatim, then saying what it means for this project. Ends with what was considered and not adopted |
 | the documents | As served, except that **active content is removed** — `<script>`, `<style>`, `<link>`. Never reformatted, never reworded, never partially quoted |
+
+**A vendored file may live outside the source directory, and `PROVENANCE.md` still
+describes it.** Some files have a location forced on them by tooling — `LICENSE` at the
+repository root, which GitHub, npm and license scanners all expect to find there. Moving such a
+file under `spec/sources/` to satisfy the layout would break the tools that actually read it.
+
+Write the path **anchored at the repository root, with a leading `//`**:
+
+```
+| File        | SHA-256                                                            |
+| ----------- | ------------------------------------------------------------------ |
+| `//LICENSE` | `58d1e17ffe5109a7ae296caafcadfdbe6a7d176f0bc4ab01e12a689b0499d8bd` |
+```
+
+Anchoring at the root rather than writing `../../../LICENSE` says the true thing. The file's
+location is fixed relative to the repository, and the number of `../` segments only records how
+deep the spec bundle happens to sit — an accident that changes when the bundle moves, as it did
+when these artifacts were collected under `spec/`.
+
+The source still gets its directory, holding a `PROVENANCE.md` and, where the source generates
+obligations, a `requirements.md`. The directory says the file is deliberately not stored there,
+so nobody helpfully copies it in and creates a second copy to drift. Record the location
+exception itself as a [project binding](#project-bindings): the layout is the method's, and
+departing from it is the project's to justify.
 
 **Strip active content, and record that you did.** A page saved from a browser carries the
 publisher's scripts, and scripts carry the publisher's secrets: vendoring four iNaturalist
@@ -357,7 +413,7 @@ Two observations about this table:
 | Name | The ID prefix used in citations (`brand`, `wcag`, `go`) |
 | Origin | Repository, URL, or document, precise enough to re-fetch |
 | Version | Tag, commit, edition, or retrieval date — a **pin**, not "latest" |
-| Integrity | Content hash of the vendored copy, where the format allows one |
+| Integrity | **Where** the content hash of the vendored copy is recorded — never the hash itself |
 | Tier | mandatory / governing / local / advisory |
 | Import style | By reference or absorbed (below) |
 | Scope | Where it applies — the whole project, or a named subset |
@@ -371,6 +427,29 @@ has never retrieved is a to-do with provenance, not a compliance posture, and th
 do not reveal the difference — every one of them can be filled in plausibly from a URL alone.
 Making the distinction visible at a glance is what stops a manifest from becoming the
 [adoption by gesture](#failure-modes-to-watch-for) it was meant to prevent.
+
+**`Integrity` never contains a hash. It names where the hash lives.** One fact,
+recorded once, in the place that owns it:
+
+| Situation | Where the hash lives |
+| --- | --- |
+| Vendored under `spec/sources/<name>/` | That directory's `PROVENANCE.md` |
+| Vendored elsewhere by a location exception | *Still* that directory's `PROVENANCE.md`, whose file table names the out-of-place path |
+| Pinned by a tool's own lockfile | That lockfile — it is the record, and the project does not author it |
+| Not vendored at all | No `Integrity` row. Say so in `Status` instead |
+
+The failure this prevents is not hypothetical. A refresh updates the vendored bytes and the
+`Version` field, and leaves a duplicated hash behind in whichever file the person was not
+looking at. Both copies then disagree with the file and with each other, and the meta-criterion
+that every vendored copy match its recorded hash cannot say which record it is supposed to
+believe. A criterion needs one place to read, and a reviewer needs one place to update.
+
+**A base pin is not an integrity hash**, and does not belong under this rule. An integrity hash
+asserts *this file hashes to X*, and a check fails when it does not. A base pin records *what
+upstream was when we last synced*, for a file the project deliberately edits — this document in
+a project copy being the standing example. The file is *supposed* to differ from it. Keep a base
+pin in `Version`, where the difference is the subject rather than the defect, and never write a
+`PROVENANCE.md` claiming a file matches one.
 
 Also record the sources you considered and rejected. "We are not subject to X" is a decision that
 someone will otherwise re-litigate every year.
@@ -484,6 +563,30 @@ governing source's owner for a deviation), or record an explicit **risk acceptan
 `decisions.md` naming the person who accepted the risk, their authority to do so, the exposure
 they accepted, an expiry date, and a review date. An unsigned, unexpiring gap row in a table is
 not a risk acceptance.
+
+**There is a third case: you may not have the authority to act.** Both exits above
+assume the adopter controls the code. Adopt this method into a fork, a vendored dependency, a
+security review or an evaluation of someone else's project, and neither is available — you
+cannot change the constraints, and you cannot accept a risk on behalf of users who are not
+yours.
+
+The honest record is then **adopted, measured, not actionable here**, and all three parts are
+load-bearing:
+
+- **Adopted.** The requirement still binds. Not withdrawn, not weakened, and *not re-tiered*
+  — lowering the tier to escape a finding is the move this section exists to prevent.
+- **Measured.** Quantify the gap. Measurement is usually the one thing an adopter without
+  authority genuinely can produce, and it is what the party who does have authority needs.
+- **Not actionable here.** Name who *is* able to act, and record what would be handed to them.
+
+**Such a record carries no expiry, and that is not the unexpiring gap row forbidden above.** An
+expiry exists so that a *choice* gets re-examined; where nothing was chosen there is nothing to
+revisit on a schedule. Record the **event** that would change the situation instead — the spec
+being proposed upstream, the fork being merged, the evaluation concluding.
+
+What this must not become is a way to file any inconvenient requirement as somebody else's
+problem. The test is whether the adopter could satisfy it by any means available to them,
+including asking. If they could and did not, it is a risk acceptance and it expires.
 
 ### Worked example
 
@@ -745,9 +848,8 @@ cannot: it forbids all divergence, so when divergence happens anyway it arrives 
 
 Two consequences, both easy to get wrong:
 
-- **Tier severity is unchanged.** See [unsatisfiable mandatory
-  requirements](#when-a-mandatory-requirement-cannot-be-satisfied). Cheap gap-recording plus a
-  mandatory requirement equals routine non-compliance.
+- **Tier severity is unchanged**, which [unsatisfiable mandatory
+  requirements](#when-a-mandatory-requirement-cannot-be-satisfied) states in full.
 - **A conformance record needs a staleness bound**, because it replaces a drift defense. A
   codebase permanently several tags behind has not decoupled from the spec; it has stopped
   implementing it, and should say so rather than carrying an ever-growing gap list.
@@ -938,9 +1040,13 @@ requirements for criteria to cite.
 | 2026-08-09 | Warned against deriving a check's expected value from a run rather than from the requirement, after a two-month-old defect survived a test whose allowlist had been built from the buggy output. Distinct from "a criterion must be able to fail": that test would have failed if the code broke, but could never report that the code was already wrong. |
 | 2026-08-09 | Required decision records to separate checked evidence from inference, after a retrofit cited a cleanup tool's existence as support for a bug the tool predated by five months. Version control would have settled it in one command. |
 | 2026-08-09 | Collected the bundle under `spec/`, leaving the repository root for entry-point docs. Motivated by vendored sources needing a directory regardless, by CODEOWNERS on one directory being a mechanical enforcement of Gate 1, and by making `process.md` sit at an identical path in every project so it can be propagated. |
-| 2026-08-27 | Required the repository's formatter to be kept off `spec/sources/` and off this file. Observed 2026-08-25 while adopting the method into gemini-cli, whose `npm run format` runs Prettier across the whole tree: `prettier@3.5.3` rewrote a saved terms-of-service page, collapsing a run of spaces *inside a sentence* and changing its hash, which would have made the quotation check verify transcriptions against text the publisher never served. The same run rewrote this document. **Exercised:** the failure was reproduced and then prevented — gemini-cli's vendored copies have matched their recorded hashes ever since, though by hand-check, because the meta-criterion that would enforce it is not written there. |
-| 2026-08-27 | Added a `Status` field to the source manifest, distinguishing an adopted source from a merely named one. Observed 2026-08-25: adopting into gemini-cli produced seven sources of which five were unpinned, untranscribed and uncovered by criteria — and the existing fields hid that completely, since all of them can be filled in plausibly from a URL alone. **Exercised:** in use in two projects. It has not yet caught a mistake its author had not already noticed, so it is so far a clearer way of writing down what someone knew rather than a way of finding out. |
-| 2026-08-27 | Described how an amendment reaches the canonical copy: staged in a project copy behind a `[LOCAL]` marker against a recorded base pin, then upstreamed once it has survived use. Written 2026-08-25, because the previous text told projects to amend the canonical copy directly — which asks them to publish improvements they have not yet run. **Exercised:** this row and the three around it are its first completed cycle, staged in gemini-cli on 2026-08-25, followed there for two days, and upstreamed today against a base pin that still matched. The half not yet tested is the failure case: no staged amendment has yet been *rejected* and reverted. |
-| 2026-08-27 | Decoupled spec commits from code commits: a tag marks the spec approved to implement, and `implements.md` records per-codebase conformance against it. Replaces the same-commit rule with a conformance bound, and states that a spec may serve several codebases. Prompted 2026-08-25 by adopting WCAG into gemini-cli, where the code plainly did not satisfy a newly adopted requirement and the method offered only two moves — stop work, or weaken the tier. Weakening the tier is what happened, and it was the wrong fix: the requirement was not less binding, the implementation was merely behind. Mandatory severity is explicitly preserved. **Exercised:** on 2026-08-26 by a three-repository worked example — a spec-only repository tagged `v1.0` and `v1.1`, two codebases each carrying `implements.md`, and a strengthening bump propagated along the chain. The staleness bound this text requires is the part still unexercised: both conformance records carry a reconciliation date and nothing checks it. |
-| 2026-08-27 | Required a project copy of this file to record its provenance in two linked places: an entry in the project's `sources.md` carrying the canonical origin, the base pin and a `Status`, and a short banner at the top of the copy pointing at that entry. Prompted by two projects inventing half the mechanism each — birdsync carried a banner naming the canonical repository but recorded no pin, so once canonical moved there was nothing to separate upstream change from local amendment; gemini-cli recorded the pin but nothing in the file itself said the pin existed. **Not exercised.** This is reasoned from a failure that had not yet happened at the time of writing, and lands unstaged because birdsync's provenance breaks at the moment canonical next changes, which is this commit. It earns its evidence, or gets reverted, at birdsync's next refresh. |
-| 2026-08-27 | Stated what the agent is for and what the human is for, in `Why`. The section argued only from drift — requirements in someone's head cannot be checked — and never said who does which half, though the whole method assumes an answer. The division is by accountability rather than capability: an agent drafts, transcribes, surfaces conflicts and runs criteria; a person decides whether the requirements are right, which one loses a conflict, and whether a gap may be accepted. A criterion an agent both wrote and approved verifies nothing. **Landed unstaged, deliberately.** The staging workflow exists to find out whether a *practice* survives use, and a statement of purpose has no procedure to run — there is nothing a project could learn by following it for a week. It is falsifiable only by disagreement, which is a review comment, not evidence. |
+| 2026-08-27 | Required the repository's formatter to be kept off `spec/sources/` and off this file. Prettier 3.5.3, run across gemini-cli, collapsed a run of spaces *inside a sentence* of a vendored terms-of-service page and changed its hash — after which the quotation check would have verified transcriptions against text the publisher never served. **Exercised:** failure reproduced, then prevented. Vendored copies have matched their pins since, though by hand-check until `check-pins.py` existed. |
+| 2026-08-27 | Added a `Status` field to the source manifest, distinguishing an adopted source from a merely named one. Adopting into gemini-cli produced seven sources of which five were unpinned, untranscribed and uncovered, and no existing field revealed it — all of them can be filled in plausibly from a URL alone. **Exercised:** in use in two projects; has not yet caught a mistake its author had not already noticed. |
+| 2026-08-27 | Described how an amendment reaches the canonical copy: staged in a project copy behind a `[LOCAL]` marker against a recorded base pin, then upstreamed once it has survived use. The previous text told projects to amend canonical directly, which asks them to publish improvements they have not run. **Exercised:** two full cycles completed. The failure case is untested — no staged amendment has yet been rejected and reverted. |
+| 2026-08-27 | Decoupled spec commits from code commits: a tag marks the spec approved to implement, and `implements.md` records per-codebase conformance against it. Replaces the same-commit rule with a conformance bound. Prompted by gemini-cli, where code plainly failed a newly adopted mandatory requirement and the method offered only stop-work or weaken-the-tier; weakening happened, and was the wrong fix. **Exercised:** fully, by a three-repository example. The staleness bound it requires remains unchecked. |
+| 2026-08-27 | Required a project copy of this file to record its provenance in two linked places: a `sources.md` entry carrying origin, base pin and `Status`, and a banner in the copy pointing at it. Two projects had invented half the mechanism each — birdsync a banner with no pin, gemini-cli a pin nothing pointed at — and birdsync's provenance broke the moment canonical next moved. **Not exercised.** Reasoned, landed unstaged; earns its evidence at birdsync's next refresh. |
+| 2026-08-27 | Stated what the agent is for and what the human is for, in `Why`. The section argued only from drift and never said who does which half, though every gate depends on the answer. The division is by accountability, not capability: a criterion an agent both wrote and approved verifies nothing. **Landed unstaged, deliberately** — the staging workflow tests whether a *practice* survives use, and a statement of purpose has no procedure to run. |
+| 2026-08-27 | Required that a content hash be recorded in exactly one place, with the manifest's `Integrity` field naming that place rather than containing a hash; added the `//`-anchored path form for a vendored file tooling forces to live elsewhere; and separated a **base pin** from an integrity hash. server-framework wrote one hash into two files, and refreshing `org-sec` to v1.1 left *both* records on the old value, undetected, because that repository had no `acceptance.md` to hold the meta-criterion. **Partly exercised:** criteria in two projects, each watched failing. The lockfile case is asserted and unchecked. |
+| 2026-08-27 | Added a third exit from an unsatisfiable mandatory requirement: the adopter may have no authority to act. The two existing exits both assume the adopter controls the code, which is false for a fork, a vendored dependency or an evaluation. Diagnosed twice in gemini-cli, finally as `CR-001` — a risk acceptance that sat incomplete for two days because the dates it needed were unfillable, the record being the wrong shape rather than merely unfinished. **Partly exercised:** the replacement record (`CR-002`) exists; the guard against filing inconvenient requirements as somebody else's problem is reasoned, not tested. |
+| 2026-08-27 | Added `goals.md` and a `Goals:` field, recording why a requirement exists. A goal is an objective in the OKR sense — deliberately not measurable, which is the opposite standard from a requirement — so structure is checkable and substance is a Gate 1 judgment. Prompted by `org-sec/R1`, verified by a passing test while its stated purpose, incident reconstruction, is unachievable from a record carrying no timestamp, status or latency. **Exercised in org-sec v1.2:** three goals, four citing requirements, coverage check watched failing on all three rules. Untested at scale. |
+| 2026-08-27 | Simplification pass. Tightened the day's nine revision rows, which had grown to a mean of 900 characters against the original entries' 327 by restating mechanisms the body already explains; a revision row states what changed, the evidence, and how well it has been exercised, and nothing else. The log fell from 15% of this document to 11%. Also removed a mutual duplication: decoupling and unsatisfiable-mandatory-requirements each argued that decoupling does not soften tier severity, so the latter now owns it and the former links. |
