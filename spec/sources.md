@@ -97,7 +97,7 @@ general Go practice, and T-002's dependency ceiling, which is far stricter.
 | Field | Value |
 | --- | --- |
 | Origin | <https://github.com/Sajmani/specman>, file `process.md` |
-| Version | Base pin `sha256:fe2762837b398a44c6fbf62068774036f65d45557dab75045766647a6d94f556`, taken 2026-08-27 |
+| Version | Base pin `sha256:63bfdecb99a256d2819aa6d0e55bfb0bccf19b96db40e28f72572315e81cbdbc`, taken 2026-09-23 |
 | Tier | **Advisory** |
 | Import style | By reference, copied to [process.md](process.md) — **not** under `sources/`, because the copy is amended in place |
 | Scope | How work on this repository is done |
@@ -111,7 +111,7 @@ file and contributor guide outrank it, and a source that declares itself to lose
 decisions is advisory whatever its author intended. Here that means [AGENTS.md](../AGENTS.md)
 and [CONTRIBUTING.md](../CONTRIBUTING.md) win where they disagree with it.
 
-**Why this entry exists.** Until 2026-08-27 this project recorded the canonical origin in a
+**Why this entry exists.** Until 2026-09-04 this project recorded the canonical origin in a
 banner at the top of `process.md` and recorded no pin anywhere. That worked only while
 canonical had not moved: a `diff` against canonical was the only way to find local amendments,
 and it silently stopped distinguishing them from upstream changes the moment canonical changed.
