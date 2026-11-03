@@ -1,0 +1,94 @@
+# Adopting River in a repository
+
+Part of River's method. Search `^## ` for the sections; read only the one you need.
+
+## Principles
+
+**You do not have to change any tool you already use.** River is files in your repository, this
+skill, and the `river` CLI, run by whatever already runs your tests.
+
+**Adopt one stage at a time.** Requirements alone is worth doing. A stage you have not adopted
+is declared **informal** in `bindings.md` rather than left unmentioned, so a partial adoption is
+distinguishable from an abandoned one.
+
+One dependency is unavoidable: **Verification depends on Requirements**, because a criterion
+with nothing behind it has nothing to check against. The others are free.
+
+**Brownfield is the normal case.** An existing codebase already has requirements, implicit in
+its code, tests and documentation. Recover them first and map them to goals afterwards. You will
+start with every requirement unmapped and a test suite nobody wrote requirements for; neither is
+a failure state, and both are counted.
+
+**A project that already keeps requirements another way** (a spec directory, a requirements
+document, a predecessor method) migrates them rather than starting over: every existing
+requirement becomes a source item, included, excluded, or composed from, so none drops out
+silently, and the old files are retired only after the migration accounts for each.
+
+## Installing the skill
+
+**This skill is the method.** It is identical in every project that uses River, so it says
+nothing about any particular project; what is true of yours goes in `bindings.md`.
+
+Copy the skill directory unchanged into your repository at `.agents/skills/river/`, the
+project-skill location of the Agent Skills convention, which most coding agents load from. If an
+agent you use reads skills only from its own directory (`.claude/skills/`, for one), point that
+location at the same copy rather than keeping a second one. Beside the copy, add `PROVENANCE.md`:
+
+```markdown
+# PROVENANCE
+
+River's skill, copied unchanged.
+
+| | |
+| --- | --- |
+| Origin | <canonical repository URL>, `skills/river/` |
+| Pin | `<commit>` |
+| Retrieved | <YYYY-MM-DD>, by <how> |
+| Local amendments | none; any are listed in `bindings.md` |
+```
+
+Keeping every other file byte-identical to its origin makes refreshing the skill a reviewable
+diff: recopy it whole and update the pin. Put amendments in `bindings.md` and say what they change.
+
+**The method is not a requirements source.** It is a pinned external document, but it
+contributes no requirements to your composed set. Its pin belongs in `PROVENANCE.md` and nowhere
+else: recording it in `imports.md` too gives two records of one pin, which a single recorded hash
+exists to prevent.
+
+Install the CLI with `go install ./cmd/river` from a River checkout at the same pin (until River
+publishes a module path).
+
+## Procedure
+
+1. **Ask which stages the project adopts.** Record each stage as adopted or **informal** in
+   `river/bindings.md`.
+2. **Install the skill** as above.
+3. **Create the bundle** at `river/` (or where the project says, recorded in `bindings.md`):
+   `goals/`, `requirements/README.md` with a `## Module` block, `requirements/precedence.md`,
+   `requirements/decisions.md`, and `requirements/local/<source>/`. The layout is in
+   [`bundle.md`](bundle.md).
+4. **Recover requirements first**, from the existing code, tests, and documentation, one item per
+   `## <id>` heading with a bold title and a first paragraph that is the complete rule
+   ([`requirements.md`](requirements.md), *Anatomy*). Leave `Goals:` empty where you cannot cite a
+   real goal; `river check` counts these and never fails them. Never invent a goal to fill the
+   field.
+5. **Find the sources** the existing code already depends on: every hosted service, library, and
+   dataset ([`discovery.md`](discovery.md)).
+6. **Propose goals and their citations** for a person to accept. Cluster the unmapped
+   requirements by who benefits and what they gain; each cluster is a candidate goal
+   ([`goals.md`](goals.md)). Do not write accepted goals yourself.
+7. **Map existing tests to criteria** from the criterion side, in `river/conformance.md`. Never
+   annotate source code with requirement IDs; if the project already does, harvest every
+   annotation into `conformance.md` first, then remove them. A test no criterion cites is kept and
+   counted ([`verification.md`](verification.md)).
+8. **Point the agent instructions at River**: add a line to the project's `AGENTS.md` (or
+   equivalent) saying requirements live in `river/`, the method is the River skill, composed
+   packages are never edited by hand, and `river check` must pass before a change is done.
+9. **Wire `river check` in** wherever the project already runs checks: pre-commit, CI, and release.
+10. Run `river check` and fix every problem.
+
+## When the method is wrong
+
+It will be. Write the amendment in `bindings.md`, say what it changes and why, and if the change
+is general rather than local, send it upstream. A project copy that silently diverges from its
+origin is worse than one that never refreshed, because the diff no longer means anything.

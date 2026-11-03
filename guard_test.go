@@ -487,6 +487,10 @@ func TestAmericanSpellings(t *testing.T) {
 			// verbatim. Their spelling is not ours to correct (T-038).
 			case path == filepath.Join("spec", "sources"):
 				return filepath.SkipDir
+			// The River skill is copied byte-for-byte from its origin so a
+			// refresh is a reviewable diff. It is a vendored document too.
+			case path == filepath.Join(".agents", "skills"):
+				return filepath.SkipDir
 			}
 			return nil
 		}
