@@ -15,7 +15,7 @@ import (
 )
 
 // TestNoLiveServiceHostsInTests is a static check over this repository's own
-// source. T-010 forbids tests from contacting a live service, and the failure
+// source. tech.noLiveServicesInTests forbids tests from contacting a live service, and the failure
 // mode it guards against is quiet: a test that reaches api.inaturalist.org
 // still passes on the author's machine, then starts writing to whichever
 // account the CI environment's credentials point at.
@@ -64,7 +64,7 @@ func TestNoLiveServiceHostsInTests(t *testing.T) {
 			if strings.Contains(string(b), host) {
 				rel, _ := filepath.Rel(root, path)
 				t.Errorf("%s names the live service host %q; tests must use an "+
-					"httptest server via the base-URL seams instead (T-010)", rel, host)
+					"httptest server via the base-URL seams instead (tech.noLiveServicesInTests)", rel, host)
 			}
 		}
 		return nil
@@ -133,7 +133,7 @@ func TestToolsAreReadOnly(t *testing.T) {
 				return true
 			}
 			if mutating[sel.Sel.Name] {
-				t.Errorf("%s:%d calls %s: programs in tools/ must be read-only (T-032)",
+				t.Errorf("%s:%d calls %s: programs in tools/ must be read-only (tech.toolsReadOnly)",
 					rel, fset.Position(sel.Pos()).Line, sel.Sel.Name)
 			}
 			return true
@@ -148,7 +148,7 @@ func TestToolsAreReadOnly(t *testing.T) {
 	}
 }
 
-// TestNoLogFatalInLibraryPackages enforces T-027: log.Fatal belongs in main and
+// TestNoLogFatalInLibraryPackages enforces tech.noLogFatalInLibraries: log.Fatal belongs in main and
 // in tools/, not in a package that has a caller. A library that calls it takes
 // the decision to abort away from the program using it — and in this repository
 // the program using it is sometimes a test, which the call takes down with it.
@@ -200,7 +200,7 @@ func TestNoLogFatalInLibraryPackages(t *testing.T) {
 				(pkg.Name == "os" && sel.Sel.Name == "Exit")
 			if bad {
 				t.Errorf("%s:%d calls %s.%s in package %s: library packages return errors "+
-					"to their caller (T-027)",
+					"to their caller (tech.noLogFatalInLibraries)",
 					rel, fset.Position(sel.Pos()).Line, pkg.Name, sel.Sel.Name, f.Name.Name)
 			}
 			return true
@@ -453,7 +453,7 @@ func init() {
 	}
 }
 
-// TestAmericanSpellings enforces T-037 and T-038 together, and the second is
+// TestAmericanSpellings enforces tech.americanSpelling and tech.quotationsNeverRespelled together, and the second is
 // the reason the first is worth a test at all.
 //
 // Spelling on its own is taste. But a bulk find-and-replace across river/ would
@@ -476,7 +476,7 @@ func TestAmericanSpellings(t *testing.T) {
 			case d.Name() == ".git":
 				return filepath.SkipDir
 			// Vendored sources and their transcriptions quote publishers
-			// verbatim. Their spelling is not ours to correct (T-038).
+			// verbatim. Their spelling is not ours to correct (tech.quotationsNeverRespelled).
 			case path == filepath.Join("river", "requirements", "imported"):
 				return filepath.SkipDir
 			// The River skill is copied byte-for-byte from its origin so a
@@ -502,12 +502,12 @@ func TestAmericanSpellings(t *testing.T) {
 		scanned++
 		for i, line := range strings.Split(string(b), "\n") {
 			if strings.HasPrefix(strings.TrimSpace(line), ">") {
-				continue // a quotation: reproduce it as published (T-038)
+				continue // a quotation: reproduce it as published (tech.quotationsNeverRespelled)
 			}
 			for _, w := range word.FindAllString(line, -1) {
 				if american, bad := britishSpellings[strings.ToLower(w)]; bad {
 					flagged++
-					t.Errorf("%s:%d: %q should be %q (T-037)", path, i+1, w, american)
+					t.Errorf("%s:%d: %q should be %q (tech.americanSpelling)", path, i+1, w, american)
 				}
 			}
 		}

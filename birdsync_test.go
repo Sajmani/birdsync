@@ -76,8 +76,8 @@ type mockINatClient struct {
 
 	// Every mutating call is recorded, so a test can assert both what birdsync
 	// sent and — for --dryrun — that it sent nothing at all. Without this the
-	// dry-run guarantee (T-005, P-051) can only be checked indirectly through
-	// the counters, which is exactly the mistake CR-001 records.
+	// dry-run guarantee (tech.dryRunGateAtCallSite, product.dryRunNoWrites) can only be checked indirectly through
+	// the counters, which is exactly the mistake decisions.dryRunCountersRelabeled records.
 	created  []inat.Observation
 	updated  []inat.Observation
 	uploaded []uploadedMedia
@@ -314,7 +314,7 @@ func TestUpdateMedia(t *testing.T) {
 	// Reset flags to default. This must go through resetFlags: after.Set("")
 	// returns an error and leaves the previous test's date window in place, so
 	// this test used to pass only because 2023-01-03 happened to fall inside
-	// the window TestBirdsync left behind (T-015).
+	// the window TestBirdsync left behind (tech.resetFlagsInTests).
 	resetFlags()
 	verifiable = false
 
@@ -468,7 +468,7 @@ func TestDryRunMediaCount(t *testing.T) {
 // TestDryRunIssuesNoWrites is the direct check on the guarantee the whole tool
 // rests on: a dry run may read, but must not create, update, or upload
 // anything. The counters are deliberately not consulted here — they are a
-// separate claim, and CR-001 records what happens when the two are conflated.
+// separate claim, and decisions.dryRunCountersRelabeled records what happens when the two are conflated.
 func TestDryRunIssuesNoWrites(t *testing.T) {
 	origDebug := debug
 	debug = true
@@ -585,7 +585,7 @@ func TestInvalidRecordsAreSkipped(t *testing.T) {
 		t.Errorf("totalRecords = %d, want 4", stats.totalRecords)
 	}
 	if stats.invalidSkips != 2 {
-		t.Errorf("invalidSkips = %d, want 2 (P-062)", stats.invalidSkips)
+		t.Errorf("invalidSkips = %d, want 2 (product.badRecordsSkipped)", stats.invalidSkips)
 	}
 	if stats.createdObservations != 2 {
 		t.Errorf("createdObservations = %d, want 2: the run must continue past a bad record", stats.createdObservations)
@@ -607,7 +607,7 @@ func TestInvalidRecordsAreSkipped(t *testing.T) {
 // an eBird name like "Aythya marila/affinis".
 //
 // This states the requirement rather than the mechanism, so it passes against
-// the code that had the CR-003 bug too: that bug was in the download query, not
+// the code that had the decisions.noTaxonFilterOnDownload bug too: that bug was in the download query, not
 // in the matching. It is here to stop the next optimization of the download
 // from quietly reintroducing the same failure.
 func TestUntaxonedObservationIsRecognized(t *testing.T) {
@@ -642,7 +642,7 @@ func TestUntaxonedObservationIsRecognized(t *testing.T) {
 		t.Errorf("Expected the untaxoned observation to be recognized as already synced, got %d skips", stats.previouslySkips)
 	}
 	if len(mockInat.created) != 0 {
-		t.Errorf("Re-created %d observations that already existed, want 0 (P-020)", len(mockInat.created))
+		t.Errorf("Re-created %d observations that already existed, want 0 (product.idempotentRerun)", len(mockInat.created))
 	}
 }
 
@@ -685,26 +685,26 @@ func TestCreatedObservationContent(t *testing.T) {
 	obs := mockInat.created[0]
 
 	if obs.CaptiveFlag {
-		t.Error("CaptiveFlag = true, want false: eBird checklists record wild birds (P-035)")
+		t.Error("CaptiveFlag = true, want false: eBird checklists record wild birds (product.createdObservationWild)")
 	}
 	if obs.LocationIsExact {
-		t.Error("LocationIsExact = true, want false: the checklist location is not the bird's (P-036)")
+		t.Error("LocationIsExact = true, want false: the checklist location is not the bird's (product.checklistCoordinates)")
 	}
 	if obs.Latitude != 37.4321 || obs.Longitude != -122.0789 {
-		t.Errorf("Coordinates = (%v, %v), want (37.4321, -122.0789) (P-036)", obs.Latitude, obs.Longitude)
+		t.Errorf("Coordinates = (%v, %v), want (37.4321, -122.0789) (product.checklistCoordinates)", obs.Latitude, obs.Longitude)
 	}
 	if obs.PositionalAccuracy != float64(ebird.PositionalAccuracy) {
-		t.Errorf("PositionalAccuracy = %v, want %v (P-036)", obs.PositionalAccuracy, ebird.PositionalAccuracy)
+		t.Errorf("PositionalAccuracy = %v, want %v (product.checklistCoordinates)", obs.PositionalAccuracy, ebird.PositionalAccuracy)
 	}
 	if obs.SpeciesGuess != rec.ScientificName {
-		t.Errorf("SpeciesGuess = %q, want %q (P-037)", obs.SpeciesGuess, rec.ScientificName)
+		t.Errorf("SpeciesGuess = %q, want %q (product.speciesGuessScientificName)", obs.SpeciesGuess, rec.ScientificName)
 	}
 	if want := "2023-01-03 03:00 PM"; obs.ObservedOnString != want {
-		t.Errorf("ObservedOnString = %q, want %q (P-038)", obs.ObservedOnString, want)
+		t.Errorf("ObservedOnString = %q, want %q (product.observedDateTime)", obs.ObservedOnString, want)
 	}
 
-	// P-039: the eBird columns copied into observation fields. The two eBird
-	// fields are also the sync key (P-019), so their absence would silently
+	// product.observationFieldMapping: the eBird columns copied into observation fields. The two eBird
+	// fields are also the sync key (product.syncKey), so their absence would silently
 	// break idempotence rather than producing a visible error.
 	wantFields := map[int]string{
 		inat.CountField:               "3",
@@ -727,12 +727,12 @@ func TestCreatedObservationContent(t *testing.T) {
 	}
 	for id, want := range wantFields {
 		if got := gotFields[id]; got != want {
-			t.Errorf("Observation field %d = %q, want %q (P-039)", id, got, want)
+			t.Errorf("Observation field %d = %q, want %q (product.observationFieldMapping)", id, got, want)
 		}
 	}
 
-	// P-040: the description. Asset lines are deliberately absent here — they
-	// are appended by the later update, not at creation (P-042, P-046).
+	// product.descriptionContents: the description. Asset lines are deliberately absent here — they
+	// are appended by the later update, not at creation (product.createBeforeMedia, product.descriptionUpdateKeepsMedia).
 	for _, want := range []string{
 		"github.com/Sajmani/birdsync",
 		"perched on a snag",
@@ -741,26 +741,26 @@ func TestCreatedObservationContent(t *testing.T) {
 		"windy morning",
 	} {
 		if !strings.Contains(obs.Description, want) {
-			t.Errorf("Description missing %q (P-040):\n%s", want, obs.Description)
+			t.Errorf("Description missing %q (product.descriptionContents):\n%s", want, obs.Description)
 		}
 	}
 	if strings.Contains(obs.Description, "Macaulay Library Asset:") {
-		t.Errorf("Created description should not list assets yet (P-042, P-046):\n%s", obs.Description)
+		t.Errorf("Created description should not list assets yet (product.createBeforeMedia, product.descriptionUpdateKeepsMedia):\n%s", obs.Description)
 	}
 
-	// The update that follows carries them (P-046), and the upload is keyed by
-	// the Macaulay Library asset ID (P-045).
+	// The update that follows carries them (product.descriptionUpdateKeepsMedia), and the upload is keyed by
+	// the Macaulay Library asset ID (product.mediaFilename).
 	if len(mockInat.updated) != 1 {
 		t.Fatalf("Expected 1 update after media upload, got %d", len(mockInat.updated))
 	}
 	if !strings.Contains(mockInat.updated[0].Description, mlAssetURL("33333")) {
-		t.Errorf("Updated description missing the asset URL (P-046):\n%s", mockInat.updated[0].Description)
+		t.Errorf("Updated description missing the asset URL (product.descriptionUpdateKeepsMedia):\n%s", mockInat.updated[0].Description)
 	}
 	if len(mockInat.uploaded) != 1 {
 		t.Fatalf("Expected 1 media upload, got %d", len(mockInat.uploaded))
 	}
 	if got := mockInat.uploaded[0].assetID; got != "33333" {
-		t.Errorf("Uploaded asset ID = %q, want %q (P-045)", got, "33333")
+		t.Errorf("Uploaded asset ID = %q, want %q (product.mediaFilename)", got, "33333")
 	}
 }
 
@@ -796,7 +796,7 @@ func TestTempFilesAreCleanedUp(t *testing.T) {
 	}
 	for _, name := range mockEbird.downloaded {
 		if _, err := os.Stat(name); !os.IsNotExist(err) {
-			t.Errorf("Temp file %s still exists after the run (T-023)", name)
+			t.Errorf("Temp file %s still exists after the run (tech.tempFilesDeleted)", name)
 		}
 	}
 
@@ -825,12 +825,12 @@ func TestSummaryDryRunLabels(t *testing.T) {
 		"Would upload 7 media assets",
 	} {
 		if !strings.Contains(got, want) {
-			t.Errorf("Dry-run summary missing %q (P-060):\n%s", want, got)
+			t.Errorf("Dry-run summary missing %q (product.dryRunCounterLabels):\n%s", want, got)
 		}
 	}
 	for _, forbidden := range []string{"Created 3", "Updated 2", "Uploaded "} {
 		if strings.Contains(got, forbidden) {
-			t.Errorf("Dry-run summary claims %q, but a dry run writes nothing (T-007):\n%s", forbidden, got)
+			t.Errorf("Dry-run summary claims %q, but a dry run writes nothing (tech.honestDryRunCounters):\n%s", forbidden, got)
 		}
 	}
 }
@@ -851,7 +851,7 @@ func TestSummaryRealRunLabels(t *testing.T) {
 		"Uploaded 1 sounds",
 	} {
 		if !strings.Contains(got, want) {
-			t.Errorf("Summary missing %q (P-054):\n%s", want, got)
+			t.Errorf("Summary missing %q (product.endOfRunSummary):\n%s", want, got)
 		}
 	}
 	if strings.Contains(got, "Would ") {
@@ -870,7 +870,7 @@ func TestSummaryConditionalLines(t *testing.T) {
 	quiet := strings.Join(stats{}.summary(), "\n")
 	for _, forbidden := range []string{"--fuzzy", "--after", "--before", "unverifiable", "unparseable", "Failed to upload"} {
 		if strings.Contains(quiet, forbidden) {
-			t.Errorf("Summary mentions %q when the rule wasn't in effect (P-055, P-056):\n%s", forbidden, quiet)
+			t.Errorf("Summary mentions %q when the rule wasn't in effect (product.conditionalSkipCounters, product.conditionalFailureCount):\n%s", forbidden, quiet)
 		}
 	}
 
@@ -885,12 +885,12 @@ func TestSummaryConditionalLines(t *testing.T) {
 	loud := strings.Join(stats{invalidSkips: 1, errors: 2}.summary(), "\n")
 	for _, want := range []string{"--fuzzy", "--after", "--before", "unverifiable", "unparseable", "Failed to upload 2"} {
 		if !strings.Contains(loud, want) {
-			t.Errorf("Summary missing %q when the rule was in effect (P-055, P-056):\n%s", want, loud)
+			t.Errorf("Summary missing %q when the rule was in effect (product.conditionalSkipCounters, product.conditionalFailureCount):\n%s", want, loud)
 		}
 	}
 }
 
-// TestFailedUploadIsRetriedNextRun is the end-to-end statement of CR-007: a
+// TestFailedUploadIsRetriedNextRun is the end-to-end statement of decisions.descriptionListsOnlyUploaded: a
 // media upload that fails must be retried on the next run, not recorded as
 // done.
 //
@@ -937,7 +937,7 @@ func TestFailedUploadIsRetriedNextRun(t *testing.T) {
 		t.Errorf("First run: description omits the asset that uploaded:\n%s", desc)
 	}
 	if strings.Contains(desc, mlAssetURL(bad)) {
-		t.Errorf("First run: description claims asset %s, which failed to upload (P-040):\n%s", bad, desc)
+		t.Errorf("First run: description claims asset %s, which failed to upload (product.descriptionContents):\n%s", bad, desc)
 	}
 
 	// Run 2: the same record, against the observation run 1 produced, with the
@@ -1001,12 +1001,12 @@ func TestAllUploadsFailingLeavesNoUpdate(t *testing.T) {
 		t.Errorf("Updated the observation with nothing to add: %+v", mockInat.updated)
 	}
 	if stats.updatedObservations != 0 {
-		t.Errorf("updatedObservations = %d, want 0: no update was made (T-007)", stats.updatedObservations)
+		t.Errorf("updatedObservations = %d, want 0: no update was made (tech.honestDryRunCounters)", stats.updatedObservations)
 	}
 }
 
-// TestPermanentUploadFailureIsNotRetried covers the case CR-007's fix made
-// worse before CR-008 fixed it: an asset iNaturalist will never accept, such as
+// TestPermanentUploadFailureIsNotRetried covers the case decisions.descriptionListsOnlyUploaded's fix made
+// worse before decisions.permanentFailuresRecorded fixed it: an asset iNaturalist will never accept, such as
 // a sound file over its size limit. Retrying it means re-downloading tens of
 // megabytes from the Macaulay Library on every run, forever.
 //
@@ -1046,7 +1046,7 @@ func TestPermanentUploadFailureIsNotRetried(t *testing.T) {
 	}
 	desc := firstInat.updated[0].Description
 	if !strings.Contains(desc, failedMarker) {
-		t.Errorf("Description doesn't record the permanent failure (P-063):\n%s", desc)
+		t.Errorf("Description doesn't record the permanent failure (product.permanentUploadFailureRecorded):\n%s", desc)
 	}
 
 	// Run 2: same record, against the observation run 1 produced. The upload
@@ -1068,7 +1068,7 @@ func TestPermanentUploadFailureIsNotRetried(t *testing.T) {
 	second := birdsync("MyEBirdData.csv", secondEbird, "myUserID", secondInat)
 
 	if len(secondInat.uploaded) != 0 {
-		t.Errorf("Retried an asset the service permanently refused: %+v (P-063)", secondInat.uploaded)
+		t.Errorf("Retried an asset the service permanently refused: %+v (product.permanentUploadFailureRecorded)", secondInat.uploaded)
 	}
 	if second.errors != 0 {
 		t.Errorf("errors = %d, want 0: nothing should have been attempted", second.errors)
@@ -1078,7 +1078,7 @@ func TestPermanentUploadFailureIsNotRetried(t *testing.T) {
 	}
 }
 
-// TestTransientUploadFailureIsRetried is the other side of P-063: a failure
+// TestTransientUploadFailureIsRetried is the other side of product.permanentUploadFailureRecorded: a failure
 // that might come good must not be recorded as permanent, or a network blip
 // would cost a photo.
 func TestTransientUploadFailureIsRetried(t *testing.T) {
@@ -1111,7 +1111,7 @@ func TestTransientUploadFailureIsRetried(t *testing.T) {
 
 			for _, u := range mockInat.updated {
 				if strings.Contains(u.Description, failedMarker) {
-					t.Errorf("Recorded %v as permanent; it may come good on the next run (P-063):\n%s",
+					t.Errorf("Recorded %v as permanent; it may come good on the next run (product.permanentUploadFailureRecorded):\n%s",
 						tc.err, u.Description)
 				}
 			}

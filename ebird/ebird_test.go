@@ -46,9 +46,9 @@ func TestDownloadMLAsset_Sound(t *testing.T) {
 	}
 	// The extension must be exactly .mp3, not merely one of the several the
 	// system mime database associates with audio/mpeg. Accepting any of them
-	// is what let the filename vary by machine (P-045).
+	// is what let the filename vary by machine (product.mediaFilename).
 	if ext := filepath.Ext(filename); ext != ".mp3" {
-		t.Errorf("Sound extension = %q, want %q (P-045)", ext, ".mp3")
+		t.Errorf("Sound extension = %q, want %q (product.mediaFilename)", ext, ".mp3")
 	}
 }
 
@@ -77,7 +77,7 @@ func TestDownloadMLAsset_Photo(t *testing.T) {
 		t.Errorf("Expected isPhoto=true for a photo asset, got false")
 	}
 	if ext := filepath.Ext(filename); ext != ".jpg" {
-		t.Errorf("Photo extension = %q, want %q (P-045)", ext, ".jpg")
+		t.Errorf("Photo extension = %q, want %q (product.mediaFilename)", ext, ".jpg")
 	}
 }
 
@@ -257,7 +257,7 @@ func TestObservationID_Valid(t *testing.T) {
 // download tests can't reach. The extension has to be the same on every
 // machine, and the function must never fail: refusing to download a user's
 // sound file because its content type wasn't recognized is a far worse outcome
-// than naming it slightly wrong (T-004, P-045).
+// than naming it slightly wrong (tech.platformIndependent, product.mediaFilename).
 func TestFileExtension(t *testing.T) {
 	tests := []struct {
 		contentType  string
@@ -316,7 +316,7 @@ func TestFileExtension(t *testing.T) {
 //
 // The checks are on the path and the header rather than on error text: issue #1
 // reported "Incorrect function.", which is what Windows returns for reading a
-// directory, where Unix says "is a directory" (T-004).
+// directory, where Unix says "is a directory" (tech.platformIndependent).
 func TestRecordsRejectsBadInput(t *testing.T) {
 	dir := t.TempDir()
 
@@ -352,7 +352,7 @@ func TestRecordsRejectsBadInput(t *testing.T) {
 				t.Fatalf("Records(%s) returned no error", tt.path)
 			}
 			if !strings.Contains(err.Error(), tt.want) {
-				t.Errorf("Error %q doesn't mention %q, so it doesn't tell the user what to fix (P-066)",
+				t.Errorf("Error %q doesn't mention %q, so it doesn't tell the user what to fix (product.unusableInputExplained)",
 					err, tt.want)
 			}
 		})
@@ -394,6 +394,6 @@ func TestDownloadMLAssetCleansUpOnError(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, e := range left {
-		t.Errorf("Left %s behind in the temp directory after a failed download (T-023)", e.Name())
+		t.Errorf("Left %s behind in the temp directory after a failed download (tech.tempFilesDeleted)", e.Name())
 	}
 }

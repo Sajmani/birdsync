@@ -31,9 +31,9 @@ func TestClient_CreateObservation(t *testing.T) {
 			t.Errorf("Expected path /observations, got %s", r.URL.Path)
 		}
 		// Every request identifies the client and carries the token
-		// (T-016). iNaturalist may throttle a client that omits either.
+		// (tech.userAgent). iNaturalist may throttle a client that omits either.
 		if got := r.Header.Get("User-Agent"); got != "test-user-agent" {
-			t.Errorf("User-Agent = %q, want %q (T-016)", got, "test-user-agent")
+			t.Errorf("User-Agent = %q, want %q (tech.userAgent)", got, "test-user-agent")
 		}
 		if got := r.Header.Get("Authorization"); got != "test-token" {
 			t.Errorf("Authorization = %q, want %q", got, "test-token")
@@ -80,7 +80,7 @@ func TestClient_UpdateObservation(t *testing.T) {
 		t.Errorf("UpdateObservation() error = %v", err)
 	}
 	if !body.IgnorePhotos {
-		t.Error("ignore_photos = false, want true: an update must not detach attached media (T-009)")
+		t.Error("ignore_photos = false, want true: an update must not detach attached media (tech.updateKeepsPhotos)")
 	}
 	if body.Observation.Description != "updated" {
 		t.Errorf("Description = %q, want %q", body.Observation.Description, "updated")
@@ -124,15 +124,15 @@ func TestStatusErrorIncludesBody(t *testing.T) {
 		t.Fatal("CreateObservation() against a refusing server returned no error")
 	}
 	if !strings.Contains(err.Error(), "File is too large") {
-		t.Errorf("Error %q doesn't include the server's explanation (T-034)", err)
+		t.Errorf("Error %q doesn't include the server's explanation (tech.errorsIncludeBody)", err)
 	}
 
 	var statusErr *StatusError
 	if !errors.As(err, &statusErr) {
-		t.Fatalf("Error %v is not a *StatusError, so callers can't classify it (P-063)", err)
+		t.Fatalf("Error %v is not a *StatusError, so callers can't classify it (product.permanentUploadFailureRecorded)", err)
 	}
 	if !statusErr.Permanent() {
-		t.Error("422 should be permanent: the service rejected the file itself (P-063)")
+		t.Error("422 should be permanent: the service rejected the file itself (product.permanentUploadFailureRecorded)")
 	}
 }
 
@@ -185,7 +185,7 @@ func TestStatusErrorDropsHTMLBody(t *testing.T) {
 		t.Fatal("CreateObservation() against a refusing server returned no error")
 	}
 	if strings.Contains(err.Error(), "<html") || strings.Contains(err.Error(), "\n") {
-		t.Errorf("Error carries the proxy's HTML page (T-034): %q", err)
+		t.Errorf("Error carries the proxy's HTML page (tech.errorsIncludeBody): %q", err)
 	}
 	if !strings.Contains(err.Error(), "413") {
 		t.Errorf("Error %q doesn't name the status", err)
@@ -245,7 +245,7 @@ func TestClientPacesRequests(t *testing.T) {
 	}
 	// Three requests means two gaps; the first goes out immediately.
 	if min := 2 * interval; elapsed < min {
-		t.Errorf("3 requests took %v, want at least %v: they are not being paced (T-035)", elapsed, min)
+		t.Errorf("3 requests took %v, want at least %v: they are not being paced (tech.requestPacing)", elapsed, min)
 	}
 }
 

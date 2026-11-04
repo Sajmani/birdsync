@@ -60,7 +60,7 @@ func (c *Client) BaseURL() string {
 // nothing else in birdsync limits how fast it issues them. Media uploads
 // already take seconds each, so this costs little there; it matters for runs
 // that create many observations without media, which would otherwise go as
-// fast as the server answers (T-035).
+// fast as the server answers (tech.requestPacing).
 const DefaultMinRequestInterval = time.Second
 
 // SetMinRequestInterval overrides the pacing. Tests set it to zero; nothing
@@ -229,7 +229,7 @@ const maxErrorBody = 512
 // StatusError is returned when the API answers with a non-200 status. It
 // carries the response body, because iNaturalist explains its refusals there
 // and the status line alone cannot distinguish a file that is too large from
-// one in an unsupported format (T-034).
+// one in an unsupported format (tech.errorsIncludeBody).
 type StatusError struct {
 	StatusCode int
 	Status     string
@@ -269,7 +269,7 @@ func (e *StatusError) Error() string {
 // run can get past: 401 needs a fresh token, 408 and 429 are explicit
 // invitations to try again. Everything else, including every 5xx and every
 // network error, is treated as transient — retrying costs a request, whereas
-// wrongly giving up loses a user's photo (P-063).
+// wrongly giving up loses a user's photo (product.permanentUploadFailureRecorded).
 func (e *StatusError) Permanent() bool {
 	switch e.StatusCode {
 	case http.StatusUnauthorized, http.StatusRequestTimeout, http.StatusTooManyRequests:

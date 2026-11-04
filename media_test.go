@@ -68,7 +68,7 @@ func TestMediaChange(t *testing.T) {
 			want: "iNat description lists 1 ML Asset IDs, but observation has 2 media files (2 photos + 0 sounds)",
 		},
 		{
-			// P-064: the asset stays in eBird and is recorded as permanently
+			// product.permanentFailuresReported: the asset stays in eBird and is recorded as permanently
 			// failed, so it must be reported and not offered for upload.
 			name: "previously failed asset is reported, not retried",
 			rec: ebird.Record{

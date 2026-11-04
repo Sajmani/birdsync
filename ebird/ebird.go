@@ -83,7 +83,7 @@ func Records(filename string) (iter.Seq[Record], error) {
 	// extracts to a folder, and users pass the folder or the zip by mistake
 	// (issue #1). Letting that reach the CSV reader produces the operating
 	// system's message — "is a directory" on Unix, "Incorrect function." on
-	// Windows — which tells nobody what to do (P-066).
+	// Windows — which tells nobody what to do (product.unusableInputExplained).
 	info, err := os.Stat(filename)
 	if err != nil {
 		return nil, fmt.Errorf("Records(%s): %w", filename, err)
@@ -119,7 +119,7 @@ func Records(filename string) (iter.Seq[Record], error) {
 	}
 	// Without this the file parses happily and produces nonsense: a lookup of
 	// an absent column returns index 0, so every record would take its
-	// submission ID from whatever the first column holds (P-066).
+	// submission ID from whatever the first column holds (product.unusableInputExplained).
 	if _, ok := field["Submission ID"]; !ok {
 		return nil, fmt.Errorf("Records(%s): no %q column; this does not look like an eBird MyEBirdData.csv export",
 			filename, "Submission ID")
@@ -239,7 +239,7 @@ func downloadMLAsset(baseURL, mlAssetID string) (string, bool, error) {
 	// Clean up on every path but success. A failed download used to abandon the
 	// file, and on Windows its open handle with it — the reported symptom being
 	// "The process cannot access the file because it is being used by another
-	// process" on a later attempt (issue #1, T-023).
+	// process" on a later attempt (issue #1, tech.tempFilesDeleted).
 	renamed := false
 	defer func() {
 		tmpFile.Close() // no-op once already closed below
@@ -278,7 +278,7 @@ func downloadMLAsset(baseURL, mlAssetID string) (string, bool, error) {
 // returns every extension registered for a type, sorted, and which ones those
 // are depends on the machine — it gave .jpe for a JPEG on macOS, .jfif on
 // Linux, and nothing whatsoever for audio/mpeg3. Both of this file's extension
-// bugs came from trusting it (T-004, P-045).
+// bugs came from trusting it (tech.platformIndependent, product.mediaFilename).
 var canonicalExtensions = map[string]string{
 	"image/jpeg":  ".jpg",
 	"image/png":   ".png",

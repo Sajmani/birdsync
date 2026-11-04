@@ -20,9 +20,9 @@ func TestDownloadObservations(t *testing.T) {
 		q := r.URL.Query()
 		// The API's recommended practices require the largest supported page
 		// size; fetching 30 at a time makes a large account many times more
-		// expensive for iNaturalist to serve (T-017).
+		// expensive for iNaturalist to serve (tech.maxPageSize).
 		if got := q.Get("per_page"); got != "200" {
-			t.Errorf("per_page = %q, want %q (T-017)", got, "200")
+			t.Errorf("per_page = %q, want %q (tech.maxPageSize)", got, "200")
 		}
 		if got := q.Get("user_id"); got != "testuser" {
 			t.Errorf("user_id = %q, want %q", got, "testuser")
@@ -65,7 +65,7 @@ func TestDownloadObservationsNoTaxonFilter(t *testing.T) {
 	}
 
 	if hasIconic {
-		t.Error("Download sent iconic_taxa[]; it must not filter by taxon (P-061)")
+		t.Error("Download sent iconic_taxa[]; it must not filter by taxon (product.noTaxonFilter)")
 	}
 }
 
@@ -96,14 +96,14 @@ func TestDownloadObservationsDateWindow(t *testing.T) {
 	}
 	// The API takes dates, not timestamps, so the time component is dropped.
 	if gotD1 != "2023-01-02" {
-		t.Errorf("d1 = %q, want %q (P-025)", gotD1, "2023-01-02")
+		t.Errorf("d1 = %q, want %q (product.dateWindowNarrowsDownload)", gotD1, "2023-01-02")
 	}
 	if gotD2 != "2023-03-04" {
-		t.Errorf("d2 = %q, want %q (P-025)", gotD2, "2023-03-04")
+		t.Errorf("d2 = %q, want %q (product.dateWindowNarrowsDownload)", gotD2, "2023-03-04")
 	}
 }
 
-// TestDownloadObservationsNoDateWindow checks the other half of P-025: with no
+// TestDownloadObservationsNoDateWindow checks the other half of product.dateWindowNarrowsDownload: with no
 // window set, the parameters are absent rather than sent as zero values, which
 // the API would read as a date in year 1.
 func TestDownloadObservationsNoDateWindow(t *testing.T) {
@@ -121,7 +121,7 @@ func TestDownloadObservationsNoDateWindow(t *testing.T) {
 	}
 
 	if hasD1 || hasD2 {
-		t.Errorf("Unset date window sent d1=%v d2=%v, want neither (P-025)", hasD1, hasD2)
+		t.Errorf("Unset date window sent d1=%v d2=%v, want neither (product.dateWindowNarrowsDownload)", hasD1, hasD2)
 	}
 }
 
@@ -212,7 +212,7 @@ func TestDownloadObservationsPagesByID(t *testing.T) {
 	}
 
 	if sawPageParam {
-		t.Error("Download sent a page parameter; page-number paging fails past 10k results (T-036)")
+		t.Error("Download sent a page parameter; page-number paging fails past 10k results (tech.idAbovePaging)")
 	}
 	if len(got) != total {
 		t.Fatalf("Got %d observations, want %d; cursors were %v", len(got), total, idAboves)
@@ -245,7 +245,7 @@ func TestDownloadObservationsCursorMustAdvance(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		requests++
 		if requests > cap {
-			t.Errorf("Client made %d requests without advancing; it is looping (T-036)", requests)
+			t.Errorf("Client made %d requests without advancing; it is looping (tech.idAbovePaging)", requests)
 			json.NewEncoder(w).Encode(Observations{TotalResults: 0})
 			return
 		}

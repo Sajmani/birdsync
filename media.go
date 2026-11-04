@@ -18,7 +18,7 @@ func mediaChange(rec ebird.Record, r inat.Result) (mlAssetSet, string) {
 	eSet := eBirdMLAssets(rec.MLCatalogNumbers)
 	iSet, fSet := iNatMLAssets(r)
 	// An asset already recorded either way is not offered for upload again: a
-	// permanent failure is remembered precisely so it isn't retried (P-063).
+	// permanent failure is remembered precisely so it isn't retried (product.permanentUploadFailureRecorded).
 	known := iSet
 	for _, id := range fSet.ids {
 		known.Add(id)
@@ -34,7 +34,7 @@ func mediaChange(rec ebird.Record, r inat.Result) (mlAssetSet, string) {
 	}
 	if fSet.Len() > 0 {
 		// Reported on every run so the user knows something needs attention,
-		// without birdsync retrying it (P-064). Deleting the line from the
+		// without birdsync retrying it (product.permanentFailuresReported). Deleting the line from the
 		// description asks for a retry.
 		diffs = append(diffs, fmt.Sprintf("%d ML Asset IDs previously failed to upload and will not be retried: %s",
 			fSet.Len(), fSet))
@@ -94,7 +94,7 @@ func eBirdMLAssets(mlAssets string) mlAssetSet {
 // failedMarker distinguishes an asset birdsync could not upload from one it
 // did. Both suppress a retry, but only the uploaded set is compared against the
 // media actually attached to the observation, so a recorded failure doesn't
-// report a count mismatch on every run (P-063).
+// report a count mismatch on every run (product.permanentUploadFailureRecorded).
 //
 // Only the opening fragment is matched, so the guidance that follows it can be
 // reworded without orphaning descriptions already written.

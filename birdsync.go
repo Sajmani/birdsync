@@ -68,7 +68,7 @@ type stats struct {
 	afterSkips, beforeSkips, verifiableSkips, previouslySkips, fuzzySkips int
 	// invalidSkips counts records whose date, time, or coordinates could not be
 	// parsed. They are skipped rather than fatal: one bad row in a large export
-	// should not end a sync that has already created observations (P-062).
+	// should not end a sync that has already created observations (product.badRecordsSkipped).
 	invalidSkips                                           int
 	totalRecords, createdObservations, updatedObservations int
 	uploadedPhotos, uploadedSounds                         int
@@ -126,7 +126,7 @@ func (s stats) summary() []string {
 	add("Finished processing %d eBird observations", s.totalRecords)
 	add("Skipped %d previously uploaded by birdsync", s.previouslySkips)
 	// A skip counter is only meaningful when the rule producing it was in
-	// effect, so those lines are conditional (P-055).
+	// effect, so those lines are conditional (product.conditionalSkipCounters).
 	if fuzzy {
 		add("Skipped %d eBird observations with --fuzzy matching", s.fuzzySkips)
 	}
@@ -148,7 +148,7 @@ func (s stats) summary() []string {
 		// count what a real run would have done. That number is worth
 		// reporting, but reporting it as "Created" would be a lie, and
 		// --dryrun is the one feature whose whole value is being trusted
-		// (P-060, T-007).
+		// (product.dryRunCounterLabels, tech.honestDryRunCounters).
 		add("Would create %d new iNaturalist observations", s.createdObservations)
 		add("Would update %d iNaturalist observations", s.updatedObservations)
 		// A dry run doesn't download the assets, so it can't tell photos from sounds.
@@ -221,7 +221,7 @@ func birdsync(eBirdCSVFilename string, ebirdClient ebirdClient, inatUserID strin
 			// A malformed row costs that row, not the run. eBird's export
 			// varies between users, so one unparseable date in a twelve
 			// thousand row file is realistic, and aborting partway would
-			// leave the sync half done (P-062).
+			// leave the sync half done (product.badRecordsSkipped).
 			log.Printf("line %d: SKIPPING record with bad date/time: %v", rec.Line, err)
 			s.invalidSkips++
 			continue
@@ -258,7 +258,7 @@ func birdsync(eBirdCSVFilename string, ebirdClient ebirdClient, inatUserID strin
 			// how birdsync remembers what it has uploaded — iNatMLAssets reads
 			// the URLs back out of it on the next run — so listing an asset
 			// that failed makes the failure permanent as well as untrue
-			// (P-040, CR-007).
+			// (product.descriptionContents, decisions.descriptionListsOnlyUploaded).
 			var uploaded, permanentlyFailed mlAssetSet
 			// Upload the media
 			for _, id := range assetIDs.ids {
@@ -279,7 +279,7 @@ func birdsync(eBirdCSVFilename string, ebirdClient ebirdClient, inatUserID strin
 					// The download is a temp file that belongs to us now, so
 					// remove it whether or not the upload worked. Syncing an
 					// account with thousands of assets used to leave one file
-					// per asset behind (T-023). Removing here rather than in a
+					// per asset behind (tech.tempFilesDeleted). Removing here rather than in a
 					// defer keeps at most one asset on disk at a time.
 					if rmErr := os.Remove(filename); rmErr != nil {
 						debugf("Couldn't remove temp file %s: %v", filename, rmErr)
@@ -289,7 +289,7 @@ func birdsync(eBirdCSVFilename string, ebirdClient ebirdClient, inatUserID strin
 						s.errors++
 						// A refusal of the file itself won't come good on a
 						// later run, so record it rather than re-downloading
-						// and re-uploading it forever (P-063).
+						// and re-uploading it forever (product.permanentUploadFailureRecorded).
 						var statusErr *inat.StatusError
 						if errors.As(err, &statusErr) && statusErr.Permanent() {
 							permanentlyFailed.Add(id)
@@ -307,7 +307,7 @@ func birdsync(eBirdCSVFilename string, ebirdClient ebirdClient, inatUserID strin
 			if uploaded.Len() == 0 && permanentlyFailed.Len() == 0 {
 				// Everything failed, and might yet succeed. Don't write an
 				// unchanged description back, and don't count an update that
-				// didn't happen (T-007). The next run tries again.
+				// didn't happen (tech.honestDryRunCounters). The next run tries again.
 				return
 			}
 			for _, id := range uploaded.ids {
@@ -376,7 +376,7 @@ func birdsync(eBirdCSVFilename string, ebirdClient ebirdClient, inatUserID strin
 		assetIDs := eBirdMLAssets(rec.MLCatalogNumbers)
 		// Skip records without media assets if --verifiable is set. This is
 		// checked before the record is parsed any further, so that a record is
-		// counted against the rule that actually skipped it (P-026).
+		// counted against the rule that actually skipped it (product.skipOrder).
 		if verifiable && assetIDs.Len() == 0 {
 			debugf("line %d: SKIPPING record that has no photos or sounds (--verifiable=true)", rec.Line)
 			s.verifiableSkips++
