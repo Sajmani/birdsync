@@ -1,8 +1,8 @@
 # ml-terms — provenance
 
 Vendored copy of the Cornell Lab / eBird / Macaulay Library terms that govern what birdsync
-does with media. See [../../sources.md](../../sources.md) for the adoption record and
-[requirements.md](requirements.md) for the transcription.
+does with media. See `river/requirements/imports.md` for the adoption record and
+[mlterms.md](mlterms.md) for the transcription.
 
 ## What was retrieved
 
@@ -22,9 +22,9 @@ does with media. See [../../sources.md](../../sources.md) for the adoption recor
 publicly published guidance, kept so that a future reader can see exactly what the terms said
 when the requirements were written, and diff them when they change.
 
-The transcription in `requirements.md` is an interpretation. Each entry quotes the source
+The transcription in `mlterms.md` is an interpretation. Each entry quotes the source
 verbatim so the interpretation can be checked against it, per
-[process.md](../../process.md#import-style): a transcription is a reviewable artifact, not
+River's rule on sources (requirements.md, *Sources*, in the River skill): a transcription is a reviewable artifact, not
 ground truth.
 
 ## Pages considered and not vendored

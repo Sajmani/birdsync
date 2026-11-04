@@ -1,34 +1,32 @@
-# inat-api — provenance
+# inat-terms — provenance
 
-Vendored copy of iNaturalist's API recommended practices. See
-[../../sources.md](../../sources.md) for the adoption record and
-[requirements.md](requirements.md) for the transcription.
+Vendored copy of iNaturalist's terms of use and community guidelines. See
+`river/requirements/imports.md` for the adoption record and
+[inatterms.md](inatterms.md) for the transcription.
 
 ## What was retrieved
 
 | File | Origin | SHA-256 |
 | --- | --- | --- |
-| `api-recommended-practices.html` | <https://www.inaturalist.org/pages/api+recommended+practices> | `ffb53ae11e1cce9c8bc2cef7743d478318ae7f9525eccde68d56d9eab4f7dbd3` |
+| `terms.html` | <https://www.inaturalist.org/pages/terms> | `de9737c4108f4058f0f6173ed8ea95894a6d56a224a5e245ae411538a0154afb` |
+| `community-guidelines.html` | <https://www.inaturalist.org/pages/community+guidelines> | `2f32109e84002e0208ecb86aa18331ed6b62d849c1729a9c4e816690626044b8` |
+| `machine-generated-content.html` | <https://www.inaturalist.org/pages/machine_generated_content> | `57ebd02cf03f0eebc5823ddea52e7299b086acf0ff54d6b719a666f8fc642160` |
 
-- **Retrieved:** 2026-08-09, **by the maintainer, saved from a browser.**
-- **Page's own revision line:** "Revised on February 27, 2025 06:23 PM by kueda".
+- **Retrieved:** 2026-08-09, **by the maintainer, saved from a browser** — the pages answer an
+  automated request with HTTP 403 and a JavaScript challenge.
+- **Retrieved by:** transcribed by an AI agent, unreviewed by counsel.
 
-## Why a human retrieved it
+## Page revision dates
 
-`www.inaturalist.org/pages/*` answers an automated request with HTTP 403 and a JavaScript
-challenge — confirmed 2026-08-09 for this page, the terms, and the community guidelines. The
-`v1/swagger.json` spec is fetchable but carries no rate-limit guidance.
+`machine-generated-content.html` carries "Revised on May 20, 2026 08:20 PM by tiwane". It is
+the page the decision `notMachineGeneratedContent` turns on,
+and the one most worth diffing on a refresh: it defines a rule whose stated penalty is account
+suspension, and its scope has evidently been revised before.
 
-Working around the challenge was rejected: evading a service's bot protection in order to
-import its own rules for being a well-behaved client would be self-defeating. Writing the
-limits from memory was also rejected — a plausible invented number is indistinguishable from a
-real one once it has a requirement ID beside it. See
-[process.md](../../process.md#import-style).
+## What this is not
 
-## Refreshing
-
-Re-save from a browser, compare the hash, and read the diff. The page carries its own revision
-date, which is the quickest way to tell whether anything moved.
+**Not legal advice, and not reviewed by a lawyer.** It is a snapshot of published guidance,
+kept so a future reader can see what the terms said when the requirements were written.
 
 ## Active content removed
 
@@ -52,5 +50,5 @@ Both hashes are recorded so the stripping can be reproduced and audited:
 | `terms.html` | `3ce69d6eac87fcc93ccca8b67a4b97f93991291ca2509467781ab8adc593122c` | `de9737c4108f4058f0f6173ed8ea95894a6d56a224a5e245ae411538a0154afb` |
 
 `TestTranscribedQuotesAppearInSources` checks that every passage quoted in
-`requirements.md` still appears in these files, so the stripping cannot quietly remove
+`inatterms.md` still appears in these files, so the stripping cannot quietly remove
 something a requirement depends on.

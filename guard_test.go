@@ -247,13 +247,15 @@ func TestTranscribedQuotesAppearInSources(t *testing.T) {
 		return spaceRE.ReplaceAllString(s, "")
 	}
 
-	dirs, err := filepath.Glob(filepath.Join("spec", "sources", "*"))
+	// Each imported source sits at river/requirements/imported/<host>/<name>/,
+	// with its transcription in <name>.md beside the vendored documents.
+	dirs, err := filepath.Glob(filepath.Join("river", "requirements", "imported", "*", "*"))
 	if err != nil {
 		t.Fatal(err)
 	}
 	var checked int
 	for _, dir := range dirs {
-		req := filepath.Join(dir, "requirements.md")
+		req := filepath.Join(dir, filepath.Base(dir)+".md")
 		if _, err := os.Stat(req); err != nil {
 			continue
 		}
@@ -462,12 +464,12 @@ func init() {
 // TestAmericanSpellings enforces T-037 and T-038 together, and the second is
 // the reason the first is worth a test at all.
 //
-// Spelling on its own is taste. But a bulk find-and-replace across spec/ would
+// Spelling on its own is taste. But a bulk find-and-replace across river/ would
 // rewrite text quoted from somebody else's terms of service — turning a
 // verbatim citation into a paraphrase that still looks verbatim, and breaking
 // the hashes recorded in each source's PROVENANCE.md. So this check skips two
 // things by construction rather than by care: blockquote lines, which are
-// quotations, and everything under spec/sources/, which is either a vendored
+// quotations, and everything under river/requirements/imported/, which is either a vendored
 // document or a transcription of one.
 //
 // Verifies: T-037, T-038.
@@ -485,7 +487,7 @@ func TestAmericanSpellings(t *testing.T) {
 				return filepath.SkipDir
 			// Vendored sources and their transcriptions quote publishers
 			// verbatim. Their spelling is not ours to correct (T-038).
-			case path == filepath.Join("spec", "sources"):
+			case path == filepath.Join("river", "requirements", "imported"):
 				return filepath.SkipDir
 			// The River skill is copied byte-for-byte from its origin so a
 			// refresh is a reviewable diff. It is a vendored document too.

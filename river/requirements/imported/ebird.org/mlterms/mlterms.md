@@ -1,3 +1,5 @@
+package mlterms
+
 # ml-terms — transcribed requirements
 
 Tier: **mandatory**. Scope: downloading assets from the Macaulay Library CDN and re-uploading
@@ -8,9 +10,14 @@ transcription — unlike, say, a WCAG success criterion, there is no upstream nu
 preserve. Each entry quotes the source so the reading can be checked. See
 [PROVENANCE.md](PROVENANCE.md) for what this is and is not.
 
----
+Identifiers were renamed from the transcription's `R#` numbers to descriptive names when
+birdsync adopted River; `Formerly:` gives the old one. The quotations are unchanged.
 
-### `ml-terms/R1` — A contributor keeps copyright in their own media
+## contributorKeepsCopyright
+
+**A contributor keeps copyright in their own media**
+
+Formerly: ml-terms/R1
 
 > "You retain all intellectual property rights and copyright to any Content you submit."
 > — Cornell Media Licensing Agreement, §1 Rights and Responsibility
@@ -19,7 +26,11 @@ preserve. Each entry quotes the source so the reading can be checked. See
 exercising their own copyright. Nothing in the agreement restricts it — the license granted
 to Cornell is explicitly *non-exclusive*.
 
-### `ml-terms/R2` — A user may download their own media
+## downloadOwnMedia
+
+**A user may download their own media**
+
+Formerly: ml-terms/R2
 
 > "note that media are not available for personal download unless they belong to you"
 >
@@ -31,7 +42,11 @@ to Cornell is explicitly *non-exclusive*.
 **For birdsync:** downloading a user's own assets is the sanctioned case, and the sentence
 frames the archive as the user's own backup. This is what birdsync is built to do.
 
-### `ml-terms/R3` — Another contributor's media may not be downloaded without permission
+## noOthersMediaWithoutPermission
+
+**Another contributor's media may not be downloaded without permission**
+
+Formerly: ml-terms/R3
 
 > "Assets in the collection are owned by the original author (e.g., photographer/recordist),
 > and the copyright lies with each author unless otherwise indicated. It is not appropriate to
@@ -43,9 +58,13 @@ CDN by asset ID, unauthenticated, and the CDN serves any asset to anyone — ver
 2026-08-09 against two assets belonging to other contributors, both returning HTTP 200. So
 nothing in the system prevents birdsync from copying another person's media into a user's
 iNaturalist account under that user's name. See
-[CR-010](../../decisions.md#cr-010--birdsync-cannot-tell-whose-media-it-is-downloading).
+the decision `ownMediaAssumption`.
 
-### `ml-terms/R4` — Media is owned by the account that uploaded it, not the checklist
+## mediaOwnedByUploader
+
+**Media is owned by the account that uploaded it, not the checklist**
+
+Formerly: ml-terms/R4
 
 > "Photos are associated with the eBird account they are uploaded under, and the rights to the
 > photo belong to that account."
@@ -57,9 +76,13 @@ iNaturalist account under that user's name. See
 
 **For birdsync:** a shared checklist shows both contributors' media. Whether the recipient's
 `MyEBirdData.csv` lists the *other* contributor's ML catalog numbers is **not stated on any
-page vendored here**, and it is the fact CR-010 turns on.
+page vendored here**, and it is the fact the decision `ownMediaAssumption` turns on.
 
-### `ml-terms/R5` — Attribution is expected when Macaulay assets are used
+## attributionExpected
+
+**Attribution is expected when Macaulay assets are used**
+
+Formerly: ml-terms/R5
 
 > "For all uses, we ask that you follow our guidelines for media attribution when using
 > Macaulay Library assets."
@@ -72,7 +95,7 @@ vendored here.
 
 ---
 
-## Not adopted
+## Not transcribed
 
 Requesting media for research, education, or commercial use, and the licensing process around
 it, are out of scope: birdsync never requests assets it doesn't already have IDs for, and
