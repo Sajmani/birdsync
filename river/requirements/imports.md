@@ -9,8 +9,8 @@ in [`precedence.md`](precedence.md).
 The first five entries were carried over from specman's source manifest (`spec/sources.md` at
 [`dc25e3b`](https://github.com/Sajmani/birdsync/blob/dc25e3b6756bd59c2de931e6d080d47318617da4/spec/sources.md)),
 where the owner adopted or retired them. The entries for `uuid` and `github-actions` were found
-by the discovery step of adopting River, on 2026-11-03. **Their status is pending the owner's
-decision** (see the migration report).
+by the discovery step of adopting River, on 2026-11-03. The owner adopted `uuid` on 2026-11-04;
+`github-actions` stays partial until someone reads GitHub's terms for Actions.
 
 ## `inatapi`
 
@@ -109,14 +109,14 @@ lacks IDs for, and makes no commercial use.
 | Scope | Generating observation UUIDs (`github.com/google/uuid` is the module's only external dependency; see [tech.oneExternalDependency](local/tech/tech.md#oneexternaldependency)) |
 | Adopted parts | Its license |
 | Owner | Google, per its copyright line |
-| Status | partial: found during discovery and awaiting the owner's decision |
+| Status | adopted ([decisions.uuidAdopted](decisions.md#uuidadopted)) |
 
 Discovery, 2026-11-03: read the `LICENSE` file shipped in the module at v1.6.0, from the Go
 module cache (SHA-256 `0a8d61ed3cbfd5312326e8126c31ce9c627a283adc99131b56896d29ada04b2d`). It
 is a three-clause BSD-style license, "Copyright (c) 2009,2014 Google Inc.", that permits
 redistribution in source and binary forms if the copyright notice, conditions, and disclaimer
 are kept. The module ships no `NOTICE` file. birdsync redistributes no binaries, since users
-build with `go install`, so the notice obligation does not arise today. The tier is a proposal.
+build with `go install`, so the notice obligation does not arise today.
 
 ## `github-actions`
 

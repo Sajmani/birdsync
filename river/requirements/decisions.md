@@ -146,7 +146,7 @@ Migrated from specman's decision log; the full entry, with the evidence and the 
 
 Date: 2026-08-09
 Decided by: Sajmani (presumed: the original entry does not name who decided; to be confirmed)
-Status: accepted
+Status: accepted; decider confirmed by decidersConfirmed
 Affects: [product.descriptionContents](local/product/product.md#descriptioncontents), [product.additiveMediaResync](local/product/product.md#additivemediaresync), [product.mediaFailuresTolerated](local/product/product.md#mediafailurestolerated), [tech.honestDryRunCounters](local/tech/tech.md#honestdryruncounters)
 Formerly: CR-007
 
@@ -187,7 +187,7 @@ Migrated from specman's decision log; the full entry, with the evidence and the 
 
 Date: 2026-08-09
 Decided by: Sajmani (presumed: the original entry does not name who decided; to be confirmed)
-Status: accepted
+Status: accepted; decider confirmed by decidersConfirmed
 Affects: [product.mediaFormats](local/product/product.md#mediaformats), [product.mediaFilename](local/product/product.md#mediafilename), [tech.platformIndependent](local/tech/tech.md#platformindependent)
 Formerly: CR-009
 
@@ -231,7 +231,7 @@ Migrated from specman's decision log; the full entry, with the evidence and the 
 
 Date: 2026-08-09
 Decided by: Sajmani (presumed: the original entry does not name who decided; to be confirmed)
-Status: accepted
+Status: accepted; decider confirmed by decidersConfirmed
 Affects: [product.largeAccounts](local/product/product.md#largeaccounts), [tech.idAbovePaging](local/tech/tech.md#idabovepaging), [product.downloadExistingObservations](local/product/product.md#downloadexistingobservations), [product.noTaxonFilter](local/product/product.md#notaxonfilter)
 Formerly: CR-011
 
@@ -252,7 +252,7 @@ Migrated from specman's decision log; the full entry, with the evidence and the 
 
 Date: 2026-08-09
 Decided by: Sajmani (presumed: the original entry does not name who decided; to be confirmed)
-Status: accepted
+Status: accepted; decider confirmed by decidersConfirmed
 Affects: [inatterms.noMachineGeneratedContent](imported/inaturalist.org/inatterms/inatterms.md#nomachinegeneratedcontent), [inatterms.dontBehaveLikeMachine](imported/inaturalist.org/inatterms/inatterms.md#dontbehavelikemachine), [product.documentCommunityObligations](local/product/product.md#documentcommunityobligations), [product.documentSyncedObservationsIdentifiable](local/product/product.md#documentsyncedobservationsidentifiable)
 Formerly: CR-012
 
@@ -318,3 +318,73 @@ and needs no review date. The obligation rests with the person running birdsync,
 already says of everything done under an account. The assumption stands as recorded, extended
 from "the export lists only the user's own assets" to "the export is the user's own", and still
 reopens on a counter-example in which birdsync itself could have told.
+
+---
+
+## mutatingToolsDeleted
+
+**The mutating programs in tools/ were deleted, and the rule that nobody may run them was withdrawn**
+
+Date: 2026-08-09
+Decided by: Sajmani
+Status: accepted
+Affects: [tech.neverRunMutatingTools](local/tech/tech.md#neverrunmutatingtools), [tech.toolsReadOnly](local/tech/tech.md#toolsreadonly), [tech.neverRunTools](local/tech/tech.md#neverruntools)
+Formerly: T-011 withdrawal note
+
+### Decided
+
+The mutating tools were deleted rather than governed by a rule nobody could check, in commit
+[`cca3255`](https://github.com/Sajmani/birdsync/commit/cca3255) ("Delete the mutating tools; enforce that tools/ stays read-only").
+[tech.toolsReadOnly](local/tech/tech.md#toolsreadonly) and [tech.neverRunTools](local/tech/tech.md#neverruntools) replace [tech.neverRunMutatingTools](local/tech/tech.md#neverrunmutatingtools). specman recorded
+the withdrawal only as a `Status:` line on `T-011`; this entry was written on 2026-11-04, when
+the owner confirmed it, and is dated by the commit that made the change.
+
+---
+
+## localTechAboveProduct
+
+**Within the Local tier, tech outranks product**
+
+Date: 2026-11-04
+Decided by: Sajmani
+Status: accepted
+Affects: [precedence](precedence.md)
+
+### Decided
+
+Confirmed as drafted at adoption: `tech` ranks above `product` in `precedence.md`, because
+birdsync's safety invariants outrank convenience. specman's manifest ranked nothing within
+Local.
+
+---
+
+## decidersConfirmed
+
+**The owner decided the four migrated decisions whose specman entries named no decider**
+
+Date: 2026-11-04
+Decided by: Sajmani
+Status: accepted
+Affects: none; it confirms the record of [descriptionListsOnlyUploaded](#descriptionlistsonlyuploaded), [extensionMapFromCDN](#extensionmapfromcdn), [pageByIDAbove](#pagebyidabove), and [notMachineGeneratedContent](#notmachinegeneratedcontent)
+
+### Decided
+
+Their `Decided by:` lines said "presumed"; the owner confirmed on 2026-11-04 that he decided
+each. Those entries are otherwise unchanged, as `decisions.md` is append-only.
+
+---
+
+## uuidAdopted
+
+**github.com/google/uuid is adopted as an Advisory source for its license**
+
+Date: 2026-11-04
+Decided by: Sajmani
+Status: accepted
+Affects: [tech.oneExternalDependency](local/tech/tech.md#oneexternaldependency)
+
+### Decided
+
+Adopted as drafted at discovery: the module's three-clause BSD-style license, read from the
+module at v1.6.0, is recorded in `imports.md` as Advisory. birdsync redistributes no binaries,
+so the notice obligation does not arise today.

@@ -7,8 +7,8 @@ the identifier this item had under the predecessor method (specman).
 
 Migrated from `spec/tech.md` at
 [`dc25e3b`](https://github.com/Sajmani/birdsync/blob/dc25e3b6756bd59c2de931e6d080d47318617da4/spec/tech.md),
-where it was approved at specman's Gate 1 on 2026-08-09 and amended since. No goals have
-been accepted yet, so every `Goals:` field is empty.
+where it was approved at specman's Gate 1 on 2026-08-09 and amended since. Goals were
+accepted on 2026-11-04 and are cited in each `Goals:` field.
 
 ## singleModule
 
@@ -16,7 +16,7 @@ been accepted yet, so every `Goals:` field is empty.
 
 Formerly: T-001
 Area: Module and dependencies
-Goals:
+Goals: [goals.maintainerChangesSafely](../../../goals/goals.md#maintainerchangessafely)
 
 birdsync is a single Go module, `github.com/Sajmani/birdsync`, with no build
 system, no code generation, and no linter configuration beyond `gofmt` and `go vet`.
@@ -29,7 +29,7 @@ Formerly: T-002
 Area: Module and dependencies
 Subject: `build.external_dependencies.count`
 Value: `1`
-Goals:
+Goals: [goals.maintainerChangesSafely](../../../goals/goals.md#maintainerchangessafely)
 
 The module has exactly one external dependency,
 `github.com/google/uuid`. Adding another requires the owner's approval.
@@ -45,7 +45,7 @@ Formerly: T-003
 Area: Module and dependencies
 Subject: `build.go_directive`
 Value: `1.23.0`
-Goals:
+Goals: [goals.maintainerChangesSafely](../../../goals/goals.md#maintainerchangessafely)
 
 The `go` and `toolchain` directives are raised only as a deliberate,
 standalone change, never as a side effect of other work.
@@ -59,7 +59,7 @@ but anyone pinned to `GOTOOLCHAIN=local` on an older Go is blocked outright.*
 
 Formerly: T-004
 Area: Module and dependencies
-Goals:
+Goals: [goals.maintainerChangesSafely](../../../goals/goals.md#maintainerchangessafely)
 
 The tool must build and run on any platform the Go toolchain supports, using
 only the standard library plus [oneExternalDependency](#oneexternaldependency). No platform-specific code.
@@ -70,7 +70,7 @@ only the standard library plus [oneExternalDependency](#oneexternaldependency). 
 
 Formerly: T-005
 Area: Safety invariants
-Goals:
+Goals: [goals.accountsStaySafe](../../../goals/goals.md#accountsstaysafe)
 
 Every operation that creates, updates, deletes, or uploads is gated on
 `--dryrun` **at the call site in `birdsync()`**, not inside the client.
@@ -84,7 +84,7 @@ belongs where the decision is made, not in a client that other callers reuse.*
 
 Formerly: T-006
 Area: Safety invariants
-Goals:
+Goals: [goals.accountsStaySafe](../../../goals/goals.md#accountsstaysafe)
 
 A skipped mutation is logged with a `DRYRUN:` prefix (implements [product.dryRunLogPrefix](../product/product.md#dryrunlogprefix)).
 
@@ -94,7 +94,7 @@ A skipped mutation is logged with a `DRYRUN:` prefix (implements [product.dryRun
 
 Formerly: T-007
 Area: Safety invariants
-Goals:
+Goals: [goals.accountsStaySafe](../../../goals/goals.md#accountsstaysafe)
 
 A dry run's counters must not report work that did not happen. Where a dry
 run cannot know something, it counts it as unknown rather than guessing.
@@ -109,7 +109,7 @@ in favour of relabeling; implements [product.dryRunCounterLabels](../product/pro
 
 Formerly: T-008
 Area: Safety invariants
-Goals:
+Goals: [goals.accountsStaySafe](../../../goals/goals.md#accountsstaysafe)
 
 `inat.Client`'s methods mutate unconditionally and know nothing about
 `--dryrun`. This is deliberate, not an oversight.
@@ -120,7 +120,7 @@ Goals:
 
 Formerly: T-009
 Area: Safety invariants
-Goals:
+Goals: [goals.accountsStaySafe](../../../goals/goals.md#accountsstaysafe)
 
 `UpdateObservation` always sets `ignore_photos`.
 
@@ -132,7 +132,7 @@ Goals:
 
 Formerly: T-010
 Area: Safety invariants
-Goals:
+Goals: [goals.maintainerChangesSafely](../../../goals/goals.md#maintainerchangessafely)
 
 Tests never contact `api.inaturalist.org`, the Macaulay Library CDN, or any
 other live service, and never depend on a real account's contents.
@@ -157,7 +157,7 @@ nobody could check. Superseded by [toolsReadOnly](#toolsreadonly) and [neverRunT
 
 Formerly: T-032
 Area: Safety invariants
-Goals:
+Goals: [goals.accountsStaySafe](../../../goals/goals.md#accountsstaysafe)
 
 No program in `tools/` performs a mutating operation. Nothing there may
 create, update, delete, or upload.
@@ -173,7 +173,7 @@ read and remember. Deleted tools remain in the history if one is needed again.*
 
 Formerly: T-033
 Area: Safety invariants
-Goals:
+Goals: [goals.accountsStaySafe](../../../goals/goals.md#accountsstaysafe)
 
 Nothing in the build, test, or development workflow runs a program in
 `tools/`. They contact the live service with the user's real credentials, which no
@@ -185,7 +185,7 @@ automated process should do on the user's behalf.
 
 Formerly: T-012
 Area: Safety invariants
-Goals:
+Goals: [goals.accountsStaySafe](../../../goals/goals.md#accountsstaysafe)
 
 Credentials are never logged, echoed, or written to a file.
 
@@ -195,7 +195,7 @@ Credentials are never logged, echoed, or written to a file.
 
 Formerly: T-013
 Area: Testability seams
-Goals:
+Goals: [goals.maintainerChangesSafely](../../../goals/goals.md#maintainerchangessafely)
 
 `birdsync()` takes its two clients as the `ebirdClient` and `inatClient`
 interfaces, so the sync loop can be driven without a network.
@@ -206,7 +206,7 @@ interfaces, so the sync loop can be driven without a network.
 
 Formerly: T-014
 Area: Testability seams
-Goals:
+Goals: [goals.maintainerChangesSafely](../../../goals/goals.md#maintainerchangessafely)
 
 `inat.NewClient` takes a base URL, and `ebird.DownloadMLAsset` delegates to
 an unexported `downloadMLAsset(baseURL, id)`, so an `httptest` server can stand in for
@@ -218,7 +218,7 @@ either service. Neither seam may be removed.
 
 Formerly: T-015
 Area: Testability seams
-Goals:
+Goals: [goals.maintainerChangesSafely](../../../goals/goals.md#maintainerchangessafely)
 
 Flags are package-level variables, so tests share global state. A test calls
 `resetFlags()` first.
@@ -234,7 +234,7 @@ Formerly: T-016
 Area: External service etiquette
 Subject: `http.user_agent`
 Value: `birdsync/0.1`
-Goals:
+Goals: [goals.communityNotBurdened](../../../goals/goals.md#communitynotburdened)
 
 Every request to the iNaturalist API carries a `User-Agent` identifying
 birdsync and its version.
@@ -247,7 +247,7 @@ Formerly: T-017
 Area: External service etiquette
 Subject: `inat.page_size`
 Value: `200`
-Goals:
+Goals: [goals.communityNotBurdened](../../../goals/goals.md#communitynotburdened)
 
 Observation downloads request the maximum supported page size.
 
@@ -260,7 +260,7 @@ Observation downloads request the maximum supported page size.
 
 Formerly: T-034
 Area: External service etiquette
-Goals:
+Goals: [goals.communityNotBurdened](../../../goals/goals.md#communitynotburdened)
 
 An error from a non-200 API response includes the response body, truncated, not
 just the status line.
@@ -281,7 +281,7 @@ Formerly: T-035
 Area: External service etiquette
 Subject: `inat.request_rate`
 Value: `1/second, 10000/day`
-Goals:
+Goals: [goals.communityNotBurdened](../../../goals/goals.md#communitynotburdened)
 
 Requests to the iNaturalist API are paced to the rate its recommended practices
 ask for: about one per second, and about 10,000 per day.
@@ -313,7 +313,7 @@ code staying slow, which is what makes it safe to parallelize later.*
 
 Formerly: T-036
 Area: External service etiquette
-Goals:
+Goals: [goals.communityNotBurdened](../../../goals/goals.md#communitynotburdened)
 
 The observation download pages with `id_above` and an ascending id sort, never
 with page numbers, and stops when a page comes back short.
@@ -329,7 +329,7 @@ makes the loop re-fetch one page forever.*
 
 Formerly: T-018
 Area: Data format handling
-Goals:
+Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 The eBird CSV is read by header name, never by column position, with
 `FieldsPerRecord = -1`.
@@ -342,7 +342,7 @@ The eBird CSV is read by header name, never by column position, with
 
 Formerly: T-019
 Area: Data format handling
-Goals:
+Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 Any comparison of an eBird observation date goes through `Record.Observed()`,
 never `Record.Date` directly.
@@ -356,7 +356,7 @@ raw field was a real bug; regression test: `TestFuzzyMatchDateFormats`.*
 
 Formerly: T-020
 Area: Data format handling
-Goals:
+Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 An empty taxon name never enters the fuzzy-match index (implements [product.fuzzyNeverEmptyName](../product/product.md#fuzzyneveremptyname)).
 
@@ -366,7 +366,7 @@ An empty taxon name never enters the fuzzy-match index (implements [product.fuzz
 
 Formerly: T-021
 Area: Data format handling
-Goals:
+Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 Code that needs to know whether a Macaulay Library asset is a photo or a
 sound must download it first; the ID does not encode it.
@@ -377,7 +377,7 @@ sound must download it first; the ID does not encode it.
 
 Formerly: T-022
 Area: Resource use
-Goals:
+Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 Memory scales with the export: the CSV is read whole with `ReadAll`, and all
 downloaded iNaturalist observations are held in memory. This is accepted at the current
@@ -389,7 +389,7 @@ scale (tens of thousands of records) and is a known ceiling, not a design goal.
 
 Formerly: T-023
 Area: Resource use
-Goals:
+Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 Temporary files created while downloading media are deleted before the run
 ends.
@@ -408,7 +408,7 @@ the file because it is being used by another process" on a later attempt.*
 
 Formerly: T-024
 Area: Code conventions
-Goals:
+Goals: [goals.maintainerChangesSafely](../../../goals/goals.md#maintainerchangessafely)
 
 `gofmt -l .` prints nothing.
 
@@ -418,7 +418,7 @@ Goals:
 
 Formerly: T-025
 Area: Code conventions
-Goals:
+Goals: [goals.maintainerChangesSafely](../../../goals/goals.md#maintainerchangessafely)
 
 `go vet ./...` is clean.
 
@@ -428,7 +428,7 @@ Goals:
 
 Formerly: T-026
 Area: Code conventions
-Goals:
+Goals: [goals.maintainerChangesSafely](../../../goals/goals.md#maintainerchangessafely)
 
 Errors are wrapped with the calling function's name:
 `fmt.Errorf("DownloadMLAsset(%s): %w", id, err)`. `inat.Client.roundTrip` is the
@@ -440,7 +440,7 @@ exception, wrapping with a phrase describing the step.
 
 Formerly: T-027
 Area: Code conventions
-Goals:
+Goals: [goals.maintainerChangesSafely](../../../goals/goals.md#maintainerchangessafely)
 
 `log.Fatal` is acceptable in `main` and in `tools/`; the `ebird` and `inat`
 packages return errors to their caller.
@@ -455,7 +455,7 @@ checked too, being the same thing under another name.*
 
 Formerly: T-028
 Area: Code conventions
-Goals:
+Goals: [goals.maintainerChangesSafely](../../../goals/goals.md#maintainerchangessafely)
 
 User-visible progress goes through `log.Printf`; verbose detail goes through
 `debugf`, gated on `--debug`.
@@ -468,7 +468,7 @@ Formerly: T-037
 Area: Code conventions
 Subject: `docs.spelling`
 Value: `en-US`
-Goals:
+Goals: [goals.maintainerChangesSafely](../../../goals/goals.md#maintainerchangessafely)
 
 Prose in this repository — documentation, comments, commit messages — uses
 American spellings.
@@ -482,7 +482,7 @@ on its own; it is written down for the exception below.*
 
 Formerly: T-038
 Area: Code conventions
-Goals:
+Goals: [goals.maintainerChangesSafely](../../../goals/goals.md#maintainerchangessafely)
 
 A spelling change never touches a quotation or a vendored document.
 
@@ -499,7 +499,7 @@ specman these were `spec/` and `spec/sources/**`).*
 
 Formerly: T-029
 Area: Code conventions
-Goals:
+Goals: [goals.maintainerChangesSafely](../../../goals/goals.md#maintainerchangessafely)
 
 Comments explain *why*. The explanations of eBird and iNaturalist quirks are
 the most valuable comments in the repository and are preserved through refactors.
@@ -510,7 +510,7 @@ the most valuable comments in the repository and are preserved through refactors
 
 Formerly: T-030
 Area: Continuous integration
-Goals:
+Goals: [goals.maintainerChangesSafely](../../../goals/goals.md#maintainerchangessafely)
 
 CI runs build, vet, gofmt, and the test suite under the race detector, on
 every push to `main` and every pull request, using the toolchain declared in `go.mod`.
@@ -525,7 +525,7 @@ target, and a deprecation warning today is a broken build later. `actions/checko
 
 Formerly: T-031
 Area: Continuous integration
-Goals:
+Goals: [goals.maintainerChangesSafely](../../../goals/goals.md#maintainerchangessafely)
 
 CI additionally runs against the latest stable Go as an early warning, and
 that job may fail without blocking a pull request.

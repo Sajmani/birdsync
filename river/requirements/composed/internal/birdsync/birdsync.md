@@ -241,4 +241,4 @@ accepted-gap decision covers it yet (see `river/proposals.md`).
 
 - [product.avesOnlyDownload](../../../local/product/product.md#avesonlydownload) — The download is restricted to Aves. Excluded by [decisions.noTaxonFilterOnDownload](../../../decisions.md#notaxonfilterondownload)
 - [product.malformedRecordAborts](../../../local/product/product.md#malformedrecordaborts) — A malformed record aborts the run. Excluded by [decisions.badRecordsSkippedNotFatal](../../../decisions.md#badrecordsskippednotfatal)
-- [tech.neverRunMutatingTools](../../../local/tech/tech.md#neverrunmutatingtools) — Nothing runs the mutating tools. Withdrawn in specman with no decision recorded; a decision is proposed in `river/proposals.md` (`mutatingToolsDeleted`) and awaits the owner
+- [tech.neverRunMutatingTools](../../../local/tech/tech.md#neverrunmutatingtools) — Nothing runs the mutating tools. Excluded by [decisions.mutatingToolsDeleted](../../../decisions.md#mutatingtoolsdeleted)

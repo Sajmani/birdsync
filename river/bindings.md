@@ -7,8 +7,7 @@ of River goes here.
 
 ## Stages
 
-Recorded **provisionally** on 2026-11-03, at adoption, without the owner's answer. The proposal
-is `stagesAdopted` in [`proposals.md`](proposals.md).
+Drafted at adoption on 2026-11-03 and confirmed by the owner, Sajmani, on 2026-11-04.
 
 | Stage | Status | Notes |
 | --- | --- | --- |
@@ -25,7 +24,7 @@ is `stagesAdopted` in [`proposals.md`](proposals.md).
 | River CLI | Built from River at the skill's pin; CI reads the pin from `PROVENANCE.md`. The CLI reports no version of its own |
 | Bundle | `river/` at the repository root |
 | Where `river check` runs | CI (`.github/workflows/ci.yml`, job `river`), which is skipped until the repository variable `RIVER_REPO` names a clonable River repository, because River is not published yet. Also before calling any change done (`AGENTS.md`). There is no pre-commit hook and no release step |
-| `goals/` | Empty, kept with `.gitkeep`, until the owner accepts a goal. `river check` treats any `.md` file there as a goal file |
+| `goals/` | [`goals/goals.md`](goals/goals.md), five goals accepted by the owner on 2026-11-04 |
 
 ## Project bindings
 

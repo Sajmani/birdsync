@@ -9,7 +9,7 @@ Migrated from `spec/product.md` at
 [`dc25e3b`](https://github.com/Sajmani/birdsync/blob/dc25e3b6756bd59c2de931e6d080d47318617da4/spec/product.md),
 where it was approved at specman's Gate 1 on 2026-08-09 and amended since. The
 requirements were recovered from the implementation, README.md and arch.md, and describe
-behavior as it was then. No goals have been accepted yet, so every `Goals:` field is empty.
+behavior as it was then. Goals were accepted on 2026-11-04 and are cited in each `Goals:` field.
 
 ## copiesObservations
 
@@ -17,7 +17,7 @@ behavior as it was then. No goals have been accepted yet, so every `Goals:` fiel
 
 Formerly: P-001
 Area: Purpose
-Goals:
+Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 birdsync copies bird observations from a user's eBird data export into that
 user's iNaturalist account, including the photos and sounds attached to them in the
@@ -29,7 +29,7 @@ Macaulay Library.
 
 Formerly: P-002
 Area: Purpose
-Goals:
+Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 The sync is one-way: eBird → iNaturalist.
 
@@ -39,7 +39,7 @@ The sync is one-way: eBird → iNaturalist.
 
 Formerly: P-003
 Area: Purpose
-Goals:
+Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 The input is a `MyEBirdData.csv` file the user downloads from eBird, not a
 live eBird API.
@@ -52,7 +52,7 @@ live eBird API.
 
 Formerly: P-004
 Area: Non-goals
-Goals:
+Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 birdsync does not sync iNaturalist observations back to eBird.
 
@@ -62,7 +62,7 @@ birdsync does not sync iNaturalist observations back to eBird.
 
 Formerly: P-005
 Area: Non-goals
-Goals:
+Goals: [goals.accountsStaySafe](../../../goals/goals.md#accountsstaysafe)
 
 birdsync never modifies or deletes an iNaturalist observation it did not
 create, except to attach media to an observation carrying its own sync key.
@@ -73,7 +73,7 @@ create, except to attach media to an observation carrying its own sync key.
 
 Formerly: P-006
 Area: Non-goals
-Goals:
+Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 birdsync does not reconcile taxonomy between the two services. An eBird
 scientific name that iNaturalist cannot resolve produces an observation with an unknown
@@ -85,7 +85,7 @@ taxon, which the user fixes by hand.
 
 Formerly: P-007
 Area: Non-goals
-Goals:
+Goals: [goals.accountsStaySafe](../../../goals/goals.md#accountsstaysafe)
 
 The programs in `tools/` are not part of the product. They are maintenance
 utilities, are not installed by `go install` of the root package, and carry no
@@ -98,7 +98,7 @@ account.
 
 Formerly: P-008
 Area: Invocation
-Goals:
+Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 birdsync takes exactly one positional argument: the path to the eBird CSV
 export. Any other number of arguments prints usage and exits non-zero.
@@ -109,7 +109,7 @@ export. Any other number of arguments prints usage and exits non-zero.
 
 Formerly: P-009
 Area: Invocation
-Goals:
+Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 Flags must appear before the positional argument.
 
@@ -121,7 +121,7 @@ Flags must appear before the positional argument.
 
 Formerly: P-010
 Area: Invocation
-Goals:
+Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 A boolean flag is disabled with `--flag=false`; `--flag false` is a usage
 error.
@@ -134,7 +134,7 @@ error.
 
 Formerly: P-011
 Area: Invocation
-Goals:
+Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 If the CSV file cannot be opened, birdsync exits with an error before
 contacting iNaturalist or prompting for credentials.
@@ -145,7 +145,7 @@ contacting iNaturalist or prompting for credentials.
 
 Formerly: P-012
 Area: Invocation
-Goals:
+Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 If `--after` is later than `--before`, birdsync exits with an error rather
 than running a sync that cannot match anything.
@@ -156,7 +156,7 @@ than running a sync that cannot match anything.
 
 Formerly: P-013
 Area: Invocation
-Goals:
+Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 `--debug` logs the reason each eBird record was skipped, and other detail
 not shown in a normal run.
@@ -167,7 +167,7 @@ not shown in a normal run.
 
 Formerly: P-014
 Area: Authentication
-Goals:
+Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 The iNaturalist user ID is read from `INAT_USER_ID`, and the API token from
 `INAT_API_TOKEN`.
@@ -178,7 +178,7 @@ The iNaturalist user ID is read from `INAT_USER_ID`, and the API token from
 
 Formerly: P-015
 Area: Authentication
-Goals:
+Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 When either is unset, birdsync prompts for it interactively and explains
 where to find it.
@@ -189,7 +189,7 @@ where to find it.
 
 Formerly: P-016
 Area: Authentication
-Goals:
+Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 At the prompt the token is accepted in its `{"api_token":"TOKEN"}` framing;
 from the environment it is the bare token.
@@ -203,7 +203,7 @@ to export in a shell.*
 
 Formerly: P-017
 Area: Authentication
-Goals:
+Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 A 401 from the API reports that the token needs refreshing, and where to get
 a new one, rather than a bare HTTP status.
@@ -217,7 +217,7 @@ hits.*
 
 Formerly: P-018
 Area: Authentication
-Goals:
+Goals: [goals.accountsStaySafe](../../../goals/goals.md#accountsstaysafe)
 
 Credentials are never written to the log.
 
@@ -229,7 +229,7 @@ Formerly: P-019
 Area: Identity and idempotence
 Subject: `sync.key.fields`
 Value: `[6033, 20215]`
-Goals:
+Goals: [goals.accountsStaySafe](../../../goals/goals.md#accountsstaysafe)
 
 birdsync identifies its own observations by a sync key: the pair of
 iNaturalist observation fields *eBird Checklist* (6033) and *eBird Scientific Name*
@@ -241,7 +241,7 @@ iNaturalist observation fields *eBird Checklist* (6033) and *eBird Scientific Na
 
 Formerly: P-020
 Area: Identity and idempotence
-Goals:
+Goals: [goals.accountsStaySafe](../../../goals/goals.md#accountsstaysafe)
 
 Re-running birdsync over the same CSV creates no duplicate observations.
 
@@ -251,7 +251,7 @@ Re-running birdsync over the same CSV creates no duplicate observations.
 
 Formerly: P-021
 Area: Identity and idempotence
-Goals:
+Goals: [goals.accountsStaySafe](../../../goals/goals.md#accountsstaysafe)
 
 The iNaturalist taxon is not part of the sync key.
 
@@ -265,7 +265,7 @@ exact iNaturalist equivalent.*
 
 Formerly: P-022
 Area: Identity and idempotence
-Goals:
+Goals: [goals.accountsStaySafe](../../../goals/goals.md#accountsstaysafe)
 
 An observation missing either sync-key field is not recognized as
 birdsync-created.
@@ -280,7 +280,7 @@ maintainer's account was clean; it is recoverable from the history.*
 
 Formerly: P-023
 Area: Downloading existing observations
-Goals:
+Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 Before syncing, birdsync downloads the user's existing iNaturalist
 observations into memory.
@@ -302,7 +302,7 @@ The download is restricted to the `Aves` iconic taxon.
 
 Formerly: P-025
 Area: Downloading existing observations
-Goals:
+Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 When `--after` or `--before` is set, the download is restricted to that date
 window, so duplicate detection and fuzzy matching only consider observations inside it.
@@ -313,7 +313,7 @@ window, so duplicate detection and fuzzy matching only consider observations ins
 
 Formerly: P-026
 Area: Filtering and skip order
-Goals:
+Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 Each eBird record is tested in this order: `--after`, `--before`,
 already-synced, `--fuzzy`, `--verifiable`. A record surviving all five becomes a new
@@ -328,7 +328,7 @@ record lands in.*
 
 Formerly: P-027
 Area: Filtering and skip order
-Goals:
+Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 `--after` skips records observed strictly before the given time.
 
@@ -338,7 +338,7 @@ Goals:
 
 Formerly: P-028
 Area: Filtering and skip order
-Goals:
+Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 `--before` skips records observed strictly after the given time.
 
@@ -348,7 +348,7 @@ Goals:
 
 Formerly: P-029
 Area: Filtering and skip order
-Goals:
+Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 Both accept `2006-01-02 15:04:05` or `2006-01-02`.
 
@@ -360,7 +360,7 @@ Formerly: P-030
 Area: Filtering and skip order
 Subject: `cli.verifiable.default`
 Value: `true`
-Goals:
+Goals: [goals.communityNotBurdened](../../../goals/goals.md#communitynotburdened), [goals.communityGainsResearchGrade](../../../goals/goals.md#communitygainsresearchgrade)
 
 `--verifiable` skips records with no Macaulay Library catalog numbers, and
 defaults to **on**.
@@ -380,7 +380,7 @@ default for convenience.*
 
 Formerly: P-031
 Area: Filtering and skip order
-Goals:
+Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 `--fuzzy` skips a record when an existing observation not carrying a sync key
 has the same observation date and the same name, matched against either the common name
@@ -392,7 +392,7 @@ or the scientific name.
 
 Formerly: P-032
 Area: Filtering and skip order
-Goals:
+Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 Fuzzy matching never uses an empty name.
 
@@ -405,7 +405,7 @@ legitimate observations.*
 
 Formerly: P-033
 Area: Filtering and skip order
-Goals:
+Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 Fuzzy matching compares parsed observation dates, not raw CSV date strings.
 
@@ -418,7 +418,7 @@ Fuzzy matching compares parsed observation dates, not raw CSV date strings.
 
 Formerly: P-034
 Area: Filtering and skip order
-Goals:
+Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 `--fuzzy` is off by default, and its documentation states that it may
 suppress a legitimate record when the same bird was seen twice in one day.
@@ -429,7 +429,7 @@ suppress a legitimate record when the same bird was seen twice in one day.
 
 Formerly: P-035
 Area: What birdsync writes
-Goals:
+Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord), [goals.communityGainsResearchGrade](../../../goals/goals.md#communitygainsresearchgrade)
 
 A created observation is marked wild, not captive.
 
@@ -443,7 +443,7 @@ Formerly: P-036
 Area: What birdsync writes
 Subject: `observation.positional_accuracy.default_m`
 Value: `1000`
-Goals:
+Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord), [goals.communityGainsResearchGrade](../../../goals/goals.md#communitygainsresearchgrade)
 
 Latitude and longitude are the checklist's, the location is marked
 not-exact, and positional accuracy is `--positional_accuracy_meters`, default 1000.
@@ -456,7 +456,7 @@ not-exact, and positional accuracy is `--positional_accuracy_meters`, default 10
 
 Formerly: P-037
 Area: What birdsync writes
-Goals:
+Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord), [goals.communityGainsResearchGrade](../../../goals/goals.md#communitygainsresearchgrade)
 
 The species guess is the eBird scientific name.
 
@@ -466,7 +466,7 @@ The species guess is the eBird scientific name.
 
 Formerly: P-038
 Area: What birdsync writes
-Goals:
+Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord), [goals.communityGainsResearchGrade](../../../goals/goals.md#communitygainsresearchgrade)
 
 The observation date and time come from the eBird `Date` and `Time` columns.
 
@@ -476,7 +476,7 @@ The observation date and time come from the eBird `Date` and `Time` columns.
 
 Formerly: P-039
 Area: What birdsync writes
-Goals:
+Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 These eBird columns are copied into iNaturalist observation fields: Count
 (1), Common Name (256), Location (157), County (245), State/Province (7739), Number of
@@ -488,7 +488,7 @@ Observers (2527), Submission ID (6033), Scientific Name (20215).
 
 Formerly: P-040
 Area: What birdsync writes
-Goals:
+Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 The description contains: a line attributing the observation to birdsync, the
 eBird observation details when present, the checklist URL, the protocol, the checklist
@@ -505,7 +505,7 @@ observation, not the source, and the retry mechanism is otherwise undiscoverable
 
 Formerly: P-041
 Area: What birdsync writes
-Goals:
+Goals: [goals.accountsStaySafe](../../../goals/goals.md#accountsstaysafe), [goals.communityGainsResearchGrade](../../../goals/goals.md#communitygainsresearchgrade)
 
 Observations birdsync creates are public, like any iNaturalist observation.
 
@@ -515,7 +515,7 @@ Observations birdsync creates are public, like any iNaturalist observation.
 
 Formerly: P-042
 Area: Media
-Goals:
+Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 The observation is created first and media attached afterward.
 
@@ -529,7 +529,7 @@ Formerly: P-043
 Area: Media
 Subject: `media.photo.max_dimension_px`
 Value: `2400`
-Goals:
+Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord), [goals.communityGainsResearchGrade](../../../goals/goals.md#communitygainsresearchgrade)
 
 Photos are fetched at 2400px and sounds as MP3.
 
@@ -539,7 +539,7 @@ Photos are fetched at 2400px and sounds as MP3.
 
 Formerly: P-044
 Area: Media
-Goals:
+Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord), [goals.communityGainsResearchGrade](../../../goals/goals.md#communitygainsresearchgrade)
 
 A Macaulay Library asset ID does not say whether it is a photo or a sound, so
 birdsync tries the photo URL and falls back to the sound URL on a 404.
@@ -552,7 +552,7 @@ Formerly: P-045
 Area: Media
 Subject: `media.filename.extension`
 Value: `{image/jpeg: .jpg, image/png: .png, audio/mpeg: .mp3, audio/mpeg3: .mp3, audio/wav: .wav}`, falling back to `.jpg` or `.mp3` by endpoint
-Goals:
+Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 Media is uploaded under the filename `ML<asset ID>` plus a canonical extension
 for the response content type — `.jpg`, `.png`, `.mp3`, `.wav` — so any file in iNaturalist
@@ -568,7 +568,7 @@ whichever extension the system's mime database happened to list first.*
 
 Formerly: P-046
 Area: Media
-Goals:
+Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 After uploading, the observation description is updated with the asset URLs,
 without detaching the media already attached.
@@ -579,7 +579,7 @@ without detaching the media already attached.
 
 Formerly: P-047
 Area: Media
-Goals:
+Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 Media re-sync is additive. Assets added to an eBird checklist after a sync
 are uploaded on the next run.
@@ -590,7 +590,7 @@ are uploaded on the next run.
 
 Formerly: P-048
 Area: Media
-Goals:
+Goals: [goals.accountsStaySafe](../../../goals/goals.md#accountsstaysafe)
 
 Assets removed from eBird are reported, not removed from iNaturalist.
 
@@ -600,7 +600,7 @@ Assets removed from eBird are reported, not removed from iNaturalist.
 
 Formerly: P-049
 Area: Media
-Goals:
+Goals: [goals.accountsStaySafe](../../../goals/goals.md#accountsstaysafe)
 
 A mismatch between the asset count in the description and the media actually
 attached is reported, not corrected.
@@ -611,7 +611,7 @@ attached is reported, not corrected.
 
 Formerly: P-050
 Area: Media
-Goals:
+Goals: [goals.accountsStaySafe](../../../goals/goals.md#accountsstaysafe)
 
 A failed media download or upload is logged and counted, and does not stop
 the run.
@@ -626,7 +626,7 @@ next run rather than recorded as done. See
 
 Formerly: P-051
 Area: Dry run
-Goals:
+Goals: [goals.accountsStaySafe](../../../goals/goals.md#accountsstaysafe)
 
 `--dryrun` issues no write request of any kind. Reads are permitted.
 
@@ -638,7 +638,7 @@ Formerly: P-052
 Area: Dry run
 Subject: `log.dryrun.prefix`
 Value: `"DRYRUN: "`
-Goals:
+Goals: [goals.accountsStaySafe](../../../goals/goals.md#accountsstaysafe)
 
 Every action a dry run skips is logged with a `DRYRUN:` prefix.
 
@@ -650,7 +650,7 @@ Every action a dry run skips is logged with a `DRYRUN:` prefix.
 
 Formerly: P-053
 Area: Dry run
-Goals:
+Goals: [goals.accountsStaySafe](../../../goals/goals.md#accountsstaysafe)
 
 A dry run reports media as a single "would upload N assets" count rather than
 splitting photos from sounds.
@@ -664,7 +664,7 @@ splitting photos from sounds.
 
 Formerly: P-054
 Area: Reporting
-Goals:
+Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 Every run ends with a summary: records processed, records skipped by each
 rule, observations created and updated, and media uploaded.
@@ -675,7 +675,7 @@ rule, observations created and updated, and media uploaded.
 
 Formerly: P-055
 Area: Reporting
-Goals:
+Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 A skip counter is printed only when the flag that produces it is in effect.
 
@@ -685,7 +685,7 @@ A skip counter is printed only when the flag that produces it is in effect.
 
 Formerly: P-056
 Area: Reporting
-Goals:
+Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 A media failure count is printed only when there were failures.
 
@@ -707,7 +707,7 @@ whole run, identifying the CSV line.
 
 Formerly: P-058
 Area: Failure behavior
-Goals:
+Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 A failed observation create or update aborts the run; a failed media transfer
 does not.
@@ -722,7 +722,7 @@ continuing would produce one identical error per remaining record. Reaffirmed un
 
 Formerly: P-059
 Area: Failure behavior
-Goals:
+Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 There is no rollback. Observations created before an abort remain in the
 user's account, and re-running is safe because of [idempotentRerun](#idempotentrerun).
@@ -733,7 +733,7 @@ user's account, and re-running is safe because of [idempotentRerun](#idempotentr
 
 Formerly: P-065
 Area: Failure behavior
-Goals:
+Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 birdsync works for an account with more than 10,000 iNaturalist observations.
 
@@ -748,7 +748,7 @@ at 10,000 results.*
 
 Formerly: P-066
 Area: Failure behavior
-Goals:
+Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 Before parsing, birdsync checks the input and names what is wrong, distinguishing
 three cases: the path is a directory, the path is a zip archive, and the file has no
@@ -774,7 +774,7 @@ Formerly: P-063
 Area: Failure behavior
 Subject: `media.upload.permanent_failure`
 Value: `HTTP 4xx except 401, 408, 429`
-Goals:
+Goals: [goals.accountsStaySafe](../../../goals/goals.md#accountsstaysafe)
 
 An upload that fails permanently — the service rejected the file itself, rather
 than the attempt — is recorded in the description as failed and is not attempted again. A
@@ -790,7 +790,7 @@ file on every run forever. Removing the line by hand is the way to ask for a ret
 
 Formerly: P-064
 Area: Failure behavior
-Goals:
+Goals: [goals.accountsStaySafe](../../../goals/goals.md#accountsstaysafe)
 
 A permanently failed asset is reported on each run, so the user learns about it
 without birdsync retrying it.
@@ -801,7 +801,7 @@ without birdsync retrying it.
 
 Formerly: P-067
 Area: Failure behavior
-Goals:
+Goals: [goals.communityNotBurdened](../../../goals/goals.md#communitynotburdened)
 
 The documentation tells users what iNaturalist expects of an account that syncs
 in bulk: review what was created, and respond to identifiers' comments.
@@ -819,7 +819,7 @@ permitted side of that rule to the prohibited side. Recorded from
 
 Formerly: P-068
 Area: Failure behavior
-Goals:
+Goals: [goals.communityNotBurdened](../../../goals/goals.md#communitynotburdened), [goals.communityGainsResearchGrade](../../../goals/goals.md#communitygainsresearchgrade)
 
 The documentation explains that birdsync-created observations are identifiable —
 by the attribution line and the two eBird observation fields — so that identifiers who would
@@ -834,7 +834,7 @@ already true ([syncKey](#synckey), [descriptionContents](#descriptioncontents));
 
 Formerly: P-060
 Area: Reporting
-Goals:
+Goals: [goals.accountsStaySafe](../../../goals/goals.md#accountsstaysafe)
 
 Under `--dryrun`, the observation counters are labeled as hypothetical:
 `Would create N` and `Would update N`.
@@ -848,7 +848,7 @@ worth reporting; claiming the work happened is not.*
 
 Formerly: P-061
 Area: Downloading existing observations
-Goals:
+Goals: [goals.accountsStaySafe](../../../goals/goals.md#accountsstaysafe)
 
 The download of existing iNaturalist observations is not filtered by taxon.
 
@@ -864,7 +864,7 @@ observations of any taxon.*
 
 Formerly: P-062
 Area: Failure behavior
-Goals:
+Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 A record whose date, time, latitude, or longitude cannot be parsed is
 skipped, logged with its CSV line, and counted. The run continues, and the count appears
