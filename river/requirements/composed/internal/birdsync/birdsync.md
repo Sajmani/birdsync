@@ -134,63 +134,63 @@ Sources at composition: `product` and `tech` (local, at this commit), and `inata
 
 ### Module and dependencies
 
-- [tech.singleModule](../../../local/tech/tech.md#singlemodule) — A single Go module with no build system
-- [tech.oneExternalDependency](../../../local/tech/tech.md#oneexternaldependency) — Exactly one external dependency
-- [tech.goDirectivePolicy](../../../local/tech/tech.md#godirectivepolicy) — go and toolchain directives change only deliberately
-- [tech.platformIndependent](../../../local/tech/tech.md#platformindependent) — Builds and runs on every Go platform
+- [tech.singleModule](../../../local/tech/deps.md#singlemodule) — A single Go module with no build system
+- [tech.oneExternalDependency](../../../local/tech/deps.md#oneexternaldependency) — Exactly one external dependency
+- [tech.goDirectivePolicy](../../../local/tech/deps.md#godirectivepolicy) — go and toolchain directives change only deliberately
+- [tech.platformIndependent](../../../local/tech/deps.md#platformindependent) — Builds and runs on every Go platform
 
 ### Safety invariants
 
-- [tech.dryRunGateAtCallSite](../../../local/tech/tech.md#dryrungateatcallsite) — Mutations are gated on --dryrun at the call site
-- [tech.dryRunPrefixLogged](../../../local/tech/tech.md#dryrunprefixlogged) — A skipped mutation is logged with DRYRUN:
-- [tech.honestDryRunCounters](../../../local/tech/tech.md#honestdryruncounters) — Dry-run counters never report work that did not happen
-- [tech.clientMutatesUnconditionally](../../../local/tech/tech.md#clientmutatesunconditionally) — inat.Client mutates unconditionally
-- [tech.updateKeepsPhotos](../../../local/tech/tech.md#updatekeepsphotos) — UpdateObservation always sets ignore_photos
-- [tech.noLiveServicesInTests](../../../local/tech/tech.md#noliveservicesintests) — Tests never contact a live service
-- [tech.toolsReadOnly](../../../local/tech/tech.md#toolsreadonly) — No program in tools/ mutates
-- [tech.neverRunTools](../../../local/tech/tech.md#neverruntools) — Nothing in the workflow runs a program in tools/
-- [tech.credentialsNeverExposed](../../../local/tech/tech.md#credentialsneverexposed) — Credentials are never logged, echoed, or written
+- [tech.dryRunGateAtCallSite](../../../local/tech/safety.md#dryrungateatcallsite) — Mutations are gated on --dryrun at the call site
+- [tech.dryRunPrefixLogged](../../../local/tech/safety.md#dryrunprefixlogged) — A skipped mutation is logged with DRYRUN:
+- [tech.honestDryRunCounters](../../../local/tech/safety.md#honestdryruncounters) — Dry-run counters never report work that did not happen
+- [tech.clientMutatesUnconditionally](../../../local/tech/safety.md#clientmutatesunconditionally) — inat.Client mutates unconditionally
+- [tech.updateKeepsPhotos](../../../local/tech/safety.md#updatekeepsphotos) — UpdateObservation always sets ignore_photos
+- [tech.noLiveServicesInTests](../../../local/tech/testing.md#noliveservicesintests) — Tests never contact a live service
+- [tech.toolsReadOnly](../../../local/tech/safety.md#toolsreadonly) — No program in tools/ mutates
+- [tech.neverRunTools](../../../local/tech/safety.md#neverruntools) — Nothing in the workflow runs a program in tools/
+- [tech.credentialsNeverExposed](../../../local/tech/safety.md#credentialsneverexposed) — Credentials are never logged, echoed, or written
 
 ### Testability seams
 
-- [tech.clientInterfaces](../../../local/tech/tech.md#clientinterfaces) — birdsync() takes its clients as interfaces
-- [tech.baseURLSeams](../../../local/tech/tech.md#baseurlseams) — Both services have base-URL test seams
-- [tech.resetFlagsInTests](../../../local/tech/tech.md#resetflagsintests) — Tests call resetFlags first
+- [tech.clientInterfaces](../../../local/tech/testing.md#clientinterfaces) — birdsync() takes its clients as interfaces
+- [tech.baseURLSeams](../../../local/tech/testing.md#baseurlseams) — Both services have base-URL test seams
+- [tech.resetFlagsInTests](../../../local/tech/testing.md#resetflagsintests) — Tests call resetFlags first
 
 ### External service etiquette
 
-- [tech.userAgent](../../../local/tech/tech.md#useragent) — Every iNaturalist request carries a birdsync User-Agent
-- [tech.maxPageSize](../../../local/tech/tech.md#maxpagesize) — Downloads request the maximum page size
-- [tech.errorsIncludeBody](../../../local/tech/tech.md#errorsincludebody) — API errors include the response body
-- [tech.idAbovePaging](../../../local/tech/tech.md#idabovepaging) — The download pages by id_above
+- [tech.userAgent](../../../local/tech/etiquette.md#useragent) — Every iNaturalist request carries a birdsync User-Agent
+- [tech.maxPageSize](../../../local/tech/etiquette.md#maxpagesize) — Downloads request the maximum page size
+- [tech.errorsIncludeBody](../../../local/tech/etiquette.md#errorsincludebody) — API errors include the response body
+- [tech.idAbovePaging](../../../local/tech/etiquette.md#idabovepaging) — The download pages by id_above
 
 ### Data format handling
 
-- [tech.csvByHeaderName](../../../local/tech/tech.md#csvbyheadername) — The CSV is read by header name
-- [tech.datesViaObserved](../../../local/tech/tech.md#datesviaobserved) — eBird dates are compared via Record.Observed()
-- [tech.emptyNameNotIndexed](../../../local/tech/tech.md#emptynamenotindexed) — An empty taxon name never enters the fuzzy index
-- [tech.assetTypeNeedsDownload](../../../local/tech/tech.md#assettypeneedsdownload) — Asset type is known only after download
+- [tech.csvByHeaderName](../../../local/tech/formats.md#csvbyheadername) — The CSV is read by header name
+- [tech.datesViaObserved](../../../local/tech/formats.md#datesviaobserved) — eBird dates are compared via Record.Observed()
+- [tech.emptyNameNotIndexed](../../../local/tech/formats.md#emptynamenotindexed) — An empty taxon name never enters the fuzzy index
+- [tech.assetTypeNeedsDownload](../../../local/tech/formats.md#assettypeneedsdownload) — Asset type is known only after download
 
 ### Resource use
 
-- [tech.memoryScalesWithExport](../../../local/tech/tech.md#memoryscaleswithexport) — Memory scales with the export
-- [tech.tempFilesDeleted](../../../local/tech/tech.md#tempfilesdeleted) — Temporary media files are deleted
+- [tech.memoryScalesWithExport](../../../local/tech/resources.md#memoryscaleswithexport) — Memory scales with the export
+- [tech.tempFilesDeleted](../../../local/tech/resources.md#tempfilesdeleted) — Temporary media files are deleted
 
 ### Code conventions
 
-- [tech.gofmtClean](../../../local/tech/tech.md#gofmtclean) — gofmt -l . prints nothing
-- [tech.vetClean](../../../local/tech/tech.md#vetclean) — go vet is clean
-- [tech.errorWrapping](../../../local/tech/tech.md#errorwrapping) — Errors are wrapped with the calling function's name
-- [tech.noLogFatalInLibraries](../../../local/tech/tech.md#nologfatalinlibraries) — log.Fatal only in main and tools/
-- [tech.progressLogging](../../../local/tech/tech.md#progresslogging) — Progress via log.Printf, detail via debugf
-- [tech.americanSpelling](../../../local/tech/tech.md#americanspelling) — Prose uses American spelling
-- [tech.quotationsNeverRespelled](../../../local/tech/tech.md#quotationsneverrespelled) — Spelling changes never touch quotations or vendored documents
-- [tech.commentsExplainWhy](../../../local/tech/tech.md#commentsexplainwhy) — Comments explain why
+- [tech.gofmtClean](../../../local/tech/style.md#gofmtclean) — gofmt -l . prints nothing
+- [tech.vetClean](../../../local/tech/style.md#vetclean) — go vet is clean
+- [tech.errorWrapping](../../../local/tech/style.md#errorwrapping) — Errors are wrapped with the calling function's name
+- [tech.noLogFatalInLibraries](../../../local/tech/style.md#nologfatalinlibraries) — log.Fatal only in main and tools/
+- [tech.progressLogging](../../../local/tech/style.md#progresslogging) — Progress via log.Printf, detail via debugf
+- [tech.americanSpelling](../../../local/tech/style.md#americanspelling) — Prose uses American spelling
+- [tech.quotationsNeverRespelled](../../../local/tech/style.md#quotationsneverrespelled) — Spelling changes never touch quotations or vendored documents
+- [tech.commentsExplainWhy](../../../local/tech/style.md#commentsexplainwhy) — Comments explain why
 
 ### Continuous integration
 
-- [tech.ciStandingChecks](../../../local/tech/tech.md#cistandingchecks) — CI runs the standing checks
-- [tech.ciLatestStable](../../../local/tech/tech.md#cilateststable) — CI also runs latest stable Go, non-blocking
+- [tech.ciStandingChecks](../../../local/tech/ci.md#cistandingchecks) — CI runs the standing checks
+- [tech.ciLatestStable](../../../local/tech/ci.md#cilateststable) — CI also runs latest stable Go, non-blocking
 
 ## Included from imported sources
 
@@ -226,13 +226,13 @@ Sources at composition: `product` and `tech` (local, at this commit), and `inata
 
 **iNaturalist API requests stay within about one per second and about 10,000 a day**
 
-Composed from: [inatapi.requestRate](../../../imported/inaturalist.org/inatapi/inatapi.md#requestrate), [inatterms.rateAndVolume](../../../imported/inaturalist.org/inatterms/inatterms.md#rateandvolume), [tech.requestPacing](../../../local/tech/tech.md#requestpacing)
+Composed from: [inatapi.requestRate](../../../imported/inaturalist.org/inatapi/inatapi.md#requestrate), [inatterms.rateAndVolume](../../../imported/inaturalist.org/inatterms/inatterms.md#rateandvolume), [tech.requestPacing](../../../local/tech/etiquette.md#requestpacing)
 
 Requests to the iNaturalist API are paced to about one per second and no more than about
 10,000 a day, so birdsync posts at a rate and volume that does not hinder other users.
 
 The Governing source sets the numbers, the Mandatory source says why they bind, and
-[tech.requestPacing](../../../local/tech/tech.md#requestpacing) is how birdsync meets them. Under precedence the Governing limit cannot be
+[tech.requestPacing](../../../local/tech/etiquette.md#requestpacing) is how birdsync meets them. Under precedence the Governing limit cannot be
 loosened locally. The local source enforces only the per-second rate: birdsync keeps no
 state between runs, so the daily cap is not enforced. That half is unmet, and no
 accepted-gap decision covers it yet (see `river/proposals.md`).
@@ -241,4 +241,4 @@ accepted-gap decision covers it yet (see `river/proposals.md`).
 
 - [product.avesOnlyDownload](../../../local/product/download.md#avesonlydownload) — The download is restricted to Aves. Excluded by [decisions.noTaxonFilterOnDownload](../../../decisions.md#notaxonfilterondownload)
 - [product.malformedRecordAborts](../../../local/product/failures.md#malformedrecordaborts) — A malformed record aborts the run. Excluded by [decisions.badRecordsSkippedNotFatal](../../../decisions.md#badrecordsskippednotfatal)
-- [tech.neverRunMutatingTools](../../../local/tech/tech.md#neverrunmutatingtools) — Nothing runs the mutating tools. Excluded by [decisions.mutatingToolsDeleted](../../../decisions.md#mutatingtoolsdeleted)
+- [tech.neverRunMutatingTools](../../../local/tech/safety.md#neverrunmutatingtools) — Nothing runs the mutating tools. Excluded by [decisions.mutatingToolsDeleted](../../../decisions.md#mutatingtoolsdeleted)

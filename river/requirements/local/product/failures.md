@@ -59,7 +59,7 @@ an operating-system message that explains nothing.*
 
 *The check is on the path and the header, never on the text of an operating-system error: that
 symptom is what Windows returns for reading a directory, where Unix says "is a directory", so a
-fix written against one would not work on the other ([tech.platformIndependent](../tech/tech.md#platformindependent)).*
+fix written against one would not work on the other ([tech.platformIndependent](../tech/deps.md#platformindependent)).*
 
 *The header case is worse than an unhelpful message. Field lookup is `field[key]`, which yields
 0 for an absent column, so a CSV without a `Submission ID` column did not fail — every record

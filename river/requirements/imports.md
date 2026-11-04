@@ -77,7 +77,7 @@ lacks IDs for, and makes no commercial use.
 | Tier | Advisory |
 | Import style | absorbed |
 | Scope | All Go source in this repository |
-| Adopted parts | Formatting, error wrapping, naming, comment style, written into `tech` as [tech.gofmtClean](local/tech/tech.md#gofmtclean) through [tech.commentsExplainWhy](local/tech/tech.md#commentsexplainwhy) |
+| Adopted parts | Formatting, error wrapping, naming, comment style, written into `tech` as [tech.gofmtClean](local/tech/style.md#gofmtclean) through [tech.commentsExplainWhy](local/tech/style.md#commentsexplainwhy) |
 | Owner | The Go team; locally, the repository owner |
 | Status | adopted |
 
@@ -106,7 +106,7 @@ lacks IDs for, and makes no commercial use.
 | Integrity | `go.sum`: `h1:NIvaJDMOsjHA8n1jAhLSgzrAzy1Hgr+hNrb57e+94F0=` |
 | Tier | Advisory |
 | Import style | fetched at build |
-| Scope | Generating observation UUIDs (`github.com/google/uuid` is the module's only external dependency; see [tech.oneExternalDependency](local/tech/tech.md#oneexternaldependency)) |
+| Scope | Generating observation UUIDs (`github.com/google/uuid` is the module's only external dependency; see [tech.oneExternalDependency](local/tech/deps.md#oneexternaldependency)) |
 | Adopted parts | Its license |
 | Owner | Google, per its copyright line |
 | Status | adopted ([decisions.uuidAdopted](decisions.md#uuidadopted)) |
@@ -128,7 +128,7 @@ build with `go install`, so the notice obligation does not arise today.
 | Integrity | none recorded |
 | Tier | Advisory |
 | Import style | consulted |
-| Scope | Continuous integration ([tech.ciStandingChecks](local/tech/tech.md#cistandingchecks)) |
+| Scope | Continuous integration ([tech.ciStandingChecks](local/tech/ci.md#cistandingchecks)) |
 | Adopted parts | none yet |
 | Owner | GitHub |
 | Status | partial: found during discovery and awaiting the owner's decision. Terms not retrieved |

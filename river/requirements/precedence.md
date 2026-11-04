@@ -13,7 +13,7 @@ at [`dc25e3b`](https://github.com/Sajmani/birdsync/blob/dc25e3b6756bd59c2de931e6
 | --- | --- | --- |
 | **Mandatory** | [`inatterms`](imported/inaturalist.org/inatterms/inatterms.md), [`mlterms`](imported/ebird.org/mlterms/mlterms.md) | Terms of service and media terms. Breaching them can cost the user their account, or put another person's copyrighted media in it |
 | **Governing** | [`inatapi`](imported/inaturalist.org/inatapi/inatapi.md) | The API operator's recommended practices. iNaturalist can throttle or block a client that ignores them. Only iNaturalist can grant an exception |
-| **Local: tech** | [`tech`](local/tech/tech.md) | The project's own constraints. Safety invariants outrank convenience |
+| **Local: tech** | [`tech`](local/tech/) | The project's own constraints. Safety invariants outrank convenience |
 | **Local: product** | [`product`](local/product/) | The project's own product requirements |
 | **Advisory** | `go-practice` (absorbed into `tech`; see [`imports.md`](imports.md)), `uuid` (its license; [decisions.uuidAdopted](decisions.md#uuidadopted)) | Loses to a local requirement, and fills in where they say nothing |
 

@@ -7,7 +7,7 @@ is in [`../bindings.md`](../bindings.md).
 | Path | What it holds |
 | --- | --- |
 | [`local/product/`](local/product/) | `package product`: what birdsync does, from a user's point of view |
-| [`local/tech/`](local/tech/tech.md) | `package tech`: constraints on the implementation |
+| [`local/tech/`](local/tech/) | `package tech`: constraints on the implementation |
 | [`imported/`](imported/) | Other parties' terms, pinned, with `PROVENANCE.md` beside each |
 | [`imports.md`](imports.md) | Every imported source, considered source, and its status |
 | [`precedence.md`](precedence.md) | Which source outranks which |

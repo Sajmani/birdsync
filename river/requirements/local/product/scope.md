@@ -89,5 +89,5 @@ Goals: [goals.accountsStaySafe](../../../goals/goals.md#accountsstaysafe)
 
 The programs in `tools/` are not part of the product. They are maintenance
 utilities, are not installed by `go install` of the root package, and carry no
-compatibility promise. They are also read-only ([tech.toolsReadOnly](../tech/tech.md#toolsreadonly)): no tool may alter a user's
+compatibility promise. They are also read-only ([tech.toolsReadOnly](../tech/safety.md#toolsreadonly)): no tool may alter a user's
 account.

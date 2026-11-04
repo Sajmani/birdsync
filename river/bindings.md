@@ -34,7 +34,7 @@ Carried over from specman's project bindings (`spec/tech.md`, *Project bindings*
 | --- | --- |
 | Owner | The repository owner, Sajmani, approves every composed package, accepted gap, and decision |
 | Standing checks | `go build ./...`, `go vet ./...`, `gofmt -l .` (must print nothing), `go test -race ./...`, `river check` |
-| Hard safety constraints | [tech.dryRunGateAtCallSite](requirements/local/tech/tech.md#dryrungateatcallsite), [tech.noLiveServicesInTests](requirements/local/tech/tech.md#noliveservicesintests), [tech.credentialsNeverExposed](requirements/local/tech/tech.md#credentialsneverexposed), [tech.toolsReadOnly](requirements/local/tech/tech.md#toolsreadonly), [tech.neverRunTools](requirements/local/tech/tech.md#neverruntools) |
+| Hard safety constraints | [tech.dryRunGateAtCallSite](requirements/local/tech/safety.md#dryrungateatcallsite), [tech.noLiveServicesInTests](requirements/local/tech/testing.md#noliveservicesintests), [tech.credentialsNeverExposed](requirements/local/tech/safety.md#credentialsneverexposed), [tech.toolsReadOnly](requirements/local/tech/safety.md#toolsreadonly), [tech.neverRunTools](requirements/local/tech/safety.md#neverruntools) |
 | External systems | `api.inaturalist.org` and `cdn.download.ams.birds.cornell.edu` are never contacted from a test. Use `httptest` through the base-URL seams |
 | Subject vocabulary | `Subject:` fields are dotted paths rooted at `build`, `cli`, `http`, `inat`, `log`, `media`, `observation`, or `sync`. The owner adds roots |
 | Source refresh | Imported sources are reviewed when a source changes, and at least once a year. `www.inaturalist.org/pages/*` refuses automated clients, so refreshing those needs a person with a browser |

@@ -22,14 +22,14 @@ wait in [`../proposals.md`](../proposals.md) until the owner decides them.
 Date: 2026-08-09
 Decided by: Sajmani
 Status: accepted
-Affects: [product.dryRunCounterLabels](local/product/reporting.md#dryruncounterlabels), [tech.honestDryRunCounters](local/tech/tech.md#honestdryruncounters)
+Affects: [product.dryRunCounterLabels](local/product/reporting.md#dryruncounterlabels), [tech.honestDryRunCounters](local/tech/safety.md#honestdryruncounters)
 Formerly: CR-001
 
 ### Decided
 
 Option A of three: under `--dryrun` the summary reads `Would create N` and `Would update N`.
 The count stays, because it is useful, but the label no longer claims the work happened.
-Recorded as [product.dryRunCounterLabels](local/product/reporting.md#dryruncounterlabels). [tech.honestDryRunCounters](local/tech/tech.md#honestdryruncounters) stands unamended. The alternatives were to narrow [tech.honestDryRunCounters](local/tech/tech.md#honestdryruncounters) to the
+Recorded as [product.dryRunCounterLabels](local/product/reporting.md#dryruncounterlabels). [tech.honestDryRunCounters](local/tech/safety.md#honestdryruncounters) stands unamended. The alternatives were to narrow [tech.honestDryRunCounters](local/tech/safety.md#honestdryruncounters) to the
 media counters, or to document the false summary.
 
 Migrated from specman's decision log; the full entry, with the evidence and the options considered, is [CR-001 at `dc25e3b`](https://github.com/Sajmani/birdsync/blob/dc25e3b6756bd59c2de931e6d080d47318617da4/spec/decisions.md#cr-001--a-dry-run-reports-observations-it-did-not-create).
@@ -43,14 +43,14 @@ Migrated from specman's decision log; the full entry, with the evidence and the 
 Date: 2026-08-09
 Decided by: Sajmani
 Status: accepted
-Affects: [tech.noLogFatalInLibraries](local/tech/tech.md#nologfatalinlibraries)
+Affects: [tech.noLogFatalInLibraries](local/tech/style.md#nologfatalinlibraries)
 Formerly: CR-002
 
 ### Decided
 
 Option A: fix both `ebird.Records` and `inat.DownloadObservations`. The second gains an
 `error` return and its callers in `tools/` are updated. They are verified by compilation and
-review only, since the tools may not be run. Scoping [tech.noLogFatalInLibraries](local/tech/tech.md#nologfatalinlibraries) to new code was rejected, because a
+review only, since the tools may not be run. Scoping [tech.noLogFatalInLibraries](local/tech/style.md#nologfatalinlibraries) to new code was rejected, because a
 check cannot tell new code from old.
 
 Migrated from specman's decision log; the full entry, with the evidence and the options considered, is [CR-002 at `dc25e3b`](https://github.com/Sajmani/birdsync/blob/dc25e3b6756bd59c2de931e6d080d47318617da4/spec/decisions.md#cr-002--logfatal-in-packages-required-to-return-errors).
@@ -127,13 +127,13 @@ Migrated from specman's decision log; the full entry, with the evidence and the 
 Date: 2026-08-09
 Decided by: Sajmani
 Status: accepted
-Affects: [product.mediaFilename](local/product/media.md#mediafilename), [tech.platformIndependent](local/tech/tech.md#platformindependent)
+Affects: [product.mediaFilename](local/product/media.md#mediafilename), [tech.platformIndependent](local/tech/deps.md#platformindependent)
 Formerly: CR-006
 
 ### Decided
 
 Option A: map known content types to canonical extensions. [product.mediaFilename](local/product/media.md#mediafilename) was amended to name the
-mapping, which makes the filename the same on every platform ([tech.platformIndependent](local/tech/tech.md#platformindependent)). Confirmed against the
+mapping, which makes the filename the same on every platform ([tech.platformIndependent](local/tech/deps.md#platformindependent)). Confirmed against the
 live service for photos. The sound path was accepted as a low residual risk.
 
 Migrated from specman's decision log; the full entry, with the evidence and the options considered, is [CR-006 at `dc25e3b`](https://github.com/Sajmani/birdsync/blob/dc25e3b6756bd59c2de931e6d080d47318617da4/spec/decisions.md#cr-006--uploaded-file-extensions-varied-by-machine).
@@ -147,14 +147,14 @@ Migrated from specman's decision log; the full entry, with the evidence and the 
 Date: 2026-08-09
 Decided by: Sajmani (presumed: the original entry does not name who decided; to be confirmed)
 Status: accepted; decider confirmed by decidersConfirmed
-Affects: [product.descriptionContents](local/product/observations.md#descriptioncontents), [product.additiveMediaResync](local/product/media.md#additivemediaresync), [product.mediaFailuresTolerated](local/product/media.md#mediafailurestolerated), [tech.honestDryRunCounters](local/tech/tech.md#honestdryruncounters)
+Affects: [product.descriptionContents](local/product/observations.md#descriptioncontents), [product.additiveMediaResync](local/product/media.md#additivemediaresync), [product.mediaFailuresTolerated](local/product/media.md#mediafailurestolerated), [tech.honestDryRunCounters](local/tech/safety.md#honestdryruncounters)
 Formerly: CR-007
 
 ### Decided
 
 Option A: build the description from the assets that uploaded, so a failed asset stays
 absent and the next run retries it ([product.additiveMediaResync](local/product/media.md#additivemediaresync)). If none uploaded, the observation is not updated
-and not counted as updated ([tech.honestDryRunCounters](local/tech/tech.md#honestdryruncounters)).
+and not counted as updated ([tech.honestDryRunCounters](local/tech/safety.md#honestdryruncounters)).
 
 Migrated from specman's decision log; the full entry, with the evidence and the options considered, is [CR-007 at `dc25e3b`](https://github.com/Sajmani/birdsync/blob/dc25e3b6756bd59c2de931e6d080d47318617da4/spec/decisions.md#cr-007--a-failed-media-upload-leaves-its-url-in-the-description).
 
@@ -167,7 +167,7 @@ Migrated from specman's decision log; the full entry, with the evidence and the 
 Date: 2026-08-09
 Decided by: Sajmani
 Status: accepted
-Affects: [product.permanentUploadFailureRecorded](local/product/failures.md#permanentuploadfailurerecorded), [product.permanentFailuresReported](local/product/failures.md#permanentfailuresreported), [tech.errorsIncludeBody](local/tech/tech.md#errorsincludebody)
+Affects: [product.permanentUploadFailureRecorded](local/product/failures.md#permanentuploadfailurerecorded), [product.permanentFailuresReported](local/product/failures.md#permanentfailuresreported), [tech.errorsIncludeBody](local/tech/etiquette.md#errorsincludebody)
 Formerly: CR-008
 
 ### Decided
@@ -175,7 +175,7 @@ Formerly: CR-008
 Option B, plus the error-message fix from option A. A 4xx response other than 401, 408, or
 429 is permanent: it is recorded in the description with retry instructions and reported each
 run ([product.permanentUploadFailureRecorded](local/product/failures.md#permanentuploadfailurerecorded), [product.permanentFailuresReported](local/product/failures.md#permanentfailuresreported)). Anything else is transient. Error messages include the response body,
-minus HTML ([tech.errorsIncludeBody](local/tech/tech.md#errorsincludebody)). Download failures stay transient, which is a known limit.
+minus HTML ([tech.errorsIncludeBody](local/tech/etiquette.md#errorsincludebody)). Download failures stay transient, which is a known limit.
 
 Migrated from specman's decision log; the full entry, with the evidence and the options considered, is [CR-008 at `dc25e3b`](https://github.com/Sajmani/birdsync/blob/dc25e3b6756bd59c2de931e6d080d47318617da4/spec/decisions.md#cr-008--a-permanently-rejected-asset-was-retried-forever).
 
@@ -188,7 +188,7 @@ Migrated from specman's decision log; the full entry, with the evidence and the 
 Date: 2026-08-09
 Decided by: Sajmani (presumed: the original entry does not name who decided; to be confirmed)
 Status: accepted; decider confirmed by decidersConfirmed
-Affects: [product.mediaFormats](local/product/media.md#mediaformats), [product.mediaFilename](local/product/media.md#mediafilename), [tech.platformIndependent](local/tech/tech.md#platformindependent)
+Affects: [product.mediaFormats](local/product/media.md#mediaformats), [product.mediaFilename](local/product/media.md#mediafilename), [tech.platformIndependent](local/tech/deps.md#platformindependent)
 Formerly: CR-009
 
 ### Decided
@@ -232,7 +232,7 @@ Migrated from specman's decision log; the full entry, with the evidence and the 
 Date: 2026-08-09
 Decided by: Sajmani (presumed: the original entry does not name who decided; to be confirmed)
 Status: accepted; decider confirmed by decidersConfirmed
-Affects: [product.largeAccounts](local/product/download.md#largeaccounts), [tech.idAbovePaging](local/tech/tech.md#idabovepaging), [product.downloadExistingObservations](local/product/download.md#downloadexistingobservations), [product.noTaxonFilter](local/product/download.md#notaxonfilter)
+Affects: [product.largeAccounts](local/product/download.md#largeaccounts), [tech.idAbovePaging](local/tech/etiquette.md#idabovepaging), [product.downloadExistingObservations](local/product/download.md#downloadexistingobservations), [product.noTaxonFilter](local/product/download.md#notaxonfilter)
 Formerly: CR-011
 
 ### Decided
@@ -328,14 +328,14 @@ reopens on a counter-example in which birdsync itself could have told.
 Date: 2026-08-09
 Decided by: Sajmani
 Status: accepted
-Affects: [tech.neverRunMutatingTools](local/tech/tech.md#neverrunmutatingtools), [tech.toolsReadOnly](local/tech/tech.md#toolsreadonly), [tech.neverRunTools](local/tech/tech.md#neverruntools)
+Affects: [tech.neverRunMutatingTools](local/tech/safety.md#neverrunmutatingtools), [tech.toolsReadOnly](local/tech/safety.md#toolsreadonly), [tech.neverRunTools](local/tech/safety.md#neverruntools)
 Formerly: T-011 withdrawal note
 
 ### Decided
 
 The mutating tools were deleted rather than governed by a rule nobody could check, in commit
 [`cca3255`](https://github.com/Sajmani/birdsync/commit/cca3255) ("Delete the mutating tools; enforce that tools/ stays read-only").
-[tech.toolsReadOnly](local/tech/tech.md#toolsreadonly) and [tech.neverRunTools](local/tech/tech.md#neverruntools) replace [tech.neverRunMutatingTools](local/tech/tech.md#neverrunmutatingtools). specman recorded
+[tech.toolsReadOnly](local/tech/safety.md#toolsreadonly) and [tech.neverRunTools](local/tech/safety.md#neverruntools) replace [tech.neverRunMutatingTools](local/tech/safety.md#neverrunmutatingtools). specman recorded
 the withdrawal only as a `Status:` line on `T-011`; this entry was written on 2026-11-04, when
 the owner confirmed it, and is dated by the commit that made the change.
 
@@ -381,7 +381,7 @@ each. Those entries are otherwise unchanged, as `decisions.md` is append-only.
 Date: 2026-11-04
 Decided by: Sajmani
 Status: accepted
-Affects: [tech.oneExternalDependency](local/tech/tech.md#oneexternaldependency)
+Affects: [tech.oneExternalDependency](local/tech/deps.md#oneexternaldependency)
 
 ### Decided
 

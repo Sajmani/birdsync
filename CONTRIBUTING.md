@@ -11,7 +11,7 @@ birdsync must do, and the constraints the code has to satisfy, are written down 
 | How to run the tool | [README.md](README.md) |
 | How the code is put together | [docs/arch.md](docs/arch.md) |
 | What it must do, and why | [river/requirements/local/product/](river/requirements/local/product/) |
-| Constraints on the implementation | [river/requirements/local/tech/](river/requirements/local/tech/tech.md) |
+| Constraints on the implementation | [river/requirements/local/tech/](river/requirements/local/tech/) |
 | How a change travels from requirement to code | River's method, in [.agents/skills/river/](.agents/skills/river/SKILL.md) |
 
 ## Getting set up
@@ -106,7 +106,7 @@ doesn't arise there.
 ## Code style
 
 Standard Go, written out as `tech.gofmtClean` through `tech.commentsExplainWhy` in
-[river/requirements/local/tech/](river/requirements/local/tech/tech.md). The short
+[river/requirements/local/tech/](river/requirements/local/tech/). The short
 version: `gofmt` decides formatting; wrap errors with the calling function's name
 (`fmt.Errorf("DownloadMLAsset(%s): %w", id, err)`); keep `log.Fatal` out of `ebird` and
 `inat`; send progress to `log.Printf` and detail to `debugf`.

@@ -16,7 +16,7 @@ are not criteria here: conformance.md lists them as project checks.
 **Everything builds**
 
 Formerly: AC-001
-Covers: [tech.singleModule](../../../local/tech/tech.md#singlemodule), [tech.platformIndependent](../../../local/tech/tech.md#platformindependent), [product.toolsNotProduct](../../../local/product/scope.md#toolsnotproduct)
+Covers: [tech.singleModule](../../../local/tech/deps.md#singlemodule), [tech.platformIndependent](../../../local/tech/deps.md#platformindependent), [product.toolsNotProduct](../../../local/product/scope.md#toolsnotproduct)
 
 `go build ./...` compiles every package, including `tools/`.
 
@@ -27,7 +27,7 @@ Limit: partial for platform independence: one OS.
 **go vet is clean**
 
 Formerly: AC-002
-Covers: [tech.vetClean](../../../local/tech/tech.md#vetclean)
+Covers: [tech.vetClean](../../../local/tech/style.md#vetclean)
 
 `go vet ./...` reports nothing.
 
@@ -36,7 +36,7 @@ Covers: [tech.vetClean](../../../local/tech/tech.md#vetclean)
 **Code is gofmt'd**
 
 Formerly: AC-003
-Covers: [tech.gofmtClean](../../../local/tech/tech.md#gofmtclean)
+Covers: [tech.gofmtClean](../../../local/tech/style.md#gofmtclean)
 
 `gofmt -l .` prints nothing.
 
@@ -45,7 +45,7 @@ Covers: [tech.gofmtClean](../../../local/tech/tech.md#gofmtclean)
 **The suite passes under the race detector**
 
 Formerly: AC-004
-Covers: [tech.ciStandingChecks](../../../local/tech/tech.md#cistandingchecks)
+Covers: [tech.ciStandingChecks](../../../local/tech/ci.md#cistandingchecks)
 
 `go test -race ./...` passes with no network and no live accounts.
 
@@ -56,7 +56,7 @@ Limit: runs every criterion below.
 **No test names a live service host**
 
 Formerly: AC-005
-Covers: [tech.noLiveServicesInTests](../../../local/tech/tech.md#noliveservicesintests)
+Covers: [tech.noLiveServicesInTests](../../../local/tech/testing.md#noliveservicesintests)
 
 No `_test.go` file contains the iNaturalist API host or the Macaulay Library CDN host.
 
@@ -67,7 +67,7 @@ Limit: a substring scan; a host assembled from parts escapes it.
 **A dry run issues no writes**
 
 Formerly: AC-006
-Covers: [product.dryRunNoWrites](../../../local/product/dryrun.md#dryrunnowrites), [tech.dryRunGateAtCallSite](../../../local/tech/tech.md#dryrungateatcallsite), [tech.clientInterfaces](../../../local/tech/tech.md#clientinterfaces)
+Covers: [product.dryRunNoWrites](../../../local/product/dryrun.md#dryrunnowrites), [tech.dryRunGateAtCallSite](../../../local/tech/safety.md#dryrungateatcallsite), [tech.clientInterfaces](../../../local/tech/testing.md#clientinterfaces)
 
 A `--dryrun` sync through a recording fake makes no create, update, or upload call, while reads still happen.
 
@@ -76,7 +76,7 @@ A `--dryrun` sync through a recording fake makes no create, update, or upload ca
 **A created observation carries the sync key and observation fields**
 
 Formerly: AC-007 (part)
-Covers: [product.syncKey](../../../local/product/identity.md#synckey), [product.observationFieldMapping](../../../local/product/observations.md#observationfieldmapping), [tech.clientInterfaces](../../../local/tech/tech.md#clientinterfaces)
+Covers: [product.syncKey](../../../local/product/identity.md#synckey), [product.observationFieldMapping](../../../local/product/observations.md#observationfieldmapping), [tech.clientInterfaces](../../../local/tech/testing.md#clientinterfaces)
 
 A sync through a recording fake creates an observation whose sync-key fields and copied eBird observation fields have the required IDs and values.
 
@@ -105,7 +105,7 @@ The created description carries the attribution, details, checklist URL, and pro
 **Updating an observation keeps its photos**
 
 Formerly: AC-008
-Covers: [tech.updateKeepsPhotos](../../../local/tech/tech.md#updatekeepsphotos), [product.descriptionUpdateKeepsMedia](../../../local/product/media.md#descriptionupdatekeepsmedia)
+Covers: [tech.updateKeepsPhotos](../../../local/tech/safety.md#updatekeepsphotos), [product.descriptionUpdateKeepsMedia](../../../local/product/media.md#descriptionupdatekeepsmedia)
 
 `UpdateObservation` against an `httptest` server sends `ignore_photos` set, and the updated description.
 
@@ -114,7 +114,7 @@ Covers: [tech.updateKeepsPhotos](../../../local/tech/tech.md#updatekeepsphotos),
 **API requests carry the birdsync User-Agent**
 
 Formerly: AC-009
-Covers: [tech.userAgent](../../../local/tech/tech.md#useragent)
+Covers: [tech.userAgent](../../../local/tech/etiquette.md#useragent)
 
 A request from `inat.Client` carries the birdsync `User-Agent`.
 
@@ -123,7 +123,7 @@ A request from `inat.Client` carries the birdsync `User-Agent`.
 **The download requests the maximum page size**
 
 Formerly: AC-010
-Covers: [tech.maxPageSize](../../../local/tech/tech.md#maxpagesize), [product.downloadExistingObservations](../../../local/product/download.md#downloadexistingobservations), [tech.baseURLSeams](../../../local/tech/tech.md#baseurlseams)
+Covers: [tech.maxPageSize](../../../local/tech/etiquette.md#maxpagesize), [product.downloadExistingObservations](../../../local/product/download.md#downloadexistingobservations), [tech.baseURLSeams](../../../local/tech/testing.md#baseurlseams)
 
 `DownloadObservations` against an `httptest` server requests `per_page=200` and returns every observation served.
 
@@ -159,7 +159,7 @@ Assets added to an already-synced checklist are uploaded on the next run.
 **Fuzzy matching works with both eBird date formats**
 
 Formerly: AC-014
-Covers: [product.fuzzyParsedDates](../../../local/product/filtering.md#fuzzyparseddates), [tech.datesViaObserved](../../../local/tech/tech.md#datesviaobserved), [product.fuzzyMatching](../../../local/product/filtering.md#fuzzymatching)
+Covers: [product.fuzzyParsedDates](../../../local/product/filtering.md#fuzzyparseddates), [tech.datesViaObserved](../../../local/tech/formats.md#datesviaobserved), [product.fuzzyMatching](../../../local/product/filtering.md#fuzzymatching)
 
 Fuzzy matching skips a record whose date is written in either eBird format.
 
@@ -168,7 +168,7 @@ Fuzzy matching skips a record whose date is written in either eBird format.
 **Fuzzy matching ignores empty names**
 
 Formerly: AC-015
-Covers: [product.fuzzyNeverEmptyName](../../../local/product/filtering.md#fuzzyneveremptyname), [tech.emptyNameNotIndexed](../../../local/tech/tech.md#emptynamenotindexed)
+Covers: [product.fuzzyNeverEmptyName](../../../local/product/filtering.md#fuzzyneveremptyname), [tech.emptyNameNotIndexed](../../../local/tech/formats.md#emptynamenotindexed)
 
 An existing observation with an empty name never fuzzy-matches a record.
 
@@ -197,7 +197,7 @@ Assets removed from eBird, and count mismatches, are reported and not corrected.
 **Macaulay Library assets download as photo or sound**
 
 Formerly: AC-018
-Covers: [product.mediaFormats](../../../local/product/media.md#mediaformats), [product.photoThenSoundFallback](../../../local/product/media.md#photothensoundfallback), [tech.assetTypeNeedsDownload](../../../local/tech/tech.md#assettypeneedsdownload), [tech.baseURLSeams](../../../local/tech/tech.md#baseurlseams)
+Covers: [product.mediaFormats](../../../local/product/media.md#mediaformats), [product.photoThenSoundFallback](../../../local/product/media.md#photothensoundfallback), [tech.assetTypeNeedsDownload](../../../local/tech/formats.md#assettypeneedsdownload), [tech.baseURLSeams](../../../local/tech/testing.md#baseurlseams)
 
 Against an `httptest` server, an asset downloads from the 2400px photo URL, or from the MP3 URL when the photo URL returns 404.
 
@@ -206,7 +206,7 @@ Against an `httptest` server, an asset downloads from the 2400px photo URL, or f
 **eBird dates parse in both formats**
 
 Formerly: AC-019
-Covers: [tech.datesViaObserved](../../../local/tech/tech.md#datesviaobserved)
+Covers: [tech.datesViaObserved](../../../local/tech/formats.md#datesviaobserved)
 
 `Record.Observed()` parses both eBird date formats, with and without a time.
 
@@ -215,7 +215,7 @@ Covers: [tech.datesViaObserved](../../../local/tech/tech.md#datesviaobserved)
 **The CSV is read by header name**
 
 Formerly: AC-020
-Covers: [tech.csvByHeaderName](../../../local/tech/tech.md#csvbyheadername), [product.csvExportInput](../../../local/product/scope.md#csvexportinput)
+Covers: [tech.csvByHeaderName](../../../local/tech/formats.md#csvbyheadername), [product.csvExportInput](../../../local/product/scope.md#csvexportinput)
 
 `ebird.Records` reads fields by header name from a file whose columns vary.
 
@@ -237,7 +237,7 @@ Limit: partial for the taxon not being in the key.
 **CI runs the standing checks on push and pull request**
 
 Formerly: AC-022
-Covers: [tech.ciStandingChecks](../../../local/tech/tech.md#cistandingchecks), [tech.ciLatestStable](../../../local/tech/tech.md#cilateststable)
+Covers: [tech.ciStandingChecks](../../../local/tech/ci.md#cistandingchecks), [tech.ciLatestStable](../../../local/tech/ci.md#cilateststable)
 
 `.github/workflows/ci.yml` runs build, vet, gofmt, and the race-enabled suite on every push to main and every pull request, plus a non-blocking latest-stable job.
 
@@ -246,7 +246,7 @@ Covers: [tech.ciStandingChecks](../../../local/tech/tech.md#cistandingchecks), [
 **The summary labels and conditional lines are right**
 
 Formerly: AC-023
-Covers: [product.dryRunCounterLabels](../../../local/product/reporting.md#dryruncounterlabels), [tech.honestDryRunCounters](../../../local/tech/tech.md#honestdryruncounters), [product.endOfRunSummary](../../../local/product/reporting.md#endofrunsummary), [product.conditionalSkipCounters](../../../local/product/reporting.md#conditionalskipcounters), [product.conditionalFailureCount](../../../local/product/reporting.md#conditionalfailurecount)
+Covers: [product.dryRunCounterLabels](../../../local/product/reporting.md#dryruncounterlabels), [tech.honestDryRunCounters](../../../local/tech/safety.md#honestdryruncounters), [product.endOfRunSummary](../../../local/product/reporting.md#endofrunsummary), [product.conditionalSkipCounters](../../../local/product/reporting.md#conditionalskipcounters), [product.conditionalFailureCount](../../../local/product/reporting.md#conditionalfailurecount)
 
 The summary says `Would create` and `Would update` under `--dryrun`, and the real labels otherwise. A counter line appears only when its flag is in effect, and the failure line only when non-zero.
 
@@ -273,7 +273,7 @@ Records with an unparseable date, time, latitude, or longitude are skipped, logg
 **Temporary media files are removed after upload**
 
 Formerly: AC-026
-Covers: [tech.tempFilesDeleted](../../../local/tech/tech.md#tempfilesdeleted)
+Covers: [tech.tempFilesDeleted](../../../local/tech/resources.md#tempfilesdeleted)
 
 After a sync no downloaded media file remains in the temp directory.
 
@@ -282,7 +282,7 @@ After a sync no downloaded media file remains in the temp directory.
 **Library packages never exit**
 
 Formerly: AC-027
-Covers: [tech.noLogFatalInLibraries](../../../local/tech/tech.md#nologfatalinlibraries)
+Covers: [tech.noLogFatalInLibraries](../../../local/tech/style.md#nologfatalinlibraries)
 
 No non-main package in the module calls `log.Fatal` or `os.Exit`.
 
@@ -291,7 +291,7 @@ No non-main package in the module calls `log.Fatal` or `os.Exit`.
 **tools/ is read-only**
 
 Formerly: AC-028
-Covers: [tech.toolsReadOnly](../../../local/tech/tech.md#toolsreadonly), [product.toolsNotProduct](../../../local/product/scope.md#toolsnotproduct)
+Covers: [tech.toolsReadOnly](../../../local/tech/safety.md#toolsreadonly), [product.toolsNotProduct](../../../local/product/scope.md#toolsnotproduct)
 
 No program under `tools/` calls a mutating `inat.Client` method.
 
@@ -300,7 +300,7 @@ No program under `tools/` calls a mutating `inat.Client` method.
 **File extensions are canonical on every platform**
 
 Formerly: AC-029
-Covers: [product.mediaFormats](../../../local/product/media.md#mediaformats), [product.mediaFilename](../../../local/product/media.md#mediafilename), [tech.platformIndependent](../../../local/tech/tech.md#platformindependent)
+Covers: [product.mediaFormats](../../../local/product/media.md#mediaformats), [product.mediaFilename](../../../local/product/media.md#mediafilename), [tech.platformIndependent](../../../local/tech/deps.md#platformindependent)
 
 Known content types, including the CDN's `audio/mpeg3`, map to `.jpg`, `.png`, `.mp3`, or `.wav`, and an unknown type falls back by endpoint.
 
@@ -309,7 +309,7 @@ Known content types, including the CDN's `audio/mpeg3`, map to `.jpg`, `.png`, `
 **A failed upload is retried on the next run**
 
 Formerly: AC-030
-Covers: [product.descriptionContents](../../../local/product/observations.md#descriptioncontents), [product.additiveMediaResync](../../../local/product/media.md#additivemediaresync), [product.mediaFailuresTolerated](../../../local/product/media.md#mediafailurestolerated), [tech.honestDryRunCounters](../../../local/tech/tech.md#honestdryruncounters)
+Covers: [product.descriptionContents](../../../local/product/observations.md#descriptioncontents), [product.additiveMediaResync](../../../local/product/media.md#additivemediaresync), [product.mediaFailuresTolerated](../../../local/product/media.md#mediafailurestolerated), [tech.honestDryRunCounters](../../../local/tech/safety.md#honestdryruncounters)
 
 Across two runs, an asset whose upload failed is absent from the first description and uploaded on the second. If every upload fails, no update is made or counted.
 
@@ -327,7 +327,7 @@ A permanently refused upload is recorded and not retried, a transient one is ret
 **API errors carry the response body**
 
 Formerly: AC-032
-Covers: [tech.errorsIncludeBody](../../../local/tech/tech.md#errorsincludebody)
+Covers: [tech.errorsIncludeBody](../../../local/tech/etiquette.md#errorsincludebody)
 
 A non-200 response's error includes the body, truncated and on one line, and drops an HTML body.
 
@@ -345,7 +345,7 @@ An asset recorded as permanently failed is reported and not counted as attached 
 **The download pages by id_above past 10,000 results**
 
 Formerly: AC-034
-Covers: [product.largeAccounts](../../../local/product/download.md#largeaccounts), [tech.idAbovePaging](../../../local/tech/tech.md#idabovepaging)
+Covers: [product.largeAccounts](../../../local/product/download.md#largeaccounts), [tech.idAbovePaging](../../../local/tech/etiquette.md#idabovepaging)
 
 Against a fake honoring `per_page`, the download pages by `id_above` and errors when the cursor fails to advance.
 
@@ -354,7 +354,7 @@ Against a fake honoring `per_page`, the download pages by `id_above` and errors 
 **Requests are paced**
 
 Formerly: AC-035
-Covers: [tech.requestPacing](../../../local/tech/tech.md#requestpacing)
+Covers: [tech.requestPacing](../../../local/tech/etiquette.md#requestpacing)
 
 Consecutive requests from one client are spaced by at least the minimum interval, and the default interval matches one per second.
 
@@ -385,7 +385,7 @@ Limit: human review.
 **A failed download leaves no temp file**
 
 Formerly: AC-038
-Covers: [tech.tempFilesDeleted](../../../local/tech/tech.md#tempfilesdeleted)
+Covers: [tech.tempFilesDeleted](../../../local/tech/resources.md#tempfilesdeleted)
 
 A truncated download leaves nothing in the temp directory.
 
@@ -394,6 +394,6 @@ A truncated download leaves nothing in the temp directory.
 **Prose is American English and quotations are untouched**
 
 Formerly: AC-041
-Covers: [tech.americanSpelling](../../../local/tech/tech.md#americanspelling), [tech.quotationsNeverRespelled](../../../local/tech/tech.md#quotationsneverrespelled)
+Covers: [tech.americanSpelling](../../../local/tech/style.md#americanspelling), [tech.quotationsNeverRespelled](../../../local/tech/style.md#quotationsneverrespelled)
 
 No Markdown or Go file outside vendored documents uses a listed British spelling, and blockquotes and vendored documents are never flagged.
