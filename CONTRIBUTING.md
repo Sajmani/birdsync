@@ -4,15 +4,15 @@ Thanks for your interest in improving birdsync. Bug reports and pull requests ar
 
 This file covers the mechanics: setup, the checks to run, and how to test safely. What
 birdsync must do, and the constraints the code has to satisfy, are written down in
-[spec/](spec/) — those are normative, and where this file disagrees with them, they win.
+[river/](river/) — those are normative, and where this file disagrees with them, they win.
 
 | If you want to know | Read |
 | --- | --- |
 | How to run the tool | [README.md](README.md) |
-| How the code is put together | [spec/arch.md](spec/arch.md) |
-| What it must do, and why | [spec/product.md](spec/product.md) |
-| Constraints on the implementation | [spec/tech.md](spec/tech.md) |
-| How a change travels from requirement to code | [spec/process.md](spec/process.md) |
+| How the code is put together | [docs/arch.md](docs/arch.md) |
+| What it must do, and why | [river/requirements/local/product/](river/requirements/local/product/product.md) |
+| Constraints on the implementation | [river/requirements/local/tech/](river/requirements/local/tech/tech.md) |
+| How a change travels from requirement to code | River's method, in [.agents/skills/river/](.agents/skills/river/SKILL.md) |
 
 ## Getting set up
 
@@ -43,16 +43,20 @@ go test -race ./...
 ```
 
 CI runs the same four on every pull request, plus a non-blocking job against the latest
-stable Go as an early warning.
+stable Go as an early warning, and `river check`, which checks the requirements in `river/`.
+To run that locally, build the `river` CLI from River's repository at the pin recorded in
+[.agents/skills/PROVENANCE.md](.agents/skills/PROVENANCE.md) and run `river check` from the
+repository root.
 
-If your change alters behavior, it also needs a matching edit to
-[spec/product.md](spec/product.md), and to [README.md](README.md) when it changes what gets
+If your change alters behavior, it also needs a matching edit to the requirements in
+[river/requirements/local/](river/requirements/local/), recomposed into
+`river/requirements/composed/` and approved by the owner, and to [README.md](README.md) when it changes what gets
 written to iNaturalist or which observations are skipped. The README documents flag defaults
 and skip order, and has drifted from the code before.
 
 ## Testing
 
-**Tests must never make live API calls** (`spec/tech.md` T-010). They must not contact
+**Tests must never make live API calls** (`tech.noLiveServicesInTests`). They must not contact
 `api.inaturalist.org` or the Macaulay Library, and they must not depend on anyone's real
 observations. Two seams exist for this, and one of them will fit whatever you're testing:
 
@@ -90,7 +94,7 @@ if dryRun {
 }
 ```
 
-The rules are `spec/tech.md` T-005 through T-008; in short, gate at the call site inside
+The rules are `tech.dryRunGateAtCallSite` through `tech.clientMutatesUnconditionally`; in short, gate at the call site inside
 `birdsync()` rather than in the client (`tools/` shares it), prefix the log line with
 `DRYRUN:` because the README tells users to grep for it, and don't let the counters report
 work that didn't happen. The gates are in `birdsync()`, around `UploadMedia`,
@@ -101,7 +105,8 @@ doesn't arise there.
 
 ## Code style
 
-Standard Go, written out as T-024 through T-029 in [spec/tech.md](spec/tech.md). The short
+Standard Go, written out as `tech.gofmtClean` through `tech.commentsExplainWhy` in
+[river/requirements/local/tech/](river/requirements/local/tech/tech.md). The short
 version: `gofmt` decides formatting; wrap errors with the calling function's name
 (`fmt.Errorf("DownloadMLAsset(%s): %w", id, err)`); keep `log.Fatal` out of `ebird` and
 `inat`; send progress to `log.Printf` and detail to `debugf`.
@@ -128,7 +133,7 @@ end to end. Please be careful:
   <https://www.inaturalist.org/users/api_token> expires every 24 hours.
 
 `tools/` holds only `dump`, which is read-only, and a check enforces that anything added
-there stays that way (T-032 in [spec/tech.md](spec/tech.md)). Please don't add a tool that
+there stays that way (`tech.toolsReadOnly`). Please don't add a tool that
 writes: the ones that used to live there were guarded by a `debug` constant that was easy
 to get wrong, and one of them shipped deleting for real.
 

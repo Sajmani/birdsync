@@ -21,7 +21,7 @@ One run does the following:
 2. **Download existing observations.** Fetch the user's iNaturalist observations into memory,
    200 per page, restricted only to the `--after`/`--before` date window when set
    (`inat.Client.DownloadObservations`). Deliberately not filtered by taxon:
-   see CR-003 in [decisions.md](decisions.md).
+   see [`noTaxonFilterOnDownload`](../river/requirements/decisions.md#notaxonfilterondownload) (formerly CR-003).
 3. **Build two indexes** over those observations, at the top of `birdsync()`:
    - `previouslySynced`, keyed by `ebird.ObservationID` — the pair of eBird observation-field
      values that identifies a birdsync-created observation.
@@ -128,12 +128,12 @@ them as JSON. It is *not* imported by birdsync, and `go install
 github.com/Sajmani/birdsync@latest` doesn't install it (though `go install ./...` from a
 clone does). Run it with `go run ./tools/dump`.
 
-`tools/` is read-only by construction, enforced by `TestToolsAreReadOnly` (T-032). It used
+`tools/` is read-only by construction, enforced by `TestToolsAreReadOnly` (`tech.toolsReadOnly`, formerly T-032). It used
 to hold six more programs that created, updated, and deleted real observations, guarded
 only by a `debug` constant at the top of each file — `purge` shipped with its guard off,
 deleting for real. Four of them (`dedupe`, `repair`, `position`, `purge`) were one-time
 cleanups for defects that have since been fixed, `poke` was a token smoke test, and
-`taxonfilter` answered CR-003. All were deleted; the history has them if one is needed
+`taxonfilter` answered CR-003 (now `noTaxonFilterOnDownload`). All were deleted; the history has them if one is needed
 again.
 
 Deleting them turned a rule people had to remember into a property a check can enforce,
@@ -154,14 +154,14 @@ which is the trade this repository prefers wherever it is available.
 
 The fakes in `birdsync_test.go` record every mutating call they receive. That is what makes
 `--dryrun` checkable directly — asserting that nothing was written, rather than inferring it
-from counters, which is how the bug in CR-001 survived.
+from counters, which is how the bug in CR-001 (now `dryRunCountersRelabeled`) survived.
 
 `inat.Client.UploadMedia` has no test — the multipart request it builds is only exercised
 through the mock in `birdsync_test.go`. It's the largest untested surface here, and the only
 place binary data is written to a user's account.
 
-`spec/acceptance.md` maps each requirement to the check that verifies it, and lists the ones
-with no check.
+[`river/conformance.md`](../river/conformance.md) maps each acceptance criterion to the tests
+that implement it, and counts the requirements with no criterion.
 
 Two things make this work: the client interfaces in `glue.go`, and base-URL parameters that let
 a test server stand in for the real service — `inat.NewClient` takes one, and the exported

@@ -228,7 +228,7 @@ go test ./...
 The tests use fake eBird and iNaturalist clients and local HTTP test servers, so they don't
 touch the network or your real observations.
 
-[CONTRIBUTING.md](CONTRIBUTING.md) covers the contributor workflow, and [spec/](spec/) holds the
-design: [spec/arch.md](spec/arch.md) describes how the code is put together, and
-[spec/process.md](spec/process.md) describes how changes are meant to be specified, checked, and
-implemented.
+[CONTRIBUTING.md](CONTRIBUTING.md) covers the contributor workflow,
+[docs/arch.md](docs/arch.md) describes how the code is put together, and [river/](river/) holds
+the requirements and acceptance criteria, kept with [River](.agents/skills/river/SKILL.md), which
+describes how changes are specified, checked, and implemented.

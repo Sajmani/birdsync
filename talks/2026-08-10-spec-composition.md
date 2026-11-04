@@ -75,7 +75,7 @@ requirement had to change*. And that dark gray on my *original* blue would have 
 **1.65:1** — so no single edit fixes it either. The resolution only exists in the composition
 too.
 
-**Show:** [the four tiers, as specified](https://github.com/Sajmani/birdsync/blob/main/spec/process.md#sources-and-composition)
+**Show:** [the four tiers, as specified](https://github.com/Sajmani/birdsync/blob/dc25e3b6756bd59c2de931e6d080d47318617da4/spec/process.md#sources-and-composition)
 
 ---
 
@@ -91,7 +91,7 @@ What I never did was write any of it down.
 The first step wasn't to write new requirements. It was to **recover the ones already implicit**
 in the code, the README, and the command-line help, and write them down with identifiers.
 
-**Show:** [spec/product.md](https://github.com/Sajmani/birdsync/blob/main/spec/product.md)
+**Show:** [spec/product.md](https://github.com/Sajmani/birdsync/blob/dc25e3b6756bd59c2de931e6d080d47318617da4/spec/product.md)
 — 68 product requirements, reverse-engineered from a tool that already worked.
 
 **Say:** Each one is individually testable, and each says *why*. That "why" earns its keep
@@ -111,7 +111,7 @@ guarantee you rely on before pointing a tool at your own data. It had a test.
 
 I changed the code so `--dryrun` wrote to the live account. **The test stayed green.**
 
-**Show:** [Criteria that do not bite](https://github.com/Sajmani/birdsync/blob/main/spec/acceptance.md#criteria-that-do-not-bite)
+**Show:** [Criteria that do not bite](https://github.com/Sajmani/birdsync/blob/dc25e3b6756bd59c2de931e6d080d47318617da4/spec/acceptance.md#criteria-that-do-not-bite)
 
 **Say:** It only ever inspected counters — and the counters were incremented outside the
 safety gate. The fake clients discarded everything handed to them, so nothing *could* observe
@@ -125,7 +125,7 @@ checkable at all. That's `AC-006`, and it's why I now believe `--dryrun` rather 
 **Say:** Only then did we go looking for the rules I hadn't written. Four sources, each with a
 tier, an owner, and a scope.
 
-**Show:** [spec/sources.md](https://github.com/Sajmani/birdsync/blob/main/spec/sources.md)
+**Show:** [spec/sources.md](https://github.com/Sajmani/birdsync/blob/dc25e3b6756bd59c2de931e6d080d47318617da4/spec/sources.md)
 
 - **eBird / Macaulay Library** — *mandatory*. birdsync downloads my photos from the Macaulay
   Library and re-uploads them to iNaturalist. Is that allowed? I had never asked it in those
@@ -136,7 +136,7 @@ tier, an owner, and a scope.
 - **Go practice** — *advisory*, so my local rules beat it.
 
 **Say:** Two details worth pausing on. **Rejected sources are recorded too** —
-[considered and not adopted](https://github.com/Sajmani/birdsync/blob/main/spec/sources.md#considered-and-not-adopted),
+[considered and not adopted](https://github.com/Sajmani/birdsync/blob/dc25e3b6756bd59c2de931e6d080d47318617da4/spec/sources.md#considered-and-not-adopted),
 so "we're not subject to GDPR, and here's why" isn't re-litigated every year. And each source
 is **vendored and hashed** — because until now there was no way to notice that a document I'd
 read once had since changed.
@@ -193,7 +193,7 @@ grounds for immediate suspension:
 birdsync is a machine that posts observations. The penalty falls on **the user's account**,
 not on mine.
 
-**Show:** [CR-012](https://github.com/Sajmani/birdsync/blob/main/spec/decisions.md#cr-012--is-birdsync-machine-generated-content)
+**Show:** [CR-012](https://github.com/Sajmani/birdsync/blob/dc25e3b6756bd59c2de931e6d080d47318617da4/spec/decisions.md#cr-012--is-birdsync-machine-generated-content)
 
 **Say:** I had thought about this one too, back at the start. What I couldn't produce on my
 own was the answer's *durability*. We resolved it by fetching the definition page that rule
@@ -245,7 +245,7 @@ concrete changes, each traceable to a rule I had read once and half-remembered.
 | `T-036` `id_above` paging | `AC-034` — no `page` parameter; the cursor must advance | Rewrote the download loop; birdsync now works for accounts over 10,000 observations |
 | `P-067`, `P-068` user obligations | `AC-037` — human review | A new [README section](https://github.com/Sajmani/birdsync/blob/main/README.md#being-a-good-inaturalist-citizen) telling users to review what was created and to answer identifiers |
 
-**Show:** [the traceability table](https://github.com/Sajmani/birdsync/blob/main/spec/acceptance.md#traceability)
+**Show:** [the traceability table](https://github.com/Sajmani/birdsync/blob/dc25e3b6756bd59c2de931e6d080d47318617da4/spec/acceptance.md#traceability)
 
 **Say:** Every requirement and what verifies it — including the ones with nothing verifying
 them, listed as gaps rather than quietly omitted.
@@ -254,7 +254,7 @@ them, listed as gaps rather than quietly omitted.
 artifacts here — legal text, transcribed by an agent — so a test checks that every quoted
 passage still appears in the vendored document.
 
-**Show:** [`TestTranscribedQuotesAppearInSources`](https://github.com/Sajmani/birdsync/blob/main/guard_test.go#L238-L262)
+**Show:** [`TestTranscribedQuotesAppearInSources`](https://github.com/Sajmani/birdsync/blob/main/guard_test.go#L231-L256)
 
 **Say:** All 29 passages. It immediately caught two places where the transcription had
 *improved* the text it was quoting — swapped quotation marks, and two bullet points joined
@@ -293,7 +293,7 @@ value came from something other than reality.
 scripts, and those carried iNaturalist's Google Maps API key into a public repo, where secret
 scanning found it.
 
-**Show:** [the revision log](https://github.com/Sajmani/birdsync/blob/main/spec/process.md#revising-this-process)
+**Show:** [the revision log](https://github.com/Sajmani/birdsync/blob/dc25e3b6756bd59c2de931e6d080d47318617da4/spec/process.md#revising-this-process)
 
 **Say:** Ten entries, all from this work. Every one is a real incident that changed the
 method. That's the honest status: it is being written by being used, and it is not finished.
@@ -317,10 +317,10 @@ You need both.
 
 | Question | Where |
 | --- | --- |
-| What does a resolution record contain? | [CR-011](https://github.com/Sajmani/birdsync/blob/main/spec/decisions.md#cr-011--the-download-cannot-page-past-10000-results) |
-| What is still open? | [Open work](https://github.com/Sajmani/birdsync/blob/main/spec/decisions.md#open-work-as-of-2026-08-09) |
-| How complete is coverage? | ~60 of 100 requirements have an automated check; gaps are [named](https://github.com/Sajmani/birdsync/blob/main/spec/acceptance.md#gaps-worth-naming) |
-| Is the method reusable? | [process.md](https://github.com/Sajmani/birdsync/blob/main/spec/process.md) is project-independent; per-project detail is confined to [bindings](https://github.com/Sajmani/birdsync/blob/main/spec/tech.md#project-bindings) |
+| What does a resolution record contain? | [CR-011](https://github.com/Sajmani/birdsync/blob/dc25e3b6756bd59c2de931e6d080d47318617da4/spec/decisions.md#cr-011--the-download-cannot-page-past-10000-results) |
+| What is still open? | [Open work](https://github.com/Sajmani/birdsync/blob/dc25e3b6756bd59c2de931e6d080d47318617da4/spec/decisions.md#open-work-as-of-2026-08-09) |
+| How complete is coverage? | ~60 of 100 requirements have an automated check; gaps are [named](https://github.com/Sajmani/birdsync/blob/dc25e3b6756bd59c2de931e6d080d47318617da4/spec/acceptance.md#gaps-worth-naming) |
+| Is the method reusable? | [process.md](https://github.com/Sajmani/birdsync/blob/dc25e3b6756bd59c2de931e6d080d47318617da4/spec/process.md) is project-independent; per-project detail is confined to [bindings](https://github.com/Sajmani/birdsync/blob/dc25e3b6756bd59c2de931e6d080d47318617da4/spec/tech.md#project-bindings) |
 | Why not just ask a lawyer? | The transcriptions say plainly they are not legal advice. The value is knowing *which* questions need one |
 | What did resolving CR-012 cost? | Two web fetches, one forum thread, one human with a browser |
 | Where did the color numbers come from? | Sampled from `talks/sdd-example.png` (`#EEEEEE` on `#0000FF`, then on `#9FC5E8`, then `#2B2B2B` on `#9FC5E8`) and computed with the WCAG relative-luminance formula. Recompute if the slide is edited |
