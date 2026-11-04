@@ -128,8 +128,6 @@ func resetFlags() {
 
 // TestBirdsync exercises the full skip order against one set of records:
 // every rule fires exactly once.
-//
-// Verifies: P-020, P-026, P-027, P-028, P-030, P-031.
 func TestBirdsync(t *testing.T) {
 	origDebug := debug
 	debug = true
@@ -279,7 +277,6 @@ func TestBirdsync(t *testing.T) {
 	}
 }
 
-// Verifies: P-047.
 func TestUpdateMedia(t *testing.T) {
 	origDebug := debug
 	debug = true
@@ -472,8 +469,6 @@ func TestDryRunMediaCount(t *testing.T) {
 // rests on: a dry run may read, but must not create, update, or upload
 // anything. The counters are deliberately not consulted here — they are a
 // separate claim, and CR-001 records what happens when the two are conflated.
-//
-// Verifies: P-051, T-005.
 func TestDryRunIssuesNoWrites(t *testing.T) {
 	origDebug := debug
 	debug = true
@@ -534,8 +529,6 @@ func TestDryRunIssuesNoWrites(t *testing.T) {
 // ending the sync after an arbitrary number of observations had already been
 // created — and eBird exports vary enough between users that one bad row in
 // twelve thousand is a realistic thing to hit.
-//
-// Verifies: P-062.
 func TestInvalidRecordsAreSkipped(t *testing.T) {
 	origDebug := debug
 	debug = true
@@ -617,8 +610,6 @@ func TestInvalidRecordsAreSkipped(t *testing.T) {
 // the code that had the CR-003 bug too: that bug was in the download query, not
 // in the matching. It is here to stop the next optimization of the download
 // from quietly reintroducing the same failure.
-//
-// Verifies: P-020, P-061.
 func TestUntaxonedObservationIsRecognized(t *testing.T) {
 	origDebug := debug
 	debug = true
@@ -658,8 +649,6 @@ func TestUntaxonedObservationIsRecognized(t *testing.T) {
 // TestCreatedObservationContent pins down what birdsync actually sends to
 // iNaturalist. Until the mock recorded its arguments, every requirement in
 // "What birdsync writes" was unverified: the tests could only see counters.
-//
-// Verifies: P-019, P-035, P-036, P-037, P-038, P-039, P-040.
 func TestCreatedObservationContent(t *testing.T) {
 	origDebug := debug
 	debug = true
@@ -779,8 +768,6 @@ func TestCreatedObservationContent(t *testing.T) {
 // the system temp directory. Each asset is downloaded to a temp file and
 // uploaded; nothing deleted them afterwards, so a full sync of an account with
 // thousands of photos left thousands of files behind.
-//
-// Verifies: T-023.
 func TestTempFilesAreCleanedUp(t *testing.T) {
 	origDebug := debug
 	debug = true
@@ -824,8 +811,6 @@ func TestTempFilesAreCleanedUp(t *testing.T) {
 // it didn't do. The counters were incremented outside the --dryrun branch, so
 // a run that touched nothing still ended with "Created 57 new iNaturalist
 // observations". The count is worth reporting; the claim is not.
-//
-// Verifies: P-060, T-007.
 func TestSummaryDryRunLabels(t *testing.T) {
 	resetFlags()
 	dryRun = true
@@ -852,8 +837,6 @@ func TestSummaryDryRunLabels(t *testing.T) {
 
 // TestSummaryRealRunLabels is the other half: a real run must still report
 // plainly, so the fix for the dry-run wording can't just hedge everything.
-//
-// Verifies: P-054.
 func TestSummaryRealRunLabels(t *testing.T) {
 	resetFlags()
 
@@ -880,8 +863,6 @@ func TestSummaryRealRunLabels(t *testing.T) {
 // rule that produces it was in effect, and the media-failure line only when
 // something failed. Otherwise every run reports a wall of zeroes and people
 // stop reading it.
-//
-// Verifies: P-055, P-056.
 func TestSummaryConditionalLines(t *testing.T) {
 	resetFlags()
 	verifiable = false
@@ -923,8 +904,6 @@ func TestSummaryConditionalLines(t *testing.T) {
 // the second run's starting state, because that round trip is where the defect
 // lives. Asserting only that the description omits the failed asset would test
 // the symptom.
-//
-// Verifies: P-040, P-047, P-050.
 func TestFailedUploadIsRetriedNextRun(t *testing.T) {
 	origDebug := debug
 	debug = true
@@ -997,8 +976,6 @@ func TestFailedUploadIsRetriedNextRun(t *testing.T) {
 // TestAllUploadsFailingLeavesNoUpdate checks the degenerate case: if nothing
 // uploaded, there is nothing to say, so the observation is not updated and the
 // counter doesn't claim it was.
-//
-// Verifies: P-040, T-007.
 func TestAllUploadsFailingLeavesNoUpdate(t *testing.T) {
 	origDebug := debug
 	debug = true
@@ -1036,8 +1013,6 @@ func TestAllUploadsFailingLeavesNoUpdate(t *testing.T) {
 // A permanent refusal is recorded in the description so it isn't retried, and
 // reported each run so the user knows. A transient failure is not recorded, so
 // it is.
-//
-// Verifies: P-063, P-064.
 func TestPermanentUploadFailureIsNotRetried(t *testing.T) {
 	origDebug := debug
 	debug = true
@@ -1106,8 +1081,6 @@ func TestPermanentUploadFailureIsNotRetried(t *testing.T) {
 // TestTransientUploadFailureIsRetried is the other side of P-063: a failure
 // that might come good must not be recorded as permanent, or a network blip
 // would cost a photo.
-//
-// Verifies: P-063.
 func TestTransientUploadFailureIsRetried(t *testing.T) {
 	origDebug := debug
 	debug = true

@@ -8,7 +8,6 @@ import (
 	"github.com/Sajmani/birdsync/inat"
 )
 
-// Verifies: P-048, P-049.
 func TestMediaChange(t *testing.T) {
 	tests := []struct {
 		name    string

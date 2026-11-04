@@ -22,7 +22,6 @@ func newTestClient(baseURL, apiToken, userAgent string) *Client {
 	return c
 }
 
-// Verifies: T-016.
 func TestClient_CreateObservation(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
@@ -56,8 +55,6 @@ func TestClient_CreateObservation(t *testing.T) {
 // instruction to detach the observation's photos — so birdsync appending an
 // asset URL to a description would silently destroy the media it just
 // uploaded. Nothing asserted this before.
-//
-// Verifies: T-009, P-046.
 func TestClient_UpdateObservation(t *testing.T) {
 	obsUUID := uuid.New()
 	var body UpdateObservation
@@ -115,8 +112,6 @@ func TestClient_DeleteObservation(t *testing.T) {
 // explanation. Without it every failure read "bad HTTP status: 422
 // Unprocessable Entity", whether the file was too large, the format
 // unsupported, or the asset withdrawn — and the user had no way to tell which.
-//
-// Verifies: T-034.
 func TestStatusErrorIncludesBody(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "File is too large (max 50 MB)", http.StatusUnprocessableEntity)
@@ -144,8 +139,6 @@ func TestStatusErrorIncludesBody(t *testing.T) {
 // TestStatusErrorPermanence pins the classification down case by case. Getting
 // it wrong in one direction retries forever; in the other it discards a user's
 // photo on a transient error.
-//
-// Verifies: P-063.
 func TestStatusErrorPermanence(t *testing.T) {
 	for _, tt := range []struct {
 		code int
@@ -172,8 +165,6 @@ func TestStatusErrorPermanence(t *testing.T) {
 // TestStatusErrorDropsHTMLBody checks that a proxy's error page doesn't end up
 // in the log. iNaturalist's own refusals are short text; a 413 comes from nginx
 // as a seven-line HTML document that says nothing the status line doesn't.
-//
-// Verifies: T-034.
 func TestStatusErrorDropsHTMLBody(t *testing.T) {
 	const nginx = `<html>
 <head><title>413 Request Entity Too Large</title></head>
@@ -203,8 +194,6 @@ func TestStatusErrorDropsHTMLBody(t *testing.T) {
 
 // TestStatusErrorCollapsesWhitespace keeps a genuine multi-line message on one
 // log line.
-//
-// Verifies: T-034.
 func TestStatusErrorCollapsesWhitespace(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusUnprocessableEntity)
@@ -229,8 +218,6 @@ func TestStatusErrorCollapsesWhitespace(t *testing.T) {
 // for about one per second and warns that it may block IPs that persistently
 // exceed that; a first sync of a media-heavy account is thousands of requests,
 // and nothing else in birdsync slows them down.
-//
-// Verifies: T-035.
 func TestClientPacesRequests(t *testing.T) {
 	var requests int
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -264,8 +251,6 @@ func TestClientPacesRequests(t *testing.T) {
 
 // TestDefaultMinRequestIntervalMatchesGuidance pins the constant to the rate
 // the governing source asks for, so a future change to it has to be deliberate.
-//
-// Verifies: T-035.
 func TestDefaultMinRequestIntervalMatchesGuidance(t *testing.T) {
 	if DefaultMinRequestInterval != time.Second {
 		t.Errorf("DefaultMinRequestInterval = %v, want 1s: iNaturalist asks for about one request per second",

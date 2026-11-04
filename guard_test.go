@@ -25,8 +25,6 @@ import (
 // host from parts or reading it from the environment. That limit is recorded
 // in acceptance.md rather than papered over; the alternative, parsing every
 // expression that could produce a hostname, would cost more than it catches.
-//
-// Verifies: T-010.
 func TestNoLiveServiceHostsInTests(t *testing.T) {
 	// The real hosts, spelled in pieces so that this file does not trip its
 	// own check. Keep in sync with inat.BaseURL and ebird.macaulayBaseURL.
@@ -93,8 +91,6 @@ func TestNoLiveServiceHostsInTests(t *testing.T) {
 // trip it, and a renamed import doesn't evade it: the test looks for calls to
 // the mutating methods by selector name, which survives aliasing of the inat
 // package.
-//
-// Verifies: T-032.
 func TestToolsAreReadOnly(t *testing.T) {
 	mutating := map[string]bool{
 		"CreateObservation": true,
@@ -159,8 +155,6 @@ func TestToolsAreReadOnly(t *testing.T) {
 //
 // A convention like this cannot be checked by example. A test can show that one
 // function returns an error; only analysis can show that no function exits.
-//
-// Verifies: T-027.
 func TestNoLogFatalInLibraryPackages(t *testing.T) {
 	root, err := os.Getwd()
 	if err != nil {
@@ -234,8 +228,6 @@ func TestNoLogFatalInLibraryPackages(t *testing.T) {
 // Matching ignores whitespace, because stripping tags introduces spaces the
 // document does not contain ("with you , or"), and splits quotations on an
 // ellipsis, because an elided quote is two fragments rather than one string.
-//
-// Verifies: the accuracy of every `<source>/R#` transcription.
 func TestTranscribedQuotesAppearInSources(t *testing.T) {
 	tagRE := regexp.MustCompile(`<[^>]+>`)
 	ellipsisRE := regexp.MustCompile(`\.\.\.|…`)
@@ -471,8 +463,6 @@ func init() {
 // things by construction rather than by care: blockquote lines, which are
 // quotations, and everything under river/requirements/imported/, which is either a vendored
 // document or a transcription of one.
-//
-// Verifies: T-037, T-038.
 func TestAmericanSpellings(t *testing.T) {
 	word := regexp.MustCompile(`[A-Za-z]+`)
 	var scanned, flagged int

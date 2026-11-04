@@ -13,7 +13,6 @@ import (
 	"time"
 )
 
-// Verifies: P-043, P-044.
 func TestDownloadMLAsset_Sound(t *testing.T) {
 	const assetID = "12345"
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -53,7 +52,6 @@ func TestDownloadMLAsset_Sound(t *testing.T) {
 	}
 }
 
-// Verifies: P-043, P-044.
 func TestDownloadMLAsset_Photo(t *testing.T) {
 	const assetID = "67890"
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -83,7 +81,6 @@ func TestDownloadMLAsset_Photo(t *testing.T) {
 	}
 }
 
-// Verifies: T-019.
 func TestRecord_Observed(t *testing.T) {
 	testCases := []struct {
 		name     string
@@ -153,7 +150,6 @@ func TestRecord_Observed(t *testing.T) {
 	}
 }
 
-// Verifies: T-018.
 func TestRecords(t *testing.T) {
 	csvData := `Submission ID,Common Name,Scientific Name,Taxonomic Order,Count,State/Province,County,Location ID,Location,Latitude,Longitude,Date,Time,Protocol,Duration (Min),All Obs Reported,Distance Traveled (km),Area Covered (ha),Number of Observers,Breeding Code,Observation Details,Checklist Comments,ML Catalog Numbers
 S123,American Robin,Turdus migratorius,1,1,CA,Santa Clara,L123,Some Park,37.123,-122.123,2023-01-02,03:04 PM,Stationary,60,1,0,0,1,,,
@@ -221,7 +217,6 @@ S123,American Robin,Turdus migratorius,1,1,CA,Santa Clara,L123,Some Park,37.123,
 	}
 }
 
-// Verifies: P-019, P-022.
 func TestObservationID_Valid(t *testing.T) {
 	testCases := []struct {
 		name string
@@ -263,8 +258,6 @@ func TestObservationID_Valid(t *testing.T) {
 // machine, and the function must never fail: refusing to download a user's
 // sound file because its content type wasn't recognized is a far worse outcome
 // than naming it slightly wrong (T-004, P-045).
-//
-// Verifies: P-045, T-004.
 func TestFileExtension(t *testing.T) {
 	tests := []struct {
 		contentType  string
@@ -324,8 +317,6 @@ func TestFileExtension(t *testing.T) {
 // The checks are on the path and the header rather than on error text: issue #1
 // reported "Incorrect function.", which is what Windows returns for reading a
 // directory, where Unix says "is a directory" (T-004).
-//
-// Verifies: P-066.
 func TestRecordsRejectsBadInput(t *testing.T) {
 	dir := t.TempDir()
 
@@ -376,8 +367,6 @@ func TestRecordsRejectsBadInput(t *testing.T) {
 // The failure is forced by promising more body than the server delivers, so
 // io.Copy fails partway: the path where a file has been created and partly
 // written is exactly the one that leaked.
-//
-// Verifies: T-023.
 func TestDownloadMLAssetCleansUpOnError(t *testing.T) {
 	tmp := t.TempDir()
 	t.Setenv("TMPDIR", tmp) // os.CreateTemp("") honors this on Unix

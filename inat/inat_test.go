@@ -15,8 +15,6 @@ import (
 // TestDownloadObservations checks the basics of a download: the request
 // identifies the user and asks for the largest page size, and every result is
 // returned. Paging itself is covered by TestDownloadObservationsPagesByID.
-//
-// Verifies: T-017, P-023.
 func TestDownloadObservations(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		q := r.URL.Query()
@@ -53,8 +51,6 @@ func TestDownloadObservations(t *testing.T) {
 // restricted by taxon. Filtering on iconic_taxa[]=Aves hid any observation
 // without an iconic taxon — the state an unresolvable eBird name produces — so
 // birdsync couldn't see its own work and created it again on the next run.
-//
-// Verifies: P-061.
 func TestDownloadObservationsNoTaxonFilter(t *testing.T) {
 	var hasIconic bool
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -77,8 +73,6 @@ func TestDownloadObservationsNoTaxonFilter(t *testing.T) {
 // the download itself, not just the local comparison. This is what makes a
 // date-limited run cheap, and it is also why duplicate detection only
 // considers observations inside the window.
-//
-// Verifies: P-025.
 func TestDownloadObservationsDateWindow(t *testing.T) {
 	var gotD1, gotD2 string
 	var sawParams bool
@@ -112,8 +106,6 @@ func TestDownloadObservationsDateWindow(t *testing.T) {
 // TestDownloadObservationsNoDateWindow checks the other half of P-025: with no
 // window set, the parameters are absent rather than sent as zero values, which
 // the API would read as a date in year 1.
-//
-// Verifies: P-025.
 func TestDownloadObservationsNoDateWindow(t *testing.T) {
 	var hasD1, hasD2 bool
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -137,8 +129,6 @@ func TestDownloadObservationsNoDateWindow(t *testing.T) {
 // rather than ending the process. It used to call log.Fatal, which meant a
 // transient server error killed a sync that had already created observations,
 // and killed the test binary in any test that provoked it.
-//
-// Verifies: T-027.
 func TestDownloadObservationsError(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "boom", http.StatusInternalServerError)
@@ -168,8 +158,6 @@ func TestDownloadObservationsError(t *testing.T) {
 // the cursor has to advance twice and then stop on a short page. An earlier
 // version of this test imposed its own page size and so made the client look
 // broken when it was the fake breaking the contract.
-//
-// Verifies: P-065, T-036.
 func TestDownloadObservationsPagesByID(t *testing.T) {
 	const total = 450
 	var all []Result
@@ -251,8 +239,6 @@ func TestDownloadObservationsPagesByID(t *testing.T) {
 //
 // The fake caps its responses so a regression here fails fast instead of
 // wedging the suite.
-//
-// Verifies: T-036.
 func TestDownloadObservationsCursorMustAdvance(t *testing.T) {
 	const cap = 10
 	var requests int
