@@ -23,5 +23,6 @@ items, or `## <name>` for one.
 module github.com/Sajmani/birdsync/river
 ```
 
-The module path names this bundle. Package names are unique within it, so `product.syncKey`
-resolves without an import block. Nothing is exported yet, so no other module imports from it.
+The module path names this bundle. Package names are unique within it, so a qualified name
+such as [product.syncKey](local/product/product.md#synckey) resolves without an import block.
+Nothing is exported yet, so no other module imports from it.

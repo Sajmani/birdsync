@@ -38,3 +38,13 @@ ground truth.
 
 Re-fetch the URLs, compare hashes, and read the diff before updating the pin. The licensing
 agreement changed as recently as July 2026, so it is the one most likely to move.
+
+## Credential-shaped strings
+
+The three pages, as served, embed Freshdesk presigned logo URLs whose `X-Amz-Credential`
+parameter holds an AWS-style access key ID. The URLs are public and expired, but secret
+scanners flag them. They are kept as served, because the hashes above describe these bytes.
+
+**Policy for the next re-fetch:** strip the presigned `X-Amz-*` query parameters from vendored
+HTML before committing it. Record here what was removed, and both hashes, as served and as
+stored, the way `inatterms` records its removed `<script>` elements.
