@@ -25,7 +25,7 @@ decision** (see the migration report).
 | Scope | Every request to the iNaturalist API, `api.inaturalist.org` |
 | Adopted parts | All eight transcribed items in [`inatapi.md`](imported/inaturalist.org/inatapi/inatapi.md) |
 | Owner | iNaturalist |
-| Status | partial: `authenticateOnlyWhenNeeded` is knowingly not met, and the daily half of `requestRate` is not enforced. Neither departure has an accepted-gap decision yet |
+| Status | partial: the daily half of `requestRate` is not enforced, and no accepted-gap decision covers it yet. `authenticateOnlyWhenNeeded` is met ([decisions.authenticationIsNecessary](decisions.md#authenticationisnecessary)) |
 
 Bulk access routes, such as observation exports and the GBIF dataset, serve consumers of
 iNaturalist data rather than a user syncing their own, and are not adopted.

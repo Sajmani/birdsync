@@ -102,12 +102,14 @@ Formerly: inat-api/R7
 > requests might contain private information, these requests are not cached, therefore they
 > can require more server time to process"
 
-**Not satisfied, deliberately.** birdsync sends the token on every request, including the
-observation download, which costs iNaturalist uncached work. Reading the user's own
-observations unauthenticated would miss anything private or geoprivacy-obscured, and missing
-an existing observation means creating a duplicate — the failure mode of
-the decision `noTaxonFilterOnDownload`.
-Recorded as a knowing departure rather than an oversight; revisit if iNaturalist objects.
+**Satisfied: every request birdsync makes to iNaturalist needs authentication**
+(the decision `authenticationIsNecessary`, 2026-11-04). birdsync
+sends the token on every request, including the observation download, which costs iNaturalist
+uncached work. Reading the user's own observations unauthenticated would miss anything private
+or geoprivacy-obscured, and missing an existing observation means creating a duplicate — the
+failure mode of the decision `noTaxonFilterOnDownload`. So the download is a request that
+requires authentication, which the rule allows. Until 2026-11-04 this note called it a
+deliberate departure.
 
 ## singleIPAndMediaCaps
 

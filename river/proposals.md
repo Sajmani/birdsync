@@ -29,10 +29,11 @@ safety invariants outrank convenience. See [`requirements/precedence.md`](requir
 
 ## goals
 
-**Accept, reword, or replace four candidate goals**
+**Accept, reword, or replace five candidate goals**
 
 Every requirement is currently unmapped. Clustering them by who benefits and what they gain
-gives four candidates. Each lists the requirements it would be cited by. A requirement may
+gave the first four candidates; the owner asked for the fifth. The first four each list the
+requirements they would be cited by. A requirement may
 serve more than one goal, but each is listed once here, under its closest fit. Nothing has
 been written to `goals/` or to any `Goals:` field.
 
@@ -175,11 +176,40 @@ Would be cited by 18 requirements:
 - [tech.americanSpelling](requirements/local/tech/tech.md#americanspelling)
 - [tech.quotationsNeverRespelled](requirements/local/tech/tech.md#quotationsneverrespelled)
 
-Missing, by goals.md's checklist: none of the four is a goal for the communities birdsync
-depends on *as such*, except `communityNotBurdened`. The Macaulay Library contributors whose
-rights `mlterms` protects have no goal of their own, and their imported requirements cite no
-goal (imported items carry no `Goals:` field). Consider a fifth goal, *contributors' rights in
-their media are respected*.
+### Candidate: communityGainsResearchGrade
+
+The iNaturalist community gains bird observations, with photos and sounds, that identifiers can
+confirm to research grade.
+
+Added at the owner's request, 2026-11-04: "we should have something about the benefit that
+birdsync provides to the iNaturalist community by adding research-grade observations."
+
+Who benefits: the iNaturalist community, and those who use its research-grade data. What they
+gain: verifiable observations that would otherwise stay only in eBird.
+
+Would also be cited by these requirements, each of which makes a synced observation eligible for
+research grade (a date, a location, media, and a wild organism) or helps identifiers confirm it:
+
+- [product.verifiableDefaultOn](requirements/local/product/product.md#verifiabledefaulton)
+- [product.createdObservationWild](requirements/local/product/product.md#createdobservationwild)
+- [product.checklistCoordinates](requirements/local/product/product.md#checklistcoordinates)
+- [product.observedDateTime](requirements/local/product/product.md#observeddatetime)
+- [product.observationsPublic](requirements/local/product/product.md#observationspublic)
+- [product.mediaFormats](requirements/local/product/product.md#mediaformats)
+- [product.photoThenSoundFallback](requirements/local/product/product.md#photothensoundfallback)
+- [product.speciesGuessScientificName](requirements/local/product/product.md#speciesguessscientificname)
+- [product.documentSyncedObservationsIdentifiable](requirements/local/product/product.md#documentsyncedobservationsidentifiable)
+
+This goal and `communityNotBurdened` pull against each other: more observations are a gain to
+the community and a cost to its identifiers. River records that as a tension, not a mistake;
+each requirement says which side it serves. `verifiableDefaultOn` serves both, which is why its
+default should not flip.
+
+Still open, from the agent's draft: the Macaulay Library contributors whose rights `mlterms`
+protects have no goal of their own. Consider a further goal, *contributors' rights in their
+media are respected*, or decide that
+[decisions.inputIdentityIsTheAccountHolders](requirements/decisions.md#inputidentityistheaccountholders) puts that obligation on the user rather than on
+birdsync.
 
 ## mutatingToolsDeleted
 
@@ -207,31 +237,29 @@ tech.toolsReadOnly and tech.neverRunTools replace it.
 Specman recorded the withdrawal only as a `Status:` line on `T-011`, with no decision entry,
 so the composed package cannot yet name the decision that excludes it.
 
-## authenticateEveryRequestGap
-
-**Accept as a gap, with a review date, that birdsync authenticates every request**
-
-[inatapi.authenticateOnlyWhenNeeded](requirements/imported/inaturalist.org/inatapi/inatapi.md#authenticateonlywhenneeded)
-is Governing, so only iNaturalist can grant an exception, and locally it can only be accepted as
-an unmet gap. The reason specman recorded: an unauthenticated download would miss private or
-obscured observations, and the next run would duplicate them. Proposed `Expires: 2027-11-03`.
-The alternative is to ask iNaturalist for an exception.
-
 ## dailyCapGap
 
-**Accept as a gap, with a review date, that the daily half of [birdsync.requestRate](requirements/composed/internal/birdsync/birdsync.md#requestrate) is not enforced**
+**Decide how to meet the daily half of [birdsync.requestRate](requirements/composed/internal/birdsync/birdsync.md#requestrate)**
 
-birdsync keeps no state between runs, so it cannot count today's requests. Proposed
-`Expires: 2027-11-03`.
+The owner, 2026-11-04: enforcing a daily cap across runs needs state outside the tool. The rate
+limiter keeps successive runs under the cap; the remaining risk is several birdsync instances
+running in parallel, which is unlikely given what birdsync is for. If that ever needs
+preventing, the best detector is to query iNaturalist for the observations created in the last
+24 hours, and their media, and estimate the requests made from them.
 
-## ownMediaReviewDate
+**One thing to check before deciding:** the limiter paces to about one request per second, and
+one second per request is 86,400 a day. So a single long run can pass 10,000 on its own: a first
+sync of about 3,000 observations with media is roughly 10,000 requests (create, uploads, update),
+and at the measured 0.2 requests per second it runs about 14 hours. The successive-runs argument
+holds only for runs under about 10,000 requests each.
 
-**Give the accepted media-ownership assumption a review date**
+Options:
 
-[decisions.ownMediaAssumption](requirements/decisions.md#ownmediaassumption) (formerly CR-010) accepts that an export lists only the user's
-own assets, with a reopen condition but no date. River requires an accepted gap to carry
-`Expires:`. If the owner treats this as an accepted gap against [mlterms.noOthersMediaWithoutPermission](requirements/imported/ebird.org/mlterms/mlterms.md#noothersmediawithoutpermission),
-a new entry amending it should add one. Proposed `Expires: 2027-11-03`.
+1. **Accept the gap** for parallel runs and very large first syncs, with `Expires:`.
+2. **Count within a run (no outside state):** pause, or stop with a message, once one run reaches
+   about 10,000 requests in 24 hours. This covers the long single run; parallel instances remain
+   the accepted residual, detectable later by the owner's query-based estimate. Adopting it is a
+   new local requirement for the owner to approve.
 
 ## attributionGuidelines
 

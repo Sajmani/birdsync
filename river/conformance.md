@@ -426,5 +426,8 @@ requirement, a test of an implementation detail, or a test of behavior nobody wa
 Requirements the code is known not to satisfy, none of them yet an accepted gap. Each has a
 drafted decision for the owner in [`proposals.md`](proposals.md).
 
-- [inatapi.authenticateOnlyWhenNeeded](requirements/imported/inaturalist.org/inatapi/inatapi.md#authenticateonlywhenneeded): birdsync authenticates every request, including the download, so as not to miss private observations
 - [birdsync.requestRate](requirements/composed/internal/birdsync/birdsync.md#requestrate): the daily cap of about 10,000 requests is not enforced
+
+[inatapi.authenticateOnlyWhenNeeded](requirements/imported/inaturalist.org/inatapi/inatapi.md#authenticateonlywhenneeded) was listed here until 2026-11-04, when the owner decided that
+every request birdsync makes needs authentication, so the rule is met
+([decisions.authenticationIsNecessary](requirements/decisions.md#authenticationisnecessary)).

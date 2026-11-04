@@ -208,7 +208,7 @@ Migrated from specman's decision log; the full entry, with the evidence and the 
 
 Date: 2026-08-09
 Decided by: Sajmani
-Status: accepted
+Status: amended by inputIdentityIsTheAccountHolders
 Affects: [mlterms.noOthersMediaWithoutPermission](imported/ebird.org/mlterms/mlterms.md#noothersmediawithoutpermission), [mlterms.downloadOwnMedia](imported/ebird.org/mlterms/mlterms.md#downloadownmedia)
 Formerly: CR-010
 Reopen: on a counter-example; no review date was set
@@ -265,3 +265,56 @@ concern a forum moderator raised stands, and became [product.documentCommunityOb
 in [product.verifiableDefaultOn](local/product/product.md#verifiabledefaulton)'s rationale, so that the `--verifiable` default is not flipped for convenience.
 
 Migrated from specman's decision log; the full entry, with the evidence and the options considered, is [CR-012 at `dc25e3b`](https://github.com/Sajmani/birdsync/blob/dc25e3b6756bd59c2de931e6d080d47318617da4/spec/decisions.md#cr-012--is-birdsync-machine-generated-content).
+
+---
+
+## authenticationIsNecessary
+
+**Every request birdsync makes to iNaturalist needs authentication, so authenticating each one meets iNaturalist's rule to authenticate only when necessary**
+
+Date: 2026-11-04
+Decided by: Sajmani
+Status: accepted
+Affects: [inatapi.authenticateOnlyWhenNeeded](imported/inaturalist.org/inatapi/inatapi.md#authenticateonlywhenneeded), [product.downloadExistingObservations](local/product/product.md#downloadexistingobservations), [product.idempotentRerun](local/product/product.md#idempotentrerun)
+
+### Decided
+
+No exception from iNaturalist is needed, and no gap is accepted. birdsync's writes need the
+token by definition. Its one read, the download of the user's existing observations, needs it
+too: an unauthenticated download omits private and geoprivacy-obscured observations, and every
+one it omits is created again on the next run. Preventing those duplicates is necessary to meet
+[product.idempotentRerun](local/product/product.md#idempotentrerun) and
+[inatterms.duplicatesUndesirable](imported/inaturalist.org/inatterms/inatterms.md#duplicatesundesirable),
+so authentication is required, which is the case the rule allows. The owner's words: "Preventing
+creation of duplicate observations, even private or obscured, seems necessary to meet other
+requirements, so I don't see why this requires an exception."
+
+Media downloads go to the Macaulay Library, not iNaturalist, and are outside this rule. A future
+iNaturalist request that does not need the token should be sent without it.
+
+---
+
+## inputIdentityIsTheAccountHolders
+
+**birdsync cannot tell whether the export and the iNaturalist account belong to the same person; that is the account holder's responsibility, not a gap**
+
+Date: 2026-11-04
+Decided by: Sajmani
+Status: accepted
+Amends: ownMediaAssumption
+Affects: [mlterms.noOthersMediaWithoutPermission](imported/ebird.org/mlterms/mlterms.md#noothersmediawithoutpermission), [inatterms.accountHolderResponsible](imported/inaturalist.org/inatterms/inatterms.md#accountholderresponsible), [inatterms.contributorKeepsRights](imported/inaturalist.org/inatterms/inatterms.md#contributorkeepsrights)
+
+### Decided
+
+Nothing stops a user from running birdsync on someone else's eBird export and uploading that
+person's observations and media to their own iNaturalist account. birdsync automates uploads but
+has no way to check that the input CSV and the iNaturalist account represent the same human, and
+checking is technically infeasible. A user can already do the same by hand without birdsync.
+
+So [ownMediaAssumption](#ownmediaassumption) is not an accepted gap against
+[mlterms.noOthersMediaWithoutPermission](imported/ebird.org/mlterms/mlterms.md#noothersmediawithoutpermission)
+and needs no review date. The obligation rests with the person running birdsync, as
+[inatterms.accountHolderResponsible](imported/inaturalist.org/inatterms/inatterms.md#accountholderresponsible)
+already says of everything done under an account. The assumption stands as recorded, extended
+from "the export lists only the user's own assets" to "the export is the user's own", and still
+reopens on a counter-example in which birdsync itself could have told.

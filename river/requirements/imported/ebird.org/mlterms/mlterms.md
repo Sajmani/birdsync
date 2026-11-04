@@ -58,7 +58,8 @@ CDN by asset ID, unauthenticated, and the CDN serves any asset to anyone — ver
 2026-08-09 against two assets belonging to other contributors, both returning HTTP 200. So
 nothing in the system prevents birdsync from copying another person's media into a user's
 iNaturalist account under that user's name. See
-the decision `ownMediaAssumption`.
+the decision `ownMediaAssumption`, as amended by `inputIdentityIsTheAccountHolders`: birdsync cannot
+tell, and the obligation rests with the account holder.
 
 ## mediaOwnedByUploader
 
