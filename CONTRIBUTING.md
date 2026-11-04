@@ -10,7 +10,7 @@ birdsync must do, and the constraints the code has to satisfy, are written down 
 | --- | --- |
 | How to run the tool | [README.md](README.md) |
 | How the code is put together | [docs/arch.md](docs/arch.md) |
-| What it must do, and why | [river/requirements/local/product/](river/requirements/local/product/product.md) |
+| What it must do, and why | [river/requirements/local/product/](river/requirements/local/product/) |
 | Constraints on the implementation | [river/requirements/local/tech/](river/requirements/local/tech/tech.md) |
 | How a change travels from requirement to code | River's method, in [.agents/skills/river/](.agents/skills/river/SKILL.md) |
 

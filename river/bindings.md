@@ -48,7 +48,8 @@ Additions to the method, none of them changing it:
   (`P-###`, `T-###`, `AC-###`, `CR-###`, `<source>/R#`). Commits, issues, comments, and test
   messages from before 2026-11-03 still cite those identifiers. Search `Formerly: P-063` to
   resolve one.
-- **`Area:`** on a local source item gives the heading it sat under in specman. The composed
+- **Files by area.** Each local source is split into one file per area (`product/auth.md`,
+  `product/media.md`, ...), all in one package; the file name says the area. The composed
   package groups by it.
 - **`Subject:` and `Value:`** carry specman's machine-checkable subject and value, where an
   item had one.

@@ -21,114 +21,114 @@ Sources at composition: `product` and `tech` (local, at this commit), and `inata
 
 ### Purpose
 
-- [product.copiesObservations](../../../local/product/product.md#copiesobservations) — Copies eBird observations, with their media, into iNaturalist
-- [product.oneWaySync](../../../local/product/product.md#onewaysync) — The sync is one-way, eBird to iNaturalist
-- [product.csvExportInput](../../../local/product/product.md#csvexportinput) — The input is the user's eBird CSV export
+- [product.copiesObservations](../../../local/product/scope.md#copiesobservations) — Copies eBird observations, with their media, into iNaturalist
+- [product.oneWaySync](../../../local/product/scope.md#onewaysync) — The sync is one-way, eBird to iNaturalist
+- [product.csvExportInput](../../../local/product/scope.md#csvexportinput) — The input is the user's eBird CSV export
 
 ### Non-goals
 
-- [product.noReverseSync](../../../local/product/product.md#noreversesync) — No sync from iNaturalist back to eBird
-- [product.neverModifyOthersObservations](../../../local/product/product.md#nevermodifyothersobservations) — Never modifies an observation birdsync did not create
-- [product.noTaxonomyReconciliation](../../../local/product/product.md#notaxonomyreconciliation) — No taxonomy reconciliation between the services
-- [product.toolsNotProduct](../../../local/product/product.md#toolsnotproduct) — Programs in tools/ are not part of the product
+- [product.noReverseSync](../../../local/product/scope.md#noreversesync) — No sync from iNaturalist back to eBird
+- [product.neverModifyOthersObservations](../../../local/product/scope.md#nevermodifyothersobservations) — Never modifies an observation birdsync did not create
+- [product.noTaxonomyReconciliation](../../../local/product/scope.md#notaxonomyreconciliation) — No taxonomy reconciliation between the services
+- [product.toolsNotProduct](../../../local/product/scope.md#toolsnotproduct) — Programs in tools/ are not part of the product
 
 ### Invocation
 
-- [product.onePositionalArgument](../../../local/product/product.md#onepositionalargument) — Exactly one positional argument
-- [product.flagsBeforeArgument](../../../local/product/product.md#flagsbeforeargument) — Flags precede the positional argument
-- [product.boolFlagEqualsForm](../../../local/product/product.md#boolflagequalsform) — Boolean flags are disabled with --flag=false
-- [product.unopenableCsvExitsEarly](../../../local/product/product.md#unopenablecsvexitsearly) — An unopenable CSV exits before contacting iNaturalist
-- [product.afterLaterThanBeforeExits](../../../local/product/product.md#afterlaterthanbeforeexits) — --after later than --before is an error
-- [product.debugExplainsSkips](../../../local/product/product.md#debugexplainsskips) — --debug logs why each record was skipped
+- [product.onePositionalArgument](../../../local/product/cli.md#onepositionalargument) — Exactly one positional argument
+- [product.flagsBeforeArgument](../../../local/product/cli.md#flagsbeforeargument) — Flags precede the positional argument
+- [product.boolFlagEqualsForm](../../../local/product/cli.md#boolflagequalsform) — Boolean flags are disabled with --flag=false
+- [product.unopenableCsvExitsEarly](../../../local/product/cli.md#unopenablecsvexitsearly) — An unopenable CSV exits before contacting iNaturalist
+- [product.afterLaterThanBeforeExits](../../../local/product/cli.md#afterlaterthanbeforeexits) — --after later than --before is an error
+- [product.debugExplainsSkips](../../../local/product/cli.md#debugexplainsskips) — --debug logs why each record was skipped
 
 ### Authentication
 
-- [product.credentialsFromEnvironment](../../../local/product/product.md#credentialsfromenvironment) — Credentials come from INAT_USER_ID and INAT_API_TOKEN
-- [product.promptForMissingCredentials](../../../local/product/product.md#promptformissingcredentials) — Missing credentials are prompted for
-- [product.tokenFraming](../../../local/product/product.md#tokenframing) — Token framing differs between prompt and environment
-- [product.unauthorizedSaysRefreshToken](../../../local/product/product.md#unauthorizedsaysrefreshtoken) — A 401 says the token needs refreshing
-- [product.credentialsNeverLogged](../../../local/product/product.md#credentialsneverlogged) — Credentials are never written to the log
+- [product.credentialsFromEnvironment](../../../local/product/auth.md#credentialsfromenvironment) — Credentials come from INAT_USER_ID and INAT_API_TOKEN
+- [product.promptForMissingCredentials](../../../local/product/auth.md#promptformissingcredentials) — Missing credentials are prompted for
+- [product.tokenFraming](../../../local/product/auth.md#tokenframing) — Token framing differs between prompt and environment
+- [product.unauthorizedSaysRefreshToken](../../../local/product/auth.md#unauthorizedsaysrefreshtoken) — A 401 says the token needs refreshing
+- [product.credentialsNeverLogged](../../../local/product/auth.md#credentialsneverlogged) — Credentials are never written to the log
 
 ### Identity and idempotence
 
-- [product.syncKey](../../../local/product/product.md#synckey) — Own observations are identified by a two-field sync key
-- [product.idempotentRerun](../../../local/product/product.md#idempotentrerun) — Re-running creates no duplicates
-- [product.taxonNotInSyncKey](../../../local/product/product.md#taxonnotinsynckey) — The taxon is not part of the sync key
-- [product.incompleteKeyNotRecognized](../../../local/product/product.md#incompletekeynotrecognized) — An incomplete sync key is not recognized
+- [product.syncKey](../../../local/product/identity.md#synckey) — Own observations are identified by a two-field sync key
+- [product.idempotentRerun](../../../local/product/identity.md#idempotentrerun) — Re-running creates no duplicates
+- [product.taxonNotInSyncKey](../../../local/product/identity.md#taxonnotinsynckey) — The taxon is not part of the sync key
+- [product.incompleteKeyNotRecognized](../../../local/product/identity.md#incompletekeynotrecognized) — An incomplete sync key is not recognized
 
 ### Downloading existing observations
 
-- [product.downloadExistingObservations](../../../local/product/product.md#downloadexistingobservations) — Existing observations are downloaded before syncing
-- [product.dateWindowNarrowsDownload](../../../local/product/product.md#datewindownarrowsdownload) — A date window narrows the download
+- [product.downloadExistingObservations](../../../local/product/download.md#downloadexistingobservations) — Existing observations are downloaded before syncing
+- [product.dateWindowNarrowsDownload](../../../local/product/download.md#datewindownarrowsdownload) — A date window narrows the download
 
 ### Filtering and skip order
 
-- [product.skipOrder](../../../local/product/product.md#skiporder) — Records are tested in a fixed skip order
-- [product.afterFlag](../../../local/product/product.md#afterflag) — --after skips records observed before it
-- [product.beforeFlag](../../../local/product/product.md#beforeflag) — --before skips records observed after it
-- [product.dateFlagFormats](../../../local/product/product.md#dateflagformats) — Date flags accept two formats
-- [product.verifiableDefaultOn](../../../local/product/product.md#verifiabledefaulton) — --verifiable skips medialess records, on by default
-- [product.fuzzyMatching](../../../local/product/product.md#fuzzymatching) — --fuzzy skips records matching an unkeyed observation
-- [product.fuzzyNeverEmptyName](../../../local/product/product.md#fuzzyneveremptyname) — Fuzzy matching never uses an empty name
-- [product.fuzzyParsedDates](../../../local/product/product.md#fuzzyparseddates) — Fuzzy matching compares parsed dates
-- [product.fuzzyOffByDefault](../../../local/product/product.md#fuzzyoffbydefault) — --fuzzy is off by default and its risk documented
+- [product.skipOrder](../../../local/product/filtering.md#skiporder) — Records are tested in a fixed skip order
+- [product.afterFlag](../../../local/product/filtering.md#afterflag) — --after skips records observed before it
+- [product.beforeFlag](../../../local/product/filtering.md#beforeflag) — --before skips records observed after it
+- [product.dateFlagFormats](../../../local/product/filtering.md#dateflagformats) — Date flags accept two formats
+- [product.verifiableDefaultOn](../../../local/product/filtering.md#verifiabledefaulton) — --verifiable skips medialess records, on by default
+- [product.fuzzyMatching](../../../local/product/filtering.md#fuzzymatching) — --fuzzy skips records matching an unkeyed observation
+- [product.fuzzyNeverEmptyName](../../../local/product/filtering.md#fuzzyneveremptyname) — Fuzzy matching never uses an empty name
+- [product.fuzzyParsedDates](../../../local/product/filtering.md#fuzzyparseddates) — Fuzzy matching compares parsed dates
+- [product.fuzzyOffByDefault](../../../local/product/filtering.md#fuzzyoffbydefault) — --fuzzy is off by default and its risk documented
 
 ### What birdsync writes
 
-- [product.createdObservationWild](../../../local/product/product.md#createdobservationwild) — Created observations are wild
-- [product.checklistCoordinates](../../../local/product/product.md#checklistcoordinates) — Coordinates are the checklist's, inexact, with set accuracy
-- [product.speciesGuessScientificName](../../../local/product/product.md#speciesguessscientificname) — The species guess is the eBird scientific name
-- [product.observedDateTime](../../../local/product/product.md#observeddatetime) — Observation date and time come from the eBird columns
-- [product.observationFieldMapping](../../../local/product/product.md#observationfieldmapping) — eBird columns are copied into observation fields
-- [product.descriptionContents](../../../local/product/product.md#descriptioncontents) — What the observation description contains
-- [product.observationsPublic](../../../local/product/product.md#observationspublic) — Created observations are public
+- [product.createdObservationWild](../../../local/product/observations.md#createdobservationwild) — Created observations are wild
+- [product.checklistCoordinates](../../../local/product/observations.md#checklistcoordinates) — Coordinates are the checklist's, inexact, with set accuracy
+- [product.speciesGuessScientificName](../../../local/product/observations.md#speciesguessscientificname) — The species guess is the eBird scientific name
+- [product.observedDateTime](../../../local/product/observations.md#observeddatetime) — Observation date and time come from the eBird columns
+- [product.observationFieldMapping](../../../local/product/observations.md#observationfieldmapping) — eBird columns are copied into observation fields
+- [product.descriptionContents](../../../local/product/observations.md#descriptioncontents) — What the observation description contains
+- [product.observationsPublic](../../../local/product/observations.md#observationspublic) — Created observations are public
 
 ### Media
 
-- [product.createBeforeMedia](../../../local/product/product.md#createbeforemedia) — The observation is created before media is attached
-- [product.mediaFormats](../../../local/product/product.md#mediaformats) — Photos at 2400px, sounds as MP3
-- [product.photoThenSoundFallback](../../../local/product/product.md#photothensoundfallback) — Try the photo URL, then the sound URL
-- [product.mediaFilename](../../../local/product/product.md#mediafilename) — Media is uploaded as ML<asset ID> with a canonical extension
-- [product.descriptionUpdateKeepsMedia](../../../local/product/product.md#descriptionupdatekeepsmedia) — The description update keeps attached media
-- [product.additiveMediaResync](../../../local/product/product.md#additivemediaresync) — Media re-sync is additive
-- [product.removedAssetsReported](../../../local/product/product.md#removedassetsreported) — Assets removed from eBird are reported, not removed
-- [product.mediaCountMismatchReported](../../../local/product/product.md#mediacountmismatchreported) — A media count mismatch is reported, not corrected
-- [product.mediaFailuresTolerated](../../../local/product/product.md#mediafailurestolerated) — A failed media transfer is logged, counted, and survived
+- [product.createBeforeMedia](../../../local/product/media.md#createbeforemedia) — The observation is created before media is attached
+- [product.mediaFormats](../../../local/product/media.md#mediaformats) — Photos at 2400px, sounds as MP3
+- [product.photoThenSoundFallback](../../../local/product/media.md#photothensoundfallback) — Try the photo URL, then the sound URL
+- [product.mediaFilename](../../../local/product/media.md#mediafilename) — Media is uploaded as ML<asset ID> with a canonical extension
+- [product.descriptionUpdateKeepsMedia](../../../local/product/media.md#descriptionupdatekeepsmedia) — The description update keeps attached media
+- [product.additiveMediaResync](../../../local/product/media.md#additivemediaresync) — Media re-sync is additive
+- [product.removedAssetsReported](../../../local/product/media.md#removedassetsreported) — Assets removed from eBird are reported, not removed
+- [product.mediaCountMismatchReported](../../../local/product/media.md#mediacountmismatchreported) — A media count mismatch is reported, not corrected
+- [product.mediaFailuresTolerated](../../../local/product/media.md#mediafailurestolerated) — A failed media transfer is logged, counted, and survived
 
 ### Dry run
 
-- [product.dryRunNoWrites](../../../local/product/product.md#dryrunnowrites) — --dryrun issues no writes
-- [product.dryRunLogPrefix](../../../local/product/product.md#dryrunlogprefix) — Skipped actions are logged with DRYRUN:
-- [product.dryRunMediaCount](../../../local/product/product.md#dryrunmediacount) — A dry run reports one unclassified media count
+- [product.dryRunNoWrites](../../../local/product/dryrun.md#dryrunnowrites) — --dryrun issues no writes
+- [product.dryRunLogPrefix](../../../local/product/dryrun.md#dryrunlogprefix) — Skipped actions are logged with DRYRUN:
+- [product.dryRunMediaCount](../../../local/product/dryrun.md#dryrunmediacount) — A dry run reports one unclassified media count
 
 ### Reporting
 
-- [product.endOfRunSummary](../../../local/product/product.md#endofrunsummary) — Every run ends with a summary
-- [product.conditionalSkipCounters](../../../local/product/product.md#conditionalskipcounters) — A skip counter prints only when its flag is in effect
-- [product.conditionalFailureCount](../../../local/product/product.md#conditionalfailurecount) — The media failure count prints only when non-zero
+- [product.endOfRunSummary](../../../local/product/reporting.md#endofrunsummary) — Every run ends with a summary
+- [product.conditionalSkipCounters](../../../local/product/reporting.md#conditionalskipcounters) — A skip counter prints only when its flag is in effect
+- [product.conditionalFailureCount](../../../local/product/reporting.md#conditionalfailurecount) — The media failure count prints only when non-zero
 
 ### Failure behavior
 
-- [product.writeFailureAborts](../../../local/product/product.md#writefailureaborts) — A failed create or update aborts the run
-- [product.noRollback](../../../local/product/product.md#norollback) — There is no rollback
-- [product.largeAccounts](../../../local/product/product.md#largeaccounts) — Works for accounts over 10,000 observations
-- [product.unusableInputExplained](../../../local/product/product.md#unusableinputexplained) — Unusable input is named before parsing
-- [product.permanentUploadFailureRecorded](../../../local/product/product.md#permanentuploadfailurerecorded) — A permanent upload failure is recorded and not retried
-- [product.permanentFailuresReported](../../../local/product/product.md#permanentfailuresreported) — Permanently failed assets are reported each run
-- [product.documentCommunityObligations](../../../local/product/product.md#documentcommunityobligations) — Documentation states the user's community obligations
-- [product.documentSyncedObservationsIdentifiable](../../../local/product/product.md#documentsyncedobservationsidentifiable) — Documentation says synced observations are identifiable
+- [product.writeFailureAborts](../../../local/product/failures.md#writefailureaborts) — A failed create or update aborts the run
+- [product.noRollback](../../../local/product/failures.md#norollback) — There is no rollback
+- [product.largeAccounts](../../../local/product/download.md#largeaccounts) — Works for accounts over 10,000 observations
+- [product.unusableInputExplained](../../../local/product/failures.md#unusableinputexplained) — Unusable input is named before parsing
+- [product.permanentUploadFailureRecorded](../../../local/product/failures.md#permanentuploadfailurerecorded) — A permanent upload failure is recorded and not retried
+- [product.permanentFailuresReported](../../../local/product/failures.md#permanentfailuresreported) — Permanently failed assets are reported each run
+- [product.documentCommunityObligations](../../../local/product/community.md#documentcommunityobligations) — Documentation states the user's community obligations
+- [product.documentSyncedObservationsIdentifiable](../../../local/product/community.md#documentsyncedobservationsidentifiable) — Documentation says synced observations are identifiable
 
 ### Reporting
 
-- [product.dryRunCounterLabels](../../../local/product/product.md#dryruncounterlabels) — Dry-run observation counters are labeled hypothetical
+- [product.dryRunCounterLabels](../../../local/product/reporting.md#dryruncounterlabels) — Dry-run observation counters are labeled hypothetical
 
 ### Downloading existing observations
 
-- [product.noTaxonFilter](../../../local/product/product.md#notaxonfilter) — The download is not filtered by taxon
+- [product.noTaxonFilter](../../../local/product/download.md#notaxonfilter) — The download is not filtered by taxon
 
 ### Failure behavior
 
-- [product.badRecordsSkipped](../../../local/product/product.md#badrecordsskipped) — Unparseable records are skipped, logged, and counted
+- [product.badRecordsSkipped](../../../local/product/failures.md#badrecordsskipped) — Unparseable records are skipped, logged, and counted
 
 ## Included from tech
 
@@ -239,6 +239,6 @@ accepted-gap decision covers it yet (see `river/proposals.md`).
 
 ## Excluded
 
-- [product.avesOnlyDownload](../../../local/product/product.md#avesonlydownload) — The download is restricted to Aves. Excluded by [decisions.noTaxonFilterOnDownload](../../../decisions.md#notaxonfilterondownload)
-- [product.malformedRecordAborts](../../../local/product/product.md#malformedrecordaborts) — A malformed record aborts the run. Excluded by [decisions.badRecordsSkippedNotFatal](../../../decisions.md#badrecordsskippednotfatal)
+- [product.avesOnlyDownload](../../../local/product/download.md#avesonlydownload) — The download is restricted to Aves. Excluded by [decisions.noTaxonFilterOnDownload](../../../decisions.md#notaxonfilterondownload)
+- [product.malformedRecordAborts](../../../local/product/failures.md#malformedrecordaborts) — A malformed record aborts the run. Excluded by [decisions.badRecordsSkippedNotFatal](../../../decisions.md#badrecordsskippednotfatal)
 - [tech.neverRunMutatingTools](../../../local/tech/tech.md#neverrunmutatingtools) — Nothing runs the mutating tools. Excluded by [decisions.mutatingToolsDeleted](../../../decisions.md#mutatingtoolsdeleted)

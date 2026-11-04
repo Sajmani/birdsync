@@ -16,7 +16,7 @@ are not criteria here: conformance.md lists them as project checks.
 **Everything builds**
 
 Formerly: AC-001
-Covers: [tech.singleModule](../../../local/tech/tech.md#singlemodule), [tech.platformIndependent](../../../local/tech/tech.md#platformindependent), [product.toolsNotProduct](../../../local/product/product.md#toolsnotproduct)
+Covers: [tech.singleModule](../../../local/tech/tech.md#singlemodule), [tech.platformIndependent](../../../local/tech/tech.md#platformindependent), [product.toolsNotProduct](../../../local/product/scope.md#toolsnotproduct)
 
 `go build ./...` compiles every package, including `tools/`.
 
@@ -67,7 +67,7 @@ Limit: a substring scan; a host assembled from parts escapes it.
 **A dry run issues no writes**
 
 Formerly: AC-006
-Covers: [product.dryRunNoWrites](../../../local/product/product.md#dryrunnowrites), [tech.dryRunGateAtCallSite](../../../local/tech/tech.md#dryrungateatcallsite), [tech.clientInterfaces](../../../local/tech/tech.md#clientinterfaces)
+Covers: [product.dryRunNoWrites](../../../local/product/dryrun.md#dryrunnowrites), [tech.dryRunGateAtCallSite](../../../local/tech/tech.md#dryrungateatcallsite), [tech.clientInterfaces](../../../local/tech/tech.md#clientinterfaces)
 
 A `--dryrun` sync through a recording fake makes no create, update, or upload call, while reads still happen.
 
@@ -76,7 +76,7 @@ A `--dryrun` sync through a recording fake makes no create, update, or upload ca
 **A created observation carries the sync key and observation fields**
 
 Formerly: AC-007 (part)
-Covers: [product.syncKey](../../../local/product/product.md#synckey), [product.observationFieldMapping](../../../local/product/product.md#observationfieldmapping), [tech.clientInterfaces](../../../local/tech/tech.md#clientinterfaces)
+Covers: [product.syncKey](../../../local/product/identity.md#synckey), [product.observationFieldMapping](../../../local/product/observations.md#observationfieldmapping), [tech.clientInterfaces](../../../local/tech/tech.md#clientinterfaces)
 
 A sync through a recording fake creates an observation whose sync-key fields and copied eBird observation fields have the required IDs and values.
 
@@ -85,7 +85,7 @@ A sync through a recording fake creates an observation whose sync-key fields and
 **A created observation is wild, placed, and timed as required**
 
 Formerly: AC-007 (part)
-Covers: [product.createdObservationWild](../../../local/product/product.md#createdobservationwild), [product.checklistCoordinates](../../../local/product/product.md#checklistcoordinates), [product.speciesGuessScientificName](../../../local/product/product.md#speciesguessscientificname), [product.observedDateTime](../../../local/product/product.md#observeddatetime)
+Covers: [product.createdObservationWild](../../../local/product/observations.md#createdobservationwild), [product.checklistCoordinates](../../../local/product/observations.md#checklistcoordinates), [product.speciesGuessScientificName](../../../local/product/observations.md#speciesguessscientificname), [product.observedDateTime](../../../local/product/observations.md#observeddatetime)
 
 The created observation is marked wild, carries the checklist's coordinates marked inexact with the configured accuracy, the scientific name as species guess, and the eBird date and time.
 
@@ -96,7 +96,7 @@ Limit: asserts what is sent, not how iNaturalist interprets it.
 **Media follows creation and the description records it**
 
 Formerly: AC-007 (part)
-Covers: [product.descriptionContents](../../../local/product/product.md#descriptioncontents), [product.createBeforeMedia](../../../local/product/product.md#createbeforemedia), [product.mediaFilename](../../../local/product/product.md#mediafilename), [product.descriptionUpdateKeepsMedia](../../../local/product/product.md#descriptionupdatekeepsmedia)
+Covers: [product.descriptionContents](../../../local/product/observations.md#descriptioncontents), [product.createBeforeMedia](../../../local/product/media.md#createbeforemedia), [product.mediaFilename](../../../local/product/media.md#mediafilename), [product.descriptionUpdateKeepsMedia](../../../local/product/media.md#descriptionupdatekeepsmedia)
 
 The created description carries the attribution, details, checklist URL, and protocol but no asset lines; the later update adds the asset URLs, and the upload is keyed by the asset ID.
 
@@ -105,7 +105,7 @@ The created description carries the attribution, details, checklist URL, and pro
 **Updating an observation keeps its photos**
 
 Formerly: AC-008
-Covers: [tech.updateKeepsPhotos](../../../local/tech/tech.md#updatekeepsphotos), [product.descriptionUpdateKeepsMedia](../../../local/product/product.md#descriptionupdatekeepsmedia)
+Covers: [tech.updateKeepsPhotos](../../../local/tech/tech.md#updatekeepsphotos), [product.descriptionUpdateKeepsMedia](../../../local/product/media.md#descriptionupdatekeepsmedia)
 
 `UpdateObservation` against an `httptest` server sends `ignore_photos` set, and the updated description.
 
@@ -123,7 +123,7 @@ A request from `inat.Client` carries the birdsync `User-Agent`.
 **The download requests the maximum page size**
 
 Formerly: AC-010
-Covers: [tech.maxPageSize](../../../local/tech/tech.md#maxpagesize), [product.downloadExistingObservations](../../../local/product/product.md#downloadexistingobservations), [tech.baseURLSeams](../../../local/tech/tech.md#baseurlseams)
+Covers: [tech.maxPageSize](../../../local/tech/tech.md#maxpagesize), [product.downloadExistingObservations](../../../local/product/download.md#downloadexistingobservations), [tech.baseURLSeams](../../../local/tech/tech.md#baseurlseams)
 
 `DownloadObservations` against an `httptest` server requests `per_page=200` and returns every observation served.
 
@@ -132,7 +132,7 @@ Covers: [tech.maxPageSize](../../../local/tech/tech.md#maxpagesize), [product.do
 **The download honors the date window**
 
 Formerly: AC-011
-Covers: [product.dateWindowNarrowsDownload](../../../local/product/product.md#datewindownarrowsdownload)
+Covers: [product.dateWindowNarrowsDownload](../../../local/product/download.md#datewindownarrowsdownload)
 
 With `--after` or `--before` set the download query carries the window, and without them it carries none.
 
@@ -141,7 +141,7 @@ With `--after` or `--before` set the download query carries the window, and with
 **Each skip rule fires in order**
 
 Formerly: AC-012
-Covers: [product.idempotentRerun](../../../local/product/product.md#idempotentrerun), [product.skipOrder](../../../local/product/product.md#skiporder), [product.afterFlag](../../../local/product/product.md#afterflag), [product.beforeFlag](../../../local/product/product.md#beforeflag), [product.verifiableDefaultOn](../../../local/product/product.md#verifiabledefaulton), [product.fuzzyMatching](../../../local/product/product.md#fuzzymatching)
+Covers: [product.idempotentRerun](../../../local/product/identity.md#idempotentrerun), [product.skipOrder](../../../local/product/filtering.md#skiporder), [product.afterFlag](../../../local/product/filtering.md#afterflag), [product.beforeFlag](../../../local/product/filtering.md#beforeflag), [product.verifiableDefaultOn](../../../local/product/filtering.md#verifiabledefaulton), [product.fuzzyMatching](../../../local/product/filtering.md#fuzzymatching)
 
 One set of records exercises every skip rule exactly once, in the order `--after`, `--before`, already synced, `--fuzzy`, `--verifiable`, and the rest are created.
 
@@ -150,7 +150,7 @@ One set of records exercises every skip rule exactly once, in the order `--after
 **Media re-sync is additive**
 
 Formerly: AC-013
-Covers: [product.additiveMediaResync](../../../local/product/product.md#additivemediaresync)
+Covers: [product.additiveMediaResync](../../../local/product/media.md#additivemediaresync)
 
 Assets added to an already-synced checklist are uploaded on the next run.
 
@@ -159,7 +159,7 @@ Assets added to an already-synced checklist are uploaded on the next run.
 **Fuzzy matching works with both eBird date formats**
 
 Formerly: AC-014
-Covers: [product.fuzzyParsedDates](../../../local/product/product.md#fuzzyparseddates), [tech.datesViaObserved](../../../local/tech/tech.md#datesviaobserved), [product.fuzzyMatching](../../../local/product/product.md#fuzzymatching)
+Covers: [product.fuzzyParsedDates](../../../local/product/filtering.md#fuzzyparseddates), [tech.datesViaObserved](../../../local/tech/tech.md#datesviaobserved), [product.fuzzyMatching](../../../local/product/filtering.md#fuzzymatching)
 
 Fuzzy matching skips a record whose date is written in either eBird format.
 
@@ -168,7 +168,7 @@ Fuzzy matching skips a record whose date is written in either eBird format.
 **Fuzzy matching ignores empty names**
 
 Formerly: AC-015
-Covers: [product.fuzzyNeverEmptyName](../../../local/product/product.md#fuzzyneveremptyname), [tech.emptyNameNotIndexed](../../../local/tech/tech.md#emptynamenotindexed)
+Covers: [product.fuzzyNeverEmptyName](../../../local/product/filtering.md#fuzzyneveremptyname), [tech.emptyNameNotIndexed](../../../local/tech/tech.md#emptynamenotindexed)
 
 An existing observation with an empty name never fuzzy-matches a record.
 
@@ -177,7 +177,7 @@ An existing observation with an empty name never fuzzy-matches a record.
 **A dry run reports one unclassified media count**
 
 Formerly: AC-016
-Covers: [product.dryRunMediaCount](../../../local/product/product.md#dryrunmediacount)
+Covers: [product.dryRunMediaCount](../../../local/product/dryrun.md#dryrunmediacount)
 
 Under `--dryrun` the media count is a single unclassified number.
 
@@ -188,7 +188,7 @@ Limit: does not detect a broken dry-run gate; criterion 6 does.
 **Media differences are reported, not applied**
 
 Formerly: AC-017
-Covers: [product.removedAssetsReported](../../../local/product/product.md#removedassetsreported), [product.mediaCountMismatchReported](../../../local/product/product.md#mediacountmismatchreported)
+Covers: [product.removedAssetsReported](../../../local/product/media.md#removedassetsreported), [product.mediaCountMismatchReported](../../../local/product/media.md#mediacountmismatchreported)
 
 Assets removed from eBird, and count mismatches, are reported and not corrected.
 
@@ -197,7 +197,7 @@ Assets removed from eBird, and count mismatches, are reported and not corrected.
 **Macaulay Library assets download as photo or sound**
 
 Formerly: AC-018
-Covers: [product.mediaFormats](../../../local/product/product.md#mediaformats), [product.photoThenSoundFallback](../../../local/product/product.md#photothensoundfallback), [tech.assetTypeNeedsDownload](../../../local/tech/tech.md#assettypeneedsdownload), [tech.baseURLSeams](../../../local/tech/tech.md#baseurlseams)
+Covers: [product.mediaFormats](../../../local/product/media.md#mediaformats), [product.photoThenSoundFallback](../../../local/product/media.md#photothensoundfallback), [tech.assetTypeNeedsDownload](../../../local/tech/tech.md#assettypeneedsdownload), [tech.baseURLSeams](../../../local/tech/tech.md#baseurlseams)
 
 Against an `httptest` server, an asset downloads from the 2400px photo URL, or from the MP3 URL when the photo URL returns 404.
 
@@ -215,7 +215,7 @@ Covers: [tech.datesViaObserved](../../../local/tech/tech.md#datesviaobserved)
 **The CSV is read by header name**
 
 Formerly: AC-020
-Covers: [tech.csvByHeaderName](../../../local/tech/tech.md#csvbyheadername), [product.csvExportInput](../../../local/product/product.md#csvexportinput)
+Covers: [tech.csvByHeaderName](../../../local/tech/tech.md#csvbyheadername), [product.csvExportInput](../../../local/product/scope.md#csvexportinput)
 
 `ebird.Records` reads fields by header name from a file whose columns vary.
 
@@ -226,7 +226,7 @@ Limit: partial for the CSV input requirement.
 **The sync key is valid only when complete**
 
 Formerly: AC-021
-Covers: [product.syncKey](../../../local/product/product.md#synckey), [product.incompleteKeyNotRecognized](../../../local/product/product.md#incompletekeynotrecognized), [product.taxonNotInSyncKey](../../../local/product/product.md#taxonnotinsynckey)
+Covers: [product.syncKey](../../../local/product/identity.md#synckey), [product.incompleteKeyNotRecognized](../../../local/product/identity.md#incompletekeynotrecognized), [product.taxonNotInSyncKey](../../../local/product/identity.md#taxonnotinsynckey)
 
 `ObservationID.Valid` is true only when both sync-key fields are present.
 
@@ -246,7 +246,7 @@ Covers: [tech.ciStandingChecks](../../../local/tech/tech.md#cistandingchecks), [
 **The summary labels and conditional lines are right**
 
 Formerly: AC-023
-Covers: [product.dryRunCounterLabels](../../../local/product/product.md#dryruncounterlabels), [tech.honestDryRunCounters](../../../local/tech/tech.md#honestdryruncounters), [product.endOfRunSummary](../../../local/product/product.md#endofrunsummary), [product.conditionalSkipCounters](../../../local/product/product.md#conditionalskipcounters), [product.conditionalFailureCount](../../../local/product/product.md#conditionalfailurecount)
+Covers: [product.dryRunCounterLabels](../../../local/product/reporting.md#dryruncounterlabels), [tech.honestDryRunCounters](../../../local/tech/tech.md#honestdryruncounters), [product.endOfRunSummary](../../../local/product/reporting.md#endofrunsummary), [product.conditionalSkipCounters](../../../local/product/reporting.md#conditionalskipcounters), [product.conditionalFailureCount](../../../local/product/reporting.md#conditionalfailurecount)
 
 The summary says `Would create` and `Would update` under `--dryrun`, and the real labels otherwise. A counter line appears only when its flag is in effect, and the failure line only when non-zero.
 
@@ -255,7 +255,7 @@ The summary says `Would create` and `Would update` under `--dryrun`, and the rea
 **A previously synced untaxoned observation is recognized**
 
 Formerly: AC-024
-Covers: [product.noTaxonFilter](../../../local/product/product.md#notaxonfilter), [product.idempotentRerun](../../../local/product/product.md#idempotentrerun)
+Covers: [product.noTaxonFilter](../../../local/product/download.md#notaxonfilter), [product.idempotentRerun](../../../local/product/identity.md#idempotentrerun)
 
 The download carries no taxon filter, and an observation with no taxon that carries a sync key is recognized as synced and not re-created.
 
@@ -264,7 +264,7 @@ The download carries no taxon filter, and an observation with no taxon that carr
 **Unparseable records are skipped and counted**
 
 Formerly: AC-025
-Covers: [product.badRecordsSkipped](../../../local/product/product.md#badrecordsskipped)
+Covers: [product.badRecordsSkipped](../../../local/product/failures.md#badrecordsskipped)
 
 Records with an unparseable date, time, latitude, or longitude are skipped, logged with their line, and counted, and the run continues.
 
@@ -291,7 +291,7 @@ No non-main package in the module calls `log.Fatal` or `os.Exit`.
 **tools/ is read-only**
 
 Formerly: AC-028
-Covers: [tech.toolsReadOnly](../../../local/tech/tech.md#toolsreadonly), [product.toolsNotProduct](../../../local/product/product.md#toolsnotproduct)
+Covers: [tech.toolsReadOnly](../../../local/tech/tech.md#toolsreadonly), [product.toolsNotProduct](../../../local/product/scope.md#toolsnotproduct)
 
 No program under `tools/` calls a mutating `inat.Client` method.
 
@@ -300,7 +300,7 @@ No program under `tools/` calls a mutating `inat.Client` method.
 **File extensions are canonical on every platform**
 
 Formerly: AC-029
-Covers: [product.mediaFormats](../../../local/product/product.md#mediaformats), [product.mediaFilename](../../../local/product/product.md#mediafilename), [tech.platformIndependent](../../../local/tech/tech.md#platformindependent)
+Covers: [product.mediaFormats](../../../local/product/media.md#mediaformats), [product.mediaFilename](../../../local/product/media.md#mediafilename), [tech.platformIndependent](../../../local/tech/tech.md#platformindependent)
 
 Known content types, including the CDN's `audio/mpeg3`, map to `.jpg`, `.png`, `.mp3`, or `.wav`, and an unknown type falls back by endpoint.
 
@@ -309,7 +309,7 @@ Known content types, including the CDN's `audio/mpeg3`, map to `.jpg`, `.png`, `
 **A failed upload is retried on the next run**
 
 Formerly: AC-030
-Covers: [product.descriptionContents](../../../local/product/product.md#descriptioncontents), [product.additiveMediaResync](../../../local/product/product.md#additivemediaresync), [product.mediaFailuresTolerated](../../../local/product/product.md#mediafailurestolerated), [tech.honestDryRunCounters](../../../local/tech/tech.md#honestdryruncounters)
+Covers: [product.descriptionContents](../../../local/product/observations.md#descriptioncontents), [product.additiveMediaResync](../../../local/product/media.md#additivemediaresync), [product.mediaFailuresTolerated](../../../local/product/media.md#mediafailurestolerated), [tech.honestDryRunCounters](../../../local/tech/tech.md#honestdryruncounters)
 
 Across two runs, an asset whose upload failed is absent from the first description and uploaded on the second. If every upload fails, no update is made or counted.
 
@@ -318,7 +318,7 @@ Across two runs, an asset whose upload failed is absent from the first descripti
 **Permanent and transient upload failures are told apart**
 
 Formerly: AC-031
-Covers: [product.permanentUploadFailureRecorded](../../../local/product/product.md#permanentuploadfailurerecorded), [product.permanentFailuresReported](../../../local/product/product.md#permanentfailuresreported)
+Covers: [product.permanentUploadFailureRecorded](../../../local/product/failures.md#permanentuploadfailurerecorded), [product.permanentFailuresReported](../../../local/product/failures.md#permanentfailuresreported)
 
 A permanently refused upload is recorded and not retried, a transient one is retried, and the status-code classification holds in both directions.
 
@@ -336,7 +336,7 @@ A non-200 response's error includes the body, truncated and on one line, and dro
 **Permanently failed assets are reported each run**
 
 Formerly: AC-033
-Covers: [product.permanentFailuresReported](../../../local/product/product.md#permanentfailuresreported)
+Covers: [product.permanentFailuresReported](../../../local/product/failures.md#permanentfailuresreported)
 
 An asset recorded as permanently failed is reported and not counted as attached or mismatched.
 
@@ -345,7 +345,7 @@ An asset recorded as permanently failed is reported and not counted as attached 
 **The download pages by id_above past 10,000 results**
 
 Formerly: AC-034
-Covers: [product.largeAccounts](../../../local/product/product.md#largeaccounts), [tech.idAbovePaging](../../../local/tech/tech.md#idabovepaging)
+Covers: [product.largeAccounts](../../../local/product/download.md#largeaccounts), [tech.idAbovePaging](../../../local/tech/tech.md#idabovepaging)
 
 Against a fake honoring `per_page`, the download pages by `id_above` and errors when the cursor fails to advance.
 
@@ -365,7 +365,7 @@ Limit: the daily cap is not checked.
 **Unusable input is named**
 
 Formerly: AC-036
-Covers: [product.unusableInputExplained](../../../local/product/product.md#unusableinputexplained)
+Covers: [product.unusableInputExplained](../../../local/product/failures.md#unusableinputexplained)
 
 A directory, a zip archive, and a CSV without a `Submission ID` column are each rejected with a message naming the problem.
 
@@ -374,7 +374,7 @@ A directory, a zip archive, and a CSV without a `Submission ID` column are each 
 **The README states the community obligations**
 
 Formerly: AC-037
-Covers: [product.documentCommunityObligations](../../../local/product/product.md#documentcommunityobligations), [product.documentSyncedObservationsIdentifiable](../../../local/product/product.md#documentsyncedobservationsidentifiable)
+Covers: [product.documentCommunityObligations](../../../local/product/community.md#documentcommunityobligations), [product.documentSyncedObservationsIdentifiable](../../../local/product/community.md#documentsyncedobservationsidentifiable)
 
 A person reviewing the README finds what iNaturalist expects of a bulk-syncing account, and how synced observations are identifiable.
 

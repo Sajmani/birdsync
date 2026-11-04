@@ -86,7 +86,7 @@ Formerly: T-006
 Area: Safety invariants
 Goals: [goals.accountsStaySafe](../../../goals/goals.md#accountsstaysafe)
 
-A skipped mutation is logged with a `DRYRUN:` prefix (implements [product.dryRunLogPrefix](../product/product.md#dryrunlogprefix)).
+A skipped mutation is logged with a `DRYRUN:` prefix (implements [product.dryRunLogPrefix](../product/dryrun.md#dryrunlogprefix)).
 
 ## honestDryRunCounters
 
@@ -101,7 +101,7 @@ run cannot know something, it counts it as unknown rather than guessing.
 
 *Status: **not yet satisfied** — the created and updated counters are labeled as though
 the work happened. [decisions.dryRunCountersRelabeled](../../decisions.md#dryruncountersrelabeled) resolved this
-in favour of relabeling; implements [product.dryRunCounterLabels](../product/product.md#dryruncounterlabels).*
+in favour of relabeling; implements [product.dryRunCounterLabels](../product/reporting.md#dryruncounterlabels).*
 
 ## clientMutatesUnconditionally
 
@@ -267,7 +267,7 @@ just the status line.
 
 *Rationale: iNaturalist explains its refusals in the body. Discarding it left every failure
 looking identical — `bad HTTP status: 422 Unprocessable Entity` whether the file was too
-large, the format unsupported, or the asset withdrawn. Classification under [product.permanentUploadFailureRecorded](../product/product.md#permanentuploadfailurerecorded) depends on
+large, the format unsupported, or the asset withdrawn. Classification under [product.permanentUploadFailureRecorded](../product/failures.md#permanentuploadfailurerecorded) depends on
 the status code, but the human reading the log needs the reason.*
 
 *An HTML body is dropped rather than included: it comes from a proxy rather than the API, and
@@ -358,7 +358,7 @@ Formerly: T-020
 Area: Data format handling
 Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
-An empty taxon name never enters the fuzzy-match index (implements [product.fuzzyNeverEmptyName](../product/product.md#fuzzyneveremptyname)).
+An empty taxon name never enters the fuzzy-match index (implements [product.fuzzyNeverEmptyName](../product/filtering.md#fuzzyneveremptyname)).
 
 ## assetTypeNeedsDownload
 

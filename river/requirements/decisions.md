@@ -22,14 +22,14 @@ wait in [`../proposals.md`](../proposals.md) until the owner decides them.
 Date: 2026-08-09
 Decided by: Sajmani
 Status: accepted
-Affects: [product.dryRunCounterLabels](local/product/product.md#dryruncounterlabels), [tech.honestDryRunCounters](local/tech/tech.md#honestdryruncounters)
+Affects: [product.dryRunCounterLabels](local/product/reporting.md#dryruncounterlabels), [tech.honestDryRunCounters](local/tech/tech.md#honestdryruncounters)
 Formerly: CR-001
 
 ### Decided
 
 Option A of three: under `--dryrun` the summary reads `Would create N` and `Would update N`.
 The count stays, because it is useful, but the label no longer claims the work happened.
-Recorded as [product.dryRunCounterLabels](local/product/product.md#dryruncounterlabels). [tech.honestDryRunCounters](local/tech/tech.md#honestdryruncounters) stands unamended. The alternatives were to narrow [tech.honestDryRunCounters](local/tech/tech.md#honestdryruncounters) to the
+Recorded as [product.dryRunCounterLabels](local/product/reporting.md#dryruncounterlabels). [tech.honestDryRunCounters](local/tech/tech.md#honestdryruncounters) stands unamended. The alternatives were to narrow [tech.honestDryRunCounters](local/tech/tech.md#honestdryruncounters) to the
 media counters, or to document the false summary.
 
 Migrated from specman's decision log; the full entry, with the evidence and the options considered, is [CR-001 at `dc25e3b`](https://github.com/Sajmani/birdsync/blob/dc25e3b6756bd59c2de931e6d080d47318617da4/spec/decisions.md#cr-001--a-dry-run-reports-observations-it-did-not-create).
@@ -64,15 +64,15 @@ Migrated from specman's decision log; the full entry, with the evidence and the 
 Date: 2026-08-09
 Decided by: Sajmani
 Status: accepted
-Affects: [product.avesOnlyDownload](local/product/product.md#avesonlydownload), [product.noTaxonFilter](local/product/product.md#notaxonfilter), [product.idempotentRerun](local/product/product.md#idempotentrerun)
+Affects: [product.avesOnlyDownload](local/product/download.md#avesonlydownload), [product.noTaxonFilter](local/product/download.md#notaxonfilter), [product.idempotentRerun](local/product/identity.md#idempotentrerun)
 Formerly: CR-003
 
 ### Decided
 
 Option B: drop the `iconic_taxa[]=Aves` filter and download all of the user's observations.
 An observation whose eBird name iNaturalist cannot resolve has no iconic taxon, so a filtered
-download misses it and the next run duplicates it ([product.idempotentRerun](local/product/product.md#idempotentrerun)). [product.avesOnlyDownload](local/product/product.md#avesonlydownload) is withdrawn and replaced
-by [product.noTaxonFilter](local/product/product.md#notaxonfilter). The owner rejected a second query for untaxoned observations, because an
+download misses it and the next run duplicates it ([product.idempotentRerun](local/product/identity.md#idempotentrerun)). [product.avesOnlyDownload](local/product/download.md#avesonlydownload) is withdrawn and replaced
+by [product.noTaxonFilter](local/product/download.md#notaxonfilter). The owner rejected a second query for untaxoned observations, because an
 unfiltered query re-fetches every `Aves` observation anyway. The extra download volume is
 knowingly re-accepted. A side effect is that `--fuzzy` now matches observations of any taxon.
 
@@ -87,7 +87,7 @@ Migrated from specman's decision log; the full entry, with the evidence and the 
 Date: 2026-08-09
 Decided by: Sajmani
 Status: accepted
-Affects: [product.fuzzyMatching](local/product/product.md#fuzzymatching), [product.incompleteKeyNotRecognized](local/product/product.md#incompletekeynotrecognized)
+Affects: [product.fuzzyMatching](local/product/filtering.md#fuzzymatching), [product.incompleteKeyNotRecognized](local/product/identity.md#incompletekeynotrecognized)
 Formerly: CR-004
 
 ### Decided
@@ -107,13 +107,13 @@ Migrated from specman's decision log; the full entry, with the evidence and the 
 Date: 2026-08-09
 Decided by: Sajmani
 Status: accepted
-Affects: [product.malformedRecordAborts](local/product/product.md#malformedrecordaborts), [product.badRecordsSkipped](local/product/product.md#badrecordsskipped), [product.writeFailureAborts](local/product/product.md#writefailureaborts)
+Affects: [product.malformedRecordAborts](local/product/failures.md#malformedrecordaborts), [product.badRecordsSkipped](local/product/failures.md#badrecordsskipped), [product.writeFailureAborts](local/product/failures.md#writefailureaborts)
 Formerly: CR-005
 
 ### Decided
 
 Option A: skip, log with its CSV line, and count the record, reporting the count in the
-summary when non-zero. Recorded as [product.badRecordsSkipped](local/product/product.md#badrecordsskipped). [product.malformedRecordAborts](local/product/product.md#malformedrecordaborts) is withdrawn. [product.writeFailureAborts](local/product/product.md#writefailureaborts) is unchanged: a failed
+summary when non-zero. Recorded as [product.badRecordsSkipped](local/product/failures.md#badrecordsskipped). [product.malformedRecordAborts](local/product/failures.md#malformedrecordaborts) is withdrawn. [product.writeFailureAborts](local/product/failures.md#writefailureaborts) is unchanged: a failed
 create or update still aborts the run.
 
 Migrated from specman's decision log; the full entry, with the evidence and the options considered, is [CR-005 at `dc25e3b`](https://github.com/Sajmani/birdsync/blob/dc25e3b6756bd59c2de931e6d080d47318617da4/spec/decisions.md#cr-005--record-level-parse-failures-abort-the-run).
@@ -127,12 +127,12 @@ Migrated from specman's decision log; the full entry, with the evidence and the 
 Date: 2026-08-09
 Decided by: Sajmani
 Status: accepted
-Affects: [product.mediaFilename](local/product/product.md#mediafilename), [tech.platformIndependent](local/tech/tech.md#platformindependent)
+Affects: [product.mediaFilename](local/product/media.md#mediafilename), [tech.platformIndependent](local/tech/tech.md#platformindependent)
 Formerly: CR-006
 
 ### Decided
 
-Option A: map known content types to canonical extensions. [product.mediaFilename](local/product/product.md#mediafilename) was amended to name the
+Option A: map known content types to canonical extensions. [product.mediaFilename](local/product/media.md#mediafilename) was amended to name the
 mapping, which makes the filename the same on every platform ([tech.platformIndependent](local/tech/tech.md#platformindependent)). Confirmed against the
 live service for photos. The sound path was accepted as a low residual risk.
 
@@ -147,13 +147,13 @@ Migrated from specman's decision log; the full entry, with the evidence and the 
 Date: 2026-08-09
 Decided by: Sajmani (presumed: the original entry does not name who decided; to be confirmed)
 Status: accepted; decider confirmed by decidersConfirmed
-Affects: [product.descriptionContents](local/product/product.md#descriptioncontents), [product.additiveMediaResync](local/product/product.md#additivemediaresync), [product.mediaFailuresTolerated](local/product/product.md#mediafailurestolerated), [tech.honestDryRunCounters](local/tech/tech.md#honestdryruncounters)
+Affects: [product.descriptionContents](local/product/observations.md#descriptioncontents), [product.additiveMediaResync](local/product/media.md#additivemediaresync), [product.mediaFailuresTolerated](local/product/media.md#mediafailurestolerated), [tech.honestDryRunCounters](local/tech/tech.md#honestdryruncounters)
 Formerly: CR-007
 
 ### Decided
 
 Option A: build the description from the assets that uploaded, so a failed asset stays
-absent and the next run retries it ([product.additiveMediaResync](local/product/product.md#additivemediaresync)). If none uploaded, the observation is not updated
+absent and the next run retries it ([product.additiveMediaResync](local/product/media.md#additivemediaresync)). If none uploaded, the observation is not updated
 and not counted as updated ([tech.honestDryRunCounters](local/tech/tech.md#honestdryruncounters)).
 
 Migrated from specman's decision log; the full entry, with the evidence and the options considered, is [CR-007 at `dc25e3b`](https://github.com/Sajmani/birdsync/blob/dc25e3b6756bd59c2de931e6d080d47318617da4/spec/decisions.md#cr-007--a-failed-media-upload-leaves-its-url-in-the-description).
@@ -167,14 +167,14 @@ Migrated from specman's decision log; the full entry, with the evidence and the 
 Date: 2026-08-09
 Decided by: Sajmani
 Status: accepted
-Affects: [product.permanentUploadFailureRecorded](local/product/product.md#permanentuploadfailurerecorded), [product.permanentFailuresReported](local/product/product.md#permanentfailuresreported), [tech.errorsIncludeBody](local/tech/tech.md#errorsincludebody)
+Affects: [product.permanentUploadFailureRecorded](local/product/failures.md#permanentuploadfailurerecorded), [product.permanentFailuresReported](local/product/failures.md#permanentfailuresreported), [tech.errorsIncludeBody](local/tech/tech.md#errorsincludebody)
 Formerly: CR-008
 
 ### Decided
 
 Option B, plus the error-message fix from option A. A 4xx response other than 401, 408, or
 429 is permanent: it is recorded in the description with retry instructions and reported each
-run ([product.permanentUploadFailureRecorded](local/product/product.md#permanentuploadfailurerecorded), [product.permanentFailuresReported](local/product/product.md#permanentfailuresreported)). Anything else is transient. Error messages include the response body,
+run ([product.permanentUploadFailureRecorded](local/product/failures.md#permanentuploadfailurerecorded), [product.permanentFailuresReported](local/product/failures.md#permanentfailuresreported)). Anything else is transient. Error messages include the response body,
 minus HTML ([tech.errorsIncludeBody](local/tech/tech.md#errorsincludebody)). Download failures stay transient, which is a known limit.
 
 Migrated from specman's decision log; the full entry, with the evidence and the options considered, is [CR-008 at `dc25e3b`](https://github.com/Sajmani/birdsync/blob/dc25e3b6756bd59c2de931e6d080d47318617da4/spec/decisions.md#cr-008--a-permanently-rejected-asset-was-retried-forever).
@@ -188,7 +188,7 @@ Migrated from specman's decision log; the full entry, with the evidence and the 
 Date: 2026-08-09
 Decided by: Sajmani (presumed: the original entry does not name who decided; to be confirmed)
 Status: accepted; decider confirmed by decidersConfirmed
-Affects: [product.mediaFormats](local/product/product.md#mediaformats), [product.mediaFilename](local/product/product.md#mediafilename), [tech.platformIndependent](local/tech/tech.md#platformindependent)
+Affects: [product.mediaFormats](local/product/media.md#mediaformats), [product.mediaFilename](local/product/media.md#mediafilename), [tech.platformIndependent](local/tech/tech.md#platformindependent)
 Formerly: CR-009
 
 ### Decided
@@ -232,7 +232,7 @@ Migrated from specman's decision log; the full entry, with the evidence and the 
 Date: 2026-08-09
 Decided by: Sajmani (presumed: the original entry does not name who decided; to be confirmed)
 Status: accepted; decider confirmed by decidersConfirmed
-Affects: [product.largeAccounts](local/product/product.md#largeaccounts), [tech.idAbovePaging](local/tech/tech.md#idabovepaging), [product.downloadExistingObservations](local/product/product.md#downloadexistingobservations), [product.noTaxonFilter](local/product/product.md#notaxonfilter)
+Affects: [product.largeAccounts](local/product/download.md#largeaccounts), [tech.idAbovePaging](local/tech/tech.md#idabovepaging), [product.downloadExistingObservations](local/product/download.md#downloadexistingobservations), [product.noTaxonFilter](local/product/download.md#notaxonfilter)
 Formerly: CR-011
 
 ### Decided
@@ -253,7 +253,7 @@ Migrated from specman's decision log; the full entry, with the evidence and the 
 Date: 2026-08-09
 Decided by: Sajmani (presumed: the original entry does not name who decided; to be confirmed)
 Status: accepted; decider confirmed by decidersConfirmed
-Affects: [inatterms.noMachineGeneratedContent](imported/inaturalist.org/inatterms/inatterms.md#nomachinegeneratedcontent), [inatterms.dontBehaveLikeMachine](imported/inaturalist.org/inatterms/inatterms.md#dontbehavelikemachine), [product.documentCommunityObligations](local/product/product.md#documentcommunityobligations), [product.documentSyncedObservationsIdentifiable](local/product/product.md#documentsyncedobservationsidentifiable)
+Affects: [inatterms.noMachineGeneratedContent](imported/inaturalist.org/inatterms/inatterms.md#nomachinegeneratedcontent), [inatterms.dontBehaveLikeMachine](imported/inaturalist.org/inatterms/inatterms.md#dontbehavelikemachine), [product.documentCommunityObligations](local/product/community.md#documentcommunityobligations), [product.documentSyncedObservationsIdentifiable](local/product/community.md#documentsyncedobservationsidentifiable)
 Formerly: CR-012
 
 ### Decided
@@ -261,8 +261,8 @@ Formerly: CR-012
 Resolved on the rule's own text: the vendored machine-generated-content definition permits a
 machine "to facilitate posting this content" where a human decided each observation, and
 gives a script posting from the user's own curated data as an acceptable example. The volume
-concern a forum moderator raised stands, and became [product.documentCommunityObligations](local/product/product.md#documentcommunityobligations) and [product.documentSyncedObservationsIdentifiable](local/product/product.md#documentsyncedobservationsidentifiable). It is also recorded
-in [product.verifiableDefaultOn](local/product/product.md#verifiabledefaulton)'s rationale, so that the `--verifiable` default is not flipped for convenience.
+concern a forum moderator raised stands, and became [product.documentCommunityObligations](local/product/community.md#documentcommunityobligations) and [product.documentSyncedObservationsIdentifiable](local/product/community.md#documentsyncedobservationsidentifiable). It is also recorded
+in [product.verifiableDefaultOn](local/product/filtering.md#verifiabledefaulton)'s rationale, so that the `--verifiable` default is not flipped for convenience.
 
 Migrated from specman's decision log; the full entry, with the evidence and the options considered, is [CR-012 at `dc25e3b`](https://github.com/Sajmani/birdsync/blob/dc25e3b6756bd59c2de931e6d080d47318617da4/spec/decisions.md#cr-012--is-birdsync-machine-generated-content).
 
@@ -275,7 +275,7 @@ Migrated from specman's decision log; the full entry, with the evidence and the 
 Date: 2026-11-04
 Decided by: Sajmani
 Status: accepted
-Affects: [inatapi.authenticateOnlyWhenNeeded](imported/inaturalist.org/inatapi/inatapi.md#authenticateonlywhenneeded), [product.downloadExistingObservations](local/product/product.md#downloadexistingobservations), [product.idempotentRerun](local/product/product.md#idempotentrerun)
+Affects: [inatapi.authenticateOnlyWhenNeeded](imported/inaturalist.org/inatapi/inatapi.md#authenticateonlywhenneeded), [product.downloadExistingObservations](local/product/download.md#downloadexistingobservations), [product.idempotentRerun](local/product/identity.md#idempotentrerun)
 
 ### Decided
 
@@ -283,7 +283,7 @@ No exception from iNaturalist is needed, and no gap is accepted. birdsync's writ
 token by definition. Its one read, the download of the user's existing observations, needs it
 too: an unauthenticated download omits private and geoprivacy-obscured observations, and every
 one it omits is created again on the next run. Preventing those duplicates is necessary to meet
-[product.idempotentRerun](local/product/product.md#idempotentrerun) and
+[product.idempotentRerun](local/product/identity.md#idempotentrerun) and
 [inatterms.duplicatesUndesirable](imported/inaturalist.org/inatterms/inatterms.md#duplicatesundesirable),
 so authentication is required, which is the case the rule allows. The owner's words: "Preventing
 creation of duplicate observations, even private or obscured, seems necessary to meet other

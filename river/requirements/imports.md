@@ -148,7 +148,7 @@ The licenses of the two actions were not retrieved either. Recorded as a gap.
 | Brand or design guidelines | rejected | None exist; this is a personal open-source project |
 | Privacy regulation (GDPR, CCPA) | rejected | birdsync collects, stores, and transmits nothing to its author. It moves a user's own data between two services they have accounts with, on their own machine |
 | Semantic versioning | rejected | There are no release tags; users install `@latest`. Revisit if tagged releases begin |
-| eBird API terms | rejected | birdsync does not use the eBird API. The CSV export exists because personal checklists are not exposed ([product.csvExportInput](local/product/product.md#csvexportinput)) |
+| eBird API terms | rejected | birdsync does not use the eBird API. The CSV export exists because personal checklists are not exposed ([product.csvExportInput](local/product/scope.md#csvexportinput)) |
 | `ebird.org` | rejected | Never called. birdsync writes the checklist URL `https://ebird.org/checklist/<id>` into a description as text. The input file is downloaded by the user, not by birdsync |
 | `macaulaylibrary.org` | rejected | Never called. birdsync writes `https://macaulaylibrary.org/asset/<id>` into a description as text. Attribution for Macaulay assets is governed by `mlterms` |
 
