@@ -357,8 +357,8 @@ Tests that check the repository rather than a requirement. These were specman cr
 `AC-039` and `AC-040`. River makes criteria only from requirements, so these are kept as the
 project's own checks (River's checks.md: *Checks of your own*), not as criteria.
 
-- `TestTranscribedQuotesAppearInSources` (`guard_test.go`): every quoted passage in an imported transcription appears in its vendored documents. 29 passages
-- `TestTalkLinksResolve` (`guard_test.go`): every link from `talks/` into this repository resolves
+- `TestTranscribedQuotesAppearInSources` (`guard_test.go`), formerly AC-039: every quoted passage in an imported transcription appears in its vendored documents. 29 passages
+- `TestTalkLinksResolve` (`guard_test.go`), formerly AC-040: every link from `talks/` into this repository resolves
 
 ## Harvested annotations
 

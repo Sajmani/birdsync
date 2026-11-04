@@ -486,11 +486,12 @@ Goals:
 
 A spelling change never touches a quotation or a vendored document.
 
-*Rationale: this is the part with consequences. A bulk find-and-replace across `spec/` would
+*Rationale: this is the part with consequences. A bulk find-and-replace across `river/` would
 silently rewrite text quoted from someone else's terms of service, turning a verbatim citation
 into a paraphrase that still looks verbatim, and would break the hashes recorded in each
 source's `PROVENANCE.md`. The rule is not "be careful"; the check skips blockquote lines and
-never opens `spec/sources/**`.*
+never opens `river/requirements/imported/**` or the skill copy in `.agents/skills/` (under
+specman these were `spec/` and `spec/sources/**`).*
 
 ## commentsExplainWhy
 
