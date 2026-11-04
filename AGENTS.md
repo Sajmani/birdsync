@@ -1,121 +1,91 @@
 # AGENTS.md
 
-Guidance for AI coding agents working in this repository. Humans should start with
-[README.md](README.md) (usage), [spec/arch.md](spec/arch.md) (design), and
-[CONTRIBUTING.md](CONTRIBUTING.md) (workflow).
+Guidance for AI coding agents. Humans: start with [README.md](README.md),
+[docs/arch.md](docs/arch.md), and [CONTRIBUTING.md](CONTRIBUTING.md).
 
-**The requirements are normative and live in [spec/](spec/).** This file summarizes the
-rules that prevent damage and points at the rest; where it disagrees with `spec/`, `spec/`
-wins. Requirement IDs below (`P-###`, `T-###`) are citations — search `spec/` for the full
-statement and rationale.
+**birdsync uses River.** Requirements, acceptance criteria, and decisions live in
+[river/](river/). The method is the River skill in
+[.agents/skills/river/](.agents/skills/river/SKILL.md): read it before changing what the
+software must do. **Never edit `river/requirements/composed/` by hand**; change a source under
+`river/requirements/local/` and recompose. **`river check` must pass before a change is done.**
+Names below such as `tech.toolsReadOnly` are requirements: search `## toolsReadOnly` under
+`river/requirements/`. Old IDs (`P-063`, `T-010`, `CR-007`) resolve through `Formerly:` fields.
 
 ## What this is
 
-`birdsync` is a Go command-line tool that copies bird observations from an eBird CSV export
-into a user's iNaturalist account, including photos and sounds from the Macaulay Library.
-Single module, `github.com/Sajmani/birdsync`, one external dependency
-(`github.com/google/uuid`).
+A Go command-line tool that copies bird observations from an eBird CSV export into a user's
+iNaturalist account, with photos and sounds from the Macaulay Library. One module,
+`github.com/Sajmani/birdsync`, one external dependency (`github.com/google/uuid`).
 
 ## Commands
 
 ```
-go build ./...        # build everything, including tools/
+go build ./...
 go vet ./...
 gofmt -l .            # must print nothing
-go test -race ./...   # full test suite; no network, no live accounts
+go test -race ./...   # no network, no live accounts
+river check           # from the repo root; build the CLI at the skill's pin
 ```
 
-Run all four before declaring work finished. There is no Makefile and no lint config beyond
-`gofmt` and `go vet`.
+Run all five before declaring work finished.
 
 ## Layout
 
 | Path | Contents |
 | --- | --- |
-| `birdsync.go` | Flags, `stats`, `main`, and `birdsync()` — the sync loop |
-| `glue.go` | `ebirdClient` / `inatClient` interfaces + real impls; `dateTimeFlag` |
+| `birdsync.go` | Flags, `stats`, `main`, and `birdsync()`, the sync loop |
+| `glue.go` | `ebirdClient` / `inatClient` interfaces and real impls; `dateTimeFlag` |
 | `media.go` | `mlAssetSet`, eBird↔iNaturalist media diffing |
 | `ebird/` | CSV parsing, Macaulay Library asset download |
 | `inat/` | iNaturalist API v2 client, types, observation-field IDs, credentials |
-| `tools/` | `dump`, a read-only observation dumper. Read-only by construction (T-032) |
-| `spec/` | Requirements, acceptance criteria, decisions, architecture, process |
+| `tools/` | `dump`, a read-only observation dumper |
+| `river/` | Requirements, criteria, decisions, conformance; `proposals.md` awaits the owner |
 
 ## Hard rules
 
-Violating any of these costs a user real data. They are stated in full in
-[spec/tech.md](spec/tech.md#safety-invariants).
+Breaking these costs a user real data.
 
-- **Never make live API calls** (T-010). Tests must not contact `api.inaturalist.org` or the
-  Macaulay Library. Use the `ebirdClient` / `inatClient` interfaces in `glue.go`, or the
-  base-URL parameter on `inat.NewClient` and `ebird.downloadMLAsset`, to point at an
-  `httptest` server (T-013, T-014).
-- **Every mutating operation is gated on `--dryrun`** (T-005), at the call site in
-  `birdsync()` — not in the client, which is shared with `tools/` (T-008). A `--dryrun` run
-  issues no writes at all; reads are fine. Log the skipped action with a `DRYRUN:` prefix
-  (T-006), and don't let the counters claim work that didn't happen (T-007). The gates are
-  in `birdsync()`, around `UploadMedia`, `UpdateObservation`, and `CreateObservation`.
-- **`tools/` stays read-only** (T-032), enforced by `TestToolsAreReadOnly`. Don't add a
-  tool that creates, updates, deletes, or uploads. **Don't run one either** (T-033): they
-  use the user's real credentials against the live service.
-- **Never log or echo credentials** (T-012).
-- **Don't add dependencies** (T-002) or touch the `go` / `toolchain` directives (T-003)
-  without asking. Both are the maintainer's call, and both are proposed as their own change.
+- **Never make live API calls** (`tech.noLiveServicesInTests`). Use the client interfaces in
+  `glue.go`, or the base-URL parameter on `inat.NewClient` and `ebird.downloadMLAsset`, with
+  an `httptest` server.
+- **Gate every mutation on `--dryrun` at the call site in `birdsync()`**, not in the client,
+  which `tools/` shares (`tech.dryRunGateAtCallSite`). A dry run writes nothing, logs each
+  skipped action with `DRYRUN:`, and its counters never claim work that didn't happen.
+- **`tools/` stays read-only, and never run a tool** (`tech.toolsReadOnly`,
+  `tech.neverRunTools`): they use real credentials against the live service.
+- **Never log or echo credentials** (`tech.credentialsNeverExposed`).
+- **Don't add dependencies or touch the `go`/`toolchain` directives** without asking
+  (`tech.oneExternalDependency`, `tech.goDirectivePolicy`).
+- **You draft; the owner decides.** Never accept a goal, approve a composed package (an
+  `Approves:` line), settle a conflict precedence cannot settle, or accept a gap. Draft it in
+  `river/proposals.md`.
 
 ## Working on a change
 
-Changes follow the loop in [spec/process.md](spec/process.md): the spec changes first, then
-the acceptance criteria, then the code. Two things follow from that:
-
-- **A behavior change edits `spec/product.md` in the same commit**, and the README too when
-  it alters what gets written to iNaturalist or which observations are skipped. The README
-  documents flag defaults and skip order, and has drifted from the code before.
-- **Never resolve a conflict in code.** If two requirements disagree, stop and take it to
-  [spec/decisions.md](spec/decisions.md). Picking one silently is the failure mode the
-  process exists to prevent.
-
-Five requirements are currently **not satisfied by the code** — the work arising from
-Gate 1, listed in [spec/decisions.md](spec/decisions.md#work-arising). Don't "fix" the code
-to match the old behavior when you notice the mismatch.
+- A **routine change** that every requirement already allows needs no River edits. If a
+  guardrail test fails, the code is wrong.
+- A **behavior change** edits a source in `river/requirements/local/` first, then recomposes,
+  and updates README.md when it alters what gets written or skipped.
+- **Never resolve a conflict in code.** Take it to the owner and record it in
+  `river/requirements/decisions.md`.
 
 ## Gotchas
 
-Hard-won operational knowledge. The requirement each one protects is cited where there is
-one.
-
-- **Flags are package-level globals**, so tests share state. Call
-  `resetFlags()` at the top of a new test. It covers every flag except `debug`, which each
-  test saves and restores by hand (T-015).
-- **`dateTimeFlag.Set("")` fails and leaves the old value.** Zero `after`/`before` by
-  assignment (`after = dateTimeFlag{}`), not through `Set`. Existing tests that call
-  `after.Set("")` are relying on the previous test's value (T-015).
-- **eBird dates come in two formats**, `2006-01-02` and `1/2/2006`, with an optional time.
-  Always compare via `ebird.Record.Observed()`, never `Record.Date` directly. Keying on the
-  raw field was a real bug: it silently disabled `--fuzzy` for anyone whose export used the
-  second format. Regression test: `TestFuzzyMatchDateFormats` (T-019).
-- **The eBird CSV has a variable number of columns.** Read fields by header name, never by
-  position (T-018).
-- **A Macaulay Library asset ID doesn't reveal whether it's a photo or a sound.** The only
-  way to know is to download it and see which URL responds. Code that needs the distinction
-  before downloading — like `--dryrun` accounting — cannot have it (T-021, P-044).
-- **`--verifiable` defaults to `true`**, so the default run skips observations without media
-  (P-030).
-- **`UpdateObservation` must keep `ignore_photos` set**, or updating a description detaches
-  the observation's photos (T-009).
-- **An empty taxon name must never enter the fuzzy-match index.** It matches every unnamed
-  record on that date and silently drops legitimate observations (T-020, P-032).
-- **iNaturalist API tokens expire every 24 hours**, so a token in the environment is likely
-  stale. Don't diagnose a 401 as a code bug (P-017).
+- **Flags are package-level globals.** Call `resetFlags()` at the top of a test; save and
+  restore `debug` by hand. `dateTimeFlag.Set("")` fails and keeps the old value, so zero
+  `after`/`before` by assignment.
+- **eBird dates come in two formats.** Compare via `ebird.Record.Observed()`, never
+  `Record.Date` (`tech.datesViaObserved`).
+- **The CSV has a variable number of columns.** Read fields by header name.
+- **An asset ID doesn't say photo or sound** until downloaded (`tech.assetTypeNeedsDownload`).
+- **`--verifiable` defaults to true**, deliberately (`product.verifiableDefaultOn`).
+- **`UpdateObservation` must keep `ignore_photos` set**, or photos detach.
+- **An empty taxon name must never enter the fuzzy index** (`tech.emptyNameNotIndexed`).
+- **API tokens expire every 24 hours**; a 401 is rarely a code bug.
 
 ## Conventions
 
-**American spellings** in prose, comments, and commit messages (T-037) — but **never edit a
-quotation or a vendored document to match** (T-038). Quoted terms of service are verbatim
-citations whose hashes are recorded; "fixing" a publisher's spelling falsifies the quote and
-breaks the record. `TestAmericanSpellings` enforces both halves.
-
-
-Stated as requirements in [spec/tech.md](spec/tech.md#code-conventions) (T-024 – T-029):
-`gofmt`, no import aliasing, standard library grouped first; errors wrapped with the calling
-function's name; `log.Fatal` in `main` and `tools/` only; `log.Printf` for progress and
-`debugf` for detail; comments explain *why*, especially around the eBird and iNaturalist
-quirks the code works around — preserve them.
+American spellings in prose, comments, and commit messages, but **never edit a quotation, a
+vendored document, or the skill copy** (`tech.quotationsNeverRespelled`).
+`TestAmericanSpellings` enforces both. Code style: `tech.gofmtClean` through
+`tech.commentsExplainWhy`. Preserve comments that explain eBird and iNaturalist quirks.

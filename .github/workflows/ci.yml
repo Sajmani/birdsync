@@ -58,3 +58,30 @@ jobs:
       - run: go build ./...
       - run: go vet ./...
       - run: go test -race ./...
+
+  # Checks the requirements bundle in river/ with River's CLI, built at the pin
+  # recorded in .agents/skills/PROVENANCE.md. River has no published module
+  # path yet, so the job runs only once the repository variable RIVER_REPO names
+  # a clonable River repository; until then it is skipped, not failed.
+  river:
+    name: river check
+    runs-on: ubuntu-latest
+    if: ${{ vars.RIVER_REPO != '' }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version: stable
+
+      - name: build river at the skill's pin
+        run: |
+          # The pin is recorded once, in PROVENANCE.md; read it from there.
+          pin=$(sed -n 's/^| Pin | `\(.*\)` |$/\1/p' .agents/skills/PROVENANCE.md)
+          test -n "$pin"
+          git clone --quiet "${{ vars.RIVER_REPO }}" "$RUNNER_TEMP/river-src"
+          git -C "$RUNNER_TEMP/river-src" checkout --quiet "$pin"
+          (cd "$RUNNER_TEMP/river-src" && go build -o "$RUNNER_TEMP/river" ./cmd/river)
+
+      - name: river check
+        run: '"$RUNNER_TEMP/river" check river'

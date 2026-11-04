@@ -21,10 +21,11 @@ is `stagesAdopted` in [`proposals.md`](proposals.md).
 
 | | |
 | --- | --- |
-| River skill | `db2604a`, see `.agents/skills/PROVENANCE.md` |
-| River CLI | Built from River at `db2604a`. The CLI reports no version of its own |
+| River skill | Pinned in [`.agents/skills/PROVENANCE.md`](../.agents/skills/PROVENANCE.md), and only there |
+| River CLI | Built from River at the skill's pin; CI reads the pin from `PROVENANCE.md`. The CLI reports no version of its own |
 | Bundle | `river/` at the repository root |
-| Where `river check` runs | CI (`.github/workflows/ci.yml`, job `river`), and before calling any change done (`AGENTS.md`). There is no pre-commit hook and no release step |
+| Where `river check` runs | CI (`.github/workflows/ci.yml`, job `river`), which is skipped until the repository variable `RIVER_REPO` names a clonable River repository, because River is not published yet. Also before calling any change done (`AGENTS.md`). There is no pre-commit hook and no release step |
+| `goals/` | Empty, kept with `.gitkeep`, until the owner accepts a goal. `river check` treats any `.md` file there as a goal file |
 
 ## Project bindings
 
