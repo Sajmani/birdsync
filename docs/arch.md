@@ -121,6 +121,24 @@ A hand-written client for the [iNaturalist API v2](https://api.inaturalist.org/v
 Note the asymmetry between `Observation` (what birdsync sends) and `Result` (what the API
 returns); they are not the same shape.
 
+#### Request pacing
+
+`Client.roundTrip` waits out a minimum interval before each request (`SetMinRequestInterval`;
+the default matches iNaturalist's one per second). Every request in the package passes through
+it, which is the only reason a single choke point suffices. It meets the per-second half of
+[birdsync.requestRate](../river/requirements/composed/internal/birdsync/birdsync.md#requestrate);
+the daily half is not enforced yet.
+
+The per-second limit was already being met before the limiter existed, by an argument nobody had
+written down: observations are fetched in large pages, and between writes birdsync downloads a
+media file, so the operations were slow enough on their own. A real run averaged about five
+seconds per upload and three per download page, roughly 0.2 requests per second. The argument
+was worth replacing with a mechanism for two reasons. It was **conditional**: with
+`--verifiable=false` there is no media to fetch between creates, so the spacing disappears. And
+it was **load-bearing on slowness**: the first change that adds concurrency, or makes uploads
+faster, would silently remove the guarantee. With an explicit limiter, compliance no longer
+depends on the code staying slow, which is what makes it safe to parallelize later.
+
 ### `tools/`
 
 One standalone `main` package, `dump`, which downloads the user's observations and prints

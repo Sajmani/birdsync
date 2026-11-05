@@ -60,7 +60,7 @@ func (c *Client) BaseURL() string {
 // nothing else in birdsync limits how fast it issues them. Media uploads
 // already take seconds each, so this costs little there; it matters for runs
 // that create many observations without media, which would otherwise go as
-// fast as the server answers (tech.requestPacing).
+// fast as the server answers (birdsync.requestRate).
 const DefaultMinRequestInterval = time.Second
 
 // SetMinRequestInterval overrides the pacing. Tests set it to zero; nothing

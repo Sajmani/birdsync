@@ -388,3 +388,36 @@ Affects: [tech.oneExternalDependency](local/tech/deps.md#oneexternaldependency)
 Adopted as drafted at discovery: the module's three-clause BSD-style license, read from the
 module at v1.6.0, is recorded in `imports.md` as Advisory. birdsync redistributes no binaries,
 so the notice obligation does not arise today.
+
+---
+
+## restatementsComposed
+
+**Local requirements that only restated an imported rule are withdrawn; composition derives them instead**
+
+Date: 2026-11-05
+Decided by: Sajmani
+Status: accepted
+Affects: [tech.maxPageSize](local/tech/etiquette.md#maxpagesize), [tech.requestPacing](local/tech/etiquette.md#requestpacing), [tech.idAbovePaging](local/tech/etiquette.md#idabovepaging), [tech.userAgent](local/tech/etiquette.md#useragent), [product.documentCommunityObligations](local/product/community.md#documentcommunityobligations)
+
+### Decided
+
+specman's local requirements included hand-written restatements of rules from the imported
+sources, so composition never had to derive them. On 2026-11-04 an agent with no context,
+following only River's skill, recomposed the imported part of the package with five such items
+hidden. It reproduced [tech.maxPageSize](local/tech/etiquette.md#maxpagesize), [tech.idAbovePaging](local/tech/etiquette.md#idabovepaging), and [tech.requestPacing](local/tech/etiquette.md#requestpacing) in
+substance, the paging details with help from [pageByIDAbove](#pagebyidabove). It reproduced
+[tech.userAgent](local/tech/etiquette.md#useragent) except for the version. It reproduced part of
+[product.documentCommunityObligations](local/product/community.md#documentcommunityobligations), missing that users should review what was created.
+
+So the three fully reproduced items are withdrawn, and the composed items replace them.
+[tech.userAgent](local/tech/etiquette.md#useragent) is narrowed to the version, its local addition. [product.documentCommunityObligations](local/product/community.md#documentcommunityobligations)
+stays, and is composed into the composed requirement on documenting the user's obligations. The
+single choke point that enforces pacing, and why it replaced an argument from slowness, are
+design and move to `docs/arch.md`.
+
+The same recomposition wrote out six imported obligations as birdsync rules, where the
+migration had included them unchanged: the JWT header, posting only as the account holder,
+authenticating only when necessary, posting only the user's own records, using only the media
+the export lists, and attributing Macaulay assets. Their criteria are new, and uncovered until
+guardrails exist.

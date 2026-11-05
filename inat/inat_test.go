@@ -20,9 +20,9 @@ func TestDownloadObservations(t *testing.T) {
 		q := r.URL.Query()
 		// The API's recommended practices require the largest supported page
 		// size; fetching 30 at a time makes a large account many times more
-		// expensive for iNaturalist to serve (tech.maxPageSize).
+		// expensive for iNaturalist to serve (birdsync.observationDownloadPageSize).
 		if got := q.Get("per_page"); got != "200" {
-			t.Errorf("per_page = %q, want %q (tech.maxPageSize)", got, "200")
+			t.Errorf("per_page = %q, want %q (birdsync.observationDownloadPageSize)", got, "200")
 		}
 		if got := q.Get("user_id"); got != "testuser" {
 			t.Errorf("user_id = %q, want %q", got, "testuser")
@@ -212,7 +212,7 @@ func TestDownloadObservationsPagesByID(t *testing.T) {
 	}
 
 	if sawPageParam {
-		t.Error("Download sent a page parameter; page-number paging fails past 10k results (tech.idAbovePaging)")
+		t.Error("Download sent a page parameter; page-number paging fails past 10k results (birdsync.observationDownloadByIDAbove)")
 	}
 	if len(got) != total {
 		t.Fatalf("Got %d observations, want %d; cursors were %v", len(got), total, idAboves)
@@ -245,7 +245,7 @@ func TestDownloadObservationsCursorMustAdvance(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		requests++
 		if requests > cap {
-			t.Errorf("Client made %d requests without advancing; it is looping (tech.idAbovePaging)", requests)
+			t.Errorf("Client made %d requests without advancing; it is looping (birdsync.observationDownloadByIDAbove)", requests)
 			json.NewEncoder(w).Encode(Observations{TotalResults: 0})
 			return
 		}

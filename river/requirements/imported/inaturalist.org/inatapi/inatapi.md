@@ -22,7 +22,7 @@ Formerly: inat-api/R1
 > “Too Many Requests”... Please add delays into your code to keep under these limits...
 > We may block IPs that consistently exceed these limits"
 
-**Implemented as `requestPacing`.** `Client.roundTrip` waits out a minimum interval. The daily cap is
+**Composed into birdsync's `requestRate`.** `Client.roundTrip` waits out a minimum interval. The daily cap is
 not enforced: birdsync keeps no state between runs and cannot know what today has spent.
 
 ## largestPageSize
@@ -35,7 +35,7 @@ Formerly: inat-api/R2
 > value. For example you can get up to 200 observations in a single request, which would be
 > faster and more efficient than fetching the default 30 results at a time"
 
-**Implemented as `maxPageSize`** (`per_page=200`).
+**Composed into birdsync's `observationDownloadPageSize`** (`per_page=200`).
 
 ## idAbovePastTenThousand
 
@@ -50,7 +50,7 @@ Formerly: inat-api/R3
 > &order_by=id&order=asc) and use the id_above parameter set to the ID of the record in the
 > last batch."
 
-**Implemented as `idAbovePaging`**, after [issue #5](https://github.com/Sajmani/birdsync/issues/5) and
+**Composed into birdsync's `observationDownloadByIDAbove`**, after [issue #5](https://github.com/Sajmani/birdsync/issues/5) and
 the decision `pageByIDAbove`.
 
 ## identifyUserAgent
@@ -63,7 +63,7 @@ Formerly: inat-api/R4
 > set to the name of your app, an iNaturalist username, or anything we might use to
 > differentiate your requests"
 
-**Implemented as `userAgent`** (`birdsync/0.1`).
+**Composed into birdsync's `inatUserAgent`** (`birdsync/0.1`).
 
 ## jwtAuthorization
 

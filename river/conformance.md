@@ -10,16 +10,18 @@ watched failing. A criterion has been watched failing only if its section here c
 - Package: [`composed/internal/birdsync`](requirements/composed/internal/birdsync/birdsync.md)
 - Version: **none approved**. The package has no `Approves:` line in `decisions.md`, so this
   record maps guardrails to a draft. Recheck it when the owner approves a version.
-- Checked on: 2026-11-03, with `go test -race ./...` passing and `river check` passing.
+- Checked on: 2026-11-05, with `go test -race ./...` passing and `river check` passing.
 
 ## Counts
 
-Computed on 2026-11-03 by a script run during the migration, not maintained by hand. Recount
-rather than editing these numbers.
+Computed on 2026-11-05 by script, not maintained by hand. Recount rather than editing these
+numbers.
 
-- Requirements in sources: 125 (106 local, 19 imported). 103 local are live; 3 are withdrawn and excluded
-- Live local requirements covered by a criterion: 70. Uncovered: 33, counted, not failed
-- Criteria: 41. Watched failing on record: 8. Watched not failing: 1. Not recorded: 32
+- Requirements in sources: 125 (106 local, 19 imported). 100 local are live; 6 are withdrawn and excluded
+- Live local requirements covered by a criterion, directly or through a composed requirement
+  they are composed into: 72. Uncovered: 28, counted, not failed
+- Composed requirements: 11. Criteria: 56. Watched failing on record: 8. Watched not failing: 1.
+  Not recorded: 32. New on 2026-11-05, with no guardrail yet: 15
 - Test functions: 48. Cited by a criterion: 44. Project checks: 2. Cited by none: 2
 - Annotations harvested: 43, from 6 files. Annotated tests no criterion cites: 2
 
@@ -351,6 +353,126 @@ Gates: yes, in CI
 Specman status: verified — five behaviors mutation-tested
 Watched failing: 2026-08-10, by planting a British word in prose, a generated inflection, and an irregular; each failed, and the same word in a quotation and in a vendored transcription correctly passed (commit `2328744`)
 
+## pacingPerDay
+
+Criterion: [birdsync.pacingPerDay](requirements/composed/internal/birdsync/acceptance.md#pacingperday)
+Guardrails: none mapped yet. Written by composition on 2026-11-05; an existing test may already
+check it, and mapping one is the next step
+Gates: no
+Not watched failing.
+
+## downloadOrderedByID
+
+Criterion: [birdsync.downloadOrderedByID](requirements/composed/internal/birdsync/acceptance.md#downloadorderedbyid)
+Guardrails: none mapped yet. Written by composition on 2026-11-05; an existing test may already
+check it, and mapping one is the next step
+Gates: no
+Not watched failing.
+
+## downloadStopsOnShortPage
+
+Criterion: [birdsync.downloadStopsOnShortPage](requirements/composed/internal/birdsync/acceptance.md#downloadstopsonshortpage)
+Guardrails: none mapped yet. Written by composition on 2026-11-05; an existing test may already
+check it, and mapping one is the next step
+Gates: no
+Not watched failing.
+
+## jwtFromEnvironmentInHeader
+
+Criterion: [birdsync.jwtFromEnvironmentInHeader](requirements/composed/internal/birdsync/acceptance.md#jwtfromenvironmentinheader)
+Guardrails: none mapped yet. Written by composition on 2026-11-05; an existing test may already
+check it, and mapping one is the next step
+Gates: no
+Not watched failing.
+
+## jwtFromPromptUnwrapped
+
+Criterion: [birdsync.jwtFromPromptUnwrapped](requirements/composed/internal/birdsync/acceptance.md#jwtfrompromptunwrapped)
+Guardrails: none mapped yet. Written by composition on 2026-11-05; an existing test may already
+check it, and mapping one is the next step
+Gates: no
+Not watched failing.
+
+## noBuiltInCredentials
+
+Criterion: [birdsync.noBuiltInCredentials](requirements/composed/internal/birdsync/acceptance.md#nobuiltincredentials)
+Guardrails: none mapped yet. Written by composition on 2026-11-05; an existing test may already
+check it, and mapping one is the next step
+Gates: no
+Not watched failing.
+
+## writesCarrySuppliedToken
+
+Criterion: [birdsync.writesCarrySuppliedToken](requirements/composed/internal/birdsync/acceptance.md#writescarrysuppliedtoken)
+Guardrails: none mapped yet. Written by composition on 2026-11-05; an existing test may already
+check it, and mapping one is the next step
+Gates: no
+Not watched failing.
+
+## tokenOnlyWhereNeeded
+
+Criterion: [birdsync.tokenOnlyWhereNeeded](requirements/composed/internal/birdsync/acceptance.md#tokenonlywhereneeded)
+Guardrails: none mapped yet. Written by composition on 2026-11-05; an existing test may already
+check it, and mapping one is the next step
+Gates: no
+Not watched failing.
+
+## authenticatedDownloadSeesPrivate
+
+Criterion: [birdsync.authenticatedDownloadSeesPrivate](requirements/composed/internal/birdsync/acceptance.md#authenticateddownloadseesprivate)
+Guardrails: none mapped yet. Written by composition on 2026-11-05; an existing test may already
+check it, and mapping one is the next step
+Gates: no
+Not watched failing.
+
+## createsMatchExportRecords
+
+Criterion: [birdsync.createsMatchExportRecords](requirements/composed/internal/birdsync/acceptance.md#createsmatchexportrecords)
+Guardrails: none mapped yet. Written by composition on 2026-11-05; an existing test may already
+check it, and mapping one is the next step
+Gates: no
+Not watched failing.
+
+## noIdentificationsCommentsOrMessages
+
+Criterion: [birdsync.noIdentificationsCommentsOrMessages](requirements/composed/internal/birdsync/acceptance.md#noidentificationscommentsormessages)
+Guardrails: none mapped yet. Written by composition on 2026-11-05; an existing test may already
+check it, and mapping one is the next step
+Gates: no
+Not watched failing.
+
+## mediaRequestsOnlyListedAssets
+
+Criterion: [birdsync.mediaRequestsOnlyListedAssets](requirements/composed/internal/birdsync/acceptance.md#mediarequestsonlylistedassets)
+Guardrails: none mapped yet. Written by composition on 2026-11-05; an existing test may already
+check it, and mapping one is the next step
+Gates: no
+Not watched failing.
+
+## mediaAttachedToListingRecord
+
+Criterion: [birdsync.mediaAttachedToListingRecord](requirements/composed/internal/birdsync/acceptance.md#mediaattachedtolistingrecord)
+Guardrails: none mapped yet. Written by composition on 2026-11-05; an existing test may already
+check it, and mapping one is the next step
+Gates: no
+Not watched failing.
+
+## assetNamedInDescription
+
+Criterion: [birdsync.assetNamedInDescription](requirements/composed/internal/birdsync/acceptance.md#assetnamedindescription)
+Guardrails: none mapped yet. Written by composition on 2026-11-05; an existing test may already
+check it, and mapping one is the next step
+Gates: no
+Not watched failing.
+
+## attributionMeetsGuidelines
+
+Criterion: [birdsync.attributionMeetsGuidelines](requirements/composed/internal/birdsync/acceptance.md#attributionmeetsguidelines)
+Guardrails: none mapped yet. Written by composition on 2026-11-05; an existing test may already
+check it, and mapping one is the next step
+Gates: no
+Not watched failing.
+
 ## Project checks
 
 Tests that check the repository rather than a requirement. These were specman criteria
@@ -427,6 +549,7 @@ Requirements the code is known not to satisfy, none of them yet an accepted gap.
 drafted decision for the owner in [`proposals.md`](proposals.md).
 
 - [birdsync.requestRate](requirements/composed/internal/birdsync/birdsync.md#requestrate): the daily cap of about 10,000 requests is not enforced
+- [birdsync.macaulayAssetsAttributed](requirements/composed/internal/birdsync/birdsync.md#macaulayassetsattributed): not known to be met; the attribution guidelines it depends on were never retrieved
 
 [inatapi.authenticateOnlyWhenNeeded](requirements/imported/inaturalist.org/inatapi/inatapi.md#authenticateonlywhenneeded) was listed here until 2026-11-04, when the owner decided that
 every request birdsync makes needs authentication, so the rule is met

@@ -52,7 +52,7 @@ Formerly: inat-terms/R3
 > does not hinder other Users' ability to use iNaturalist"
 > — Terms of Use, Responsibility of Contributors
 
-**For birdsync:** a second reason for `requestPacing`'s pacing, independent of `inat-api/R1`. This one
+**For birdsync:** a second reason for the pacing in birdsync's `requestRate`, independent of `inat-api/R1`. This one
 is in the terms rather than in guidance, so it binds harder.
 
 ## noMachineGeneratedContent
@@ -87,7 +87,7 @@ Formerly: inat-terms/R5
 > very quickly and does not respond to comments and messages."
 > — Community Guidelines
 
-**For birdsync:** two obligations. Pacing (`requestPacing`) addresses "very quickly". The second half
+**For birdsync:** two obligations. Pacing (birdsync's `requestRate`) addresses "very quickly". The second half
 falls on the user: an account that syncs hundreds of observations and never answers an
 identifier's comment looks exactly like the thing this describes. birdsync cannot discharge
 that for them, but it can say so — currently it does not.

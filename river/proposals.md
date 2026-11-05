@@ -44,6 +44,21 @@ Found by discovery and marked `partial` in `imports.md`; nothing was retrieved. 
 the owner's pages and records their obligations, or the owner records why they impose nothing.
 The owner adopted `uuid` on 2026-11-04 ([decisions.uuidAdopted](requirements/decisions.md#uuidadopted)).
 
+## compositionQuestions
+
+**Questions the recomposition of 2026-11-05 raised that precedence does not settle**
+
+- **"About" one per second.** The criterion `requestsPaced` checks a minimum interval between
+  requests. Is a minimum gap the threshold you want, or an average over a window?
+- **OAuth.** [inatapi.noGroupAccounts](requirements/imported/inaturalist.org/inatapi/inatapi.md#nogroupaccounts) says to "use one of the various OAuth authentication
+  flows". Does the pasted api_token JWT, which [inatapi.jwtAuthorization](requirements/imported/inaturalist.org/inatapi/inatapi.md#jwtauthorization) calls the preferred
+  way, meet it, or should iNaturalist be asked? Composed as [birdsync.ownAccountOnly](requirements/composed/internal/birdsync/birdsync.md#ownaccountonly).
+- **License on upload.** [inatterms.contributorKeepsRights](requirements/imported/inaturalist.org/inatterms/inatterms.md#contributorkeepsrights) makes uploads CC BY-NC unless the
+  user says otherwise. Should birdsync leave the account default, set a license, or tell the user
+  in the documentation?
+- **User-Agent on the Macaulay Library CDN.** `inatapi` covers only iNaturalist. Should birdsync
+  identify itself to the CDN too? Nothing requires it.
+
 ## approveComposedPackage
 
 **Approve `composed/internal/birdsync`, once the items above are settled**

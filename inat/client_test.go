@@ -31,9 +31,9 @@ func TestClient_CreateObservation(t *testing.T) {
 			t.Errorf("Expected path /observations, got %s", r.URL.Path)
 		}
 		// Every request identifies the client and carries the token
-		// (tech.userAgent). iNaturalist may throttle a client that omits either.
+		// (birdsync.inatUserAgent). iNaturalist may throttle a client that omits either.
 		if got := r.Header.Get("User-Agent"); got != "test-user-agent" {
-			t.Errorf("User-Agent = %q, want %q (tech.userAgent)", got, "test-user-agent")
+			t.Errorf("User-Agent = %q, want %q (birdsync.inatUserAgent)", got, "test-user-agent")
 		}
 		if got := r.Header.Get("Authorization"); got != "test-token" {
 			t.Errorf("Authorization = %q, want %q", got, "test-token")
@@ -245,7 +245,7 @@ func TestClientPacesRequests(t *testing.T) {
 	}
 	// Three requests means two gaps; the first goes out immediately.
 	if min := 2 * interval; elapsed < min {
-		t.Errorf("3 requests took %v, want at least %v: they are not being paced (tech.requestPacing)", elapsed, min)
+		t.Errorf("3 requests took %v, want at least %v: they are not being paced (birdsync.requestRate)", elapsed, min)
 	}
 }
 

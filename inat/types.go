@@ -99,7 +99,7 @@ type Result struct {
 	Description string `json:"description,omitempty"`
 	// ID is the numeric observation id. It is the cursor for paging: the API
 	// refuses to page past 10,000 results by page number, so DownloadObservations
-	// walks the set with id_above (tech.idAbovePaging). Unlike UUID, the v2 API only returns
+	// walks the set with id_above (birdsync.observationDownloadByIDAbove). Unlike UUID, the v2 API only returns
 	// it when "id" is named in the fields parameter.
 	ID                   int       `json:"id,omitempty"`
 	IdentificationsCount int       `json:"identifications_count,omitempty"`

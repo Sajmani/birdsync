@@ -9,24 +9,30 @@ one item. Other tech requirements are in the other files in this directory, all 
 
 ## userAgent
 
-**Every iNaturalist request carries a birdsync User-Agent**
+**The User-Agent birdsync sends to iNaturalist includes its version**
 
 Formerly: T-016
 Subject: `http.user_agent`
 Value: `birdsync/0.1`
 Goals: [goals.communityNotBurdened](../../../goals/goals.md#communitynotburdened)
 
-Every request to the iNaturalist API carries a `User-Agent` identifying
-birdsync and its version.
+The `User-Agent` birdsync sends to the iNaturalist API names birdsync's version as
+well as its name.
+
+*Rationale: narrowed on 2026-11-05 to what it adds to the imported
+[inatapi.identifyUserAgent](../../imported/inaturalist.org/inatapi/inatapi.md#identifyuseragent), which composition turns into the composed `inatUserAgent`
+([decisions.restatementsComposed](../../decisions.md#restatementscomposed)). A version lets
+iNaturalist tell one release's traffic from another's.*
 
 ## maxPageSize
 
 **Downloads request the maximum page size**
 
 Formerly: T-017
+Status: withdrawn — composition derives it from the imported source; see [decisions.restatementsComposed](../../decisions.md#restatementscomposed)
 Subject: `inat.page_size`
 Value: `200`
-Goals: [goals.communityNotBurdened](../../../goals/goals.md#communitynotburdened)
+Goals:
 
 Observation downloads request the maximum supported page size.
 
@@ -56,9 +62,10 @@ a 413 arrives as a seven-line nginx page. A message that is kept is collapsed on
 **iNaturalist requests are paced**
 
 Formerly: T-035
+Status: withdrawn — composition derives it from the imported source; see [decisions.restatementsComposed](../../decisions.md#restatementscomposed)
 Subject: `inat.request_rate`
 Value: `1/second, 10000/day`
-Goals: [goals.communityNotBurdened](../../../goals/goals.md#communitynotburdened)
+Goals:
 
 Requests to the iNaturalist API are paced to the rate its recommended practices
 ask for: about one per second, and about 10,000 per day.
@@ -89,7 +96,8 @@ code staying slow, which is what makes it safe to parallelize later.*
 **The download pages by id_above**
 
 Formerly: T-036
-Goals: [goals.communityNotBurdened](../../../goals/goals.md#communitynotburdened)
+Status: withdrawn — composition derives it from the imported source; see [decisions.restatementsComposed](../../decisions.md#restatementscomposed)
+Goals:
 
 The observation download pages with `id_above` and an ascending id sort, never
 with page numbers, and stops when a page comes back short.
