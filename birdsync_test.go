@@ -4,6 +4,7 @@ import (
 	"errors"
 	"iter"
 	"os"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -78,9 +79,10 @@ type mockINatClient struct {
 	// sent and — for --dryrun — that it sent nothing at all. Without this the
 	// dry-run guarantee (tech.dryRunGateAtCallSite, product.dryRunNoWrites) can only be checked indirectly through
 	// the counters, which is exactly the mistake decisions.dryRunCountersRelabeled records.
-	created  []inat.Observation
-	updated  []inat.Observation
-	uploaded []uploadedMedia
+	created        []inat.Observation
+	updated        []inat.Observation
+	uploaded       []uploadedMedia
+	downloadFields []string
 }
 
 func (m *mockINatClient) GetUserID() string {
@@ -92,6 +94,7 @@ func (m *mockINatClient) GetAPIToken() string {
 }
 
 func (m *mockINatClient) DownloadObservations(userID string, after, before time.Time, fields ...string) ([]inat.Result, error) {
+	m.downloadFields = slices.Clone(fields)
 	return m.observations, m.downloadErr
 }
 
@@ -124,6 +127,8 @@ func resetFlags() {
 	after = dateTimeFlag{}
 	before = dateTimeFlag{}
 	positionalAccuracy = ebird.PositionalAccuracy
+	dailyRequestBudget = inat.DefaultMaxRequests
+	nowFunc = time.Now
 }
 
 // TestBirdsync exercises the full skip order against one set of records:
@@ -1116,5 +1121,101 @@ func TestTransientUploadFailureIsRetried(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+// TestDailyRequestBudget checks tech.dailyRequestBudget and birdsync.requestRate
+// across both recent-account history and in-run writes:
+//   - birdsync asks DownloadObservations for created_at so the estimate works
+//     against the real API, not only mocks;
+//   - observations created in the last 24 hours count toward the budget
+//     (create + media uploads + description update), while older ones do not;
+//   - the sync stops cleanly before an observation whose writes would push the
+//     24-hour total past the budget, leaving no observation half-synced without
+//     its media, and reports the stop in the summary.
+func TestDailyRequestBudget(t *testing.T) {
+	resetFlags()
+	defer resetFlags()
+
+	fixedNow := time.Date(2026, 11, 8, 12, 0, 0, 0, time.UTC)
+	nowFunc = func() time.Time { return fixedNow }
+	// Budget of 9 requests:
+	//   - 1 download page for 2 existing observations
+	//   - 4 requests from an observation created 2h ago with 2 photos (1 create + 2 uploads + 1 update)
+	//   - 0 requests from an observation created 30h ago with 3 photos (outside 24h window)
+	//   => 5 requests already used; 4 remaining.
+	// Record 1 needs 3 requests (1 create + 1 media upload + 1 update) -> fits (total 8 <= 9).
+	// Record 2 needs 3 requests (1 create + 1 media upload + 1 update) -> would hit 11 > 9, so birdsync stops before creating it.
+	dailyRequestBudget = 9
+
+	existing := []inat.Result{
+		{
+			ID:          1,
+			UUID:        uuid.New(),
+			CreatedAt:   fixedNow.Add(-2 * time.Hour).Format(time.RFC3339),
+			ObservedOn:  "2023-05-01",
+			Photos:      []inat.Photo{{ID: 10}, {ID: 11}},
+			Description: assetLine("1001", true) + assetLine("1002", true),
+			Ofvs: []inat.Ofv{
+				{FieldID: inat.EBirdField, Value: "S100"},
+				{FieldID: inat.EBirdScientificNameField, Value: "Turdus migratorius"},
+			},
+		},
+		{
+			ID:          2,
+			UUID:        uuid.New(),
+			CreatedAt:   fixedNow.Add(-30 * time.Hour).Format(time.RFC3339),
+			ObservedOn:  "2023-05-02",
+			Photos:      []inat.Photo{{ID: 20}, {ID: 21}, {ID: 22}},
+			Description: assetLine("2001", true) + assetLine("2002", true) + assetLine("2003", true),
+			Ofvs: []inat.Ofv{
+				{FieldID: inat.EBirdField, Value: "S101"},
+				{FieldID: inat.EBirdScientificNameField, Value: "Cardinalis cardinalis"},
+			},
+		},
+	}
+
+	records := []ebird.Record{
+		{
+			Line:             2,
+			SubmissionID:     "S200",
+			ScientificName:   "Corvus brachyrhynchos",
+			CommonName:       "American Crow",
+			Date:             "2026-11-01",
+			Time:             "08:00 AM",
+			MLCatalogNumbers: "3001",
+		},
+		{
+			Line:             3,
+			SubmissionID:     "S201",
+			ScientificName:   "Cyanocitta cristata",
+			CommonName:       "Blue Jay",
+			Date:             "2026-11-01",
+			Time:             "08:15 AM",
+			MLCatalogNumbers: "3002",
+		},
+	}
+
+	mockEbird := &mockEBirdClient{records: records}
+	mockInat := &mockINatClient{observations: existing}
+
+	s := birdsync("MyEBirdData.csv", mockEbird, "myUserID", mockInat)
+
+	if !slices.Contains(mockInat.downloadFields, "created_at") {
+		t.Errorf("DownloadObservations fields %v missing \"created_at\"; prior 24h usage would always estimate 0", mockInat.downloadFields)
+	}
+	if len(mockInat.created) != 1 || len(mockInat.uploaded) != 1 || len(mockInat.updated) != 1 {
+		t.Fatalf("got %d creates, %d uploads, %d updates; want 1, 1, 1 (must finish S200 and stop cleanly before S201)",
+			len(mockInat.created), len(mockInat.uploaded), len(mockInat.updated))
+	}
+	if !s.stoppedAtDailyBudget {
+		t.Error("stoppedAtDailyBudget = false, want true")
+	}
+	if s.totalRecords != 1 || s.createdObservations != 1 {
+		t.Errorf("totalRecords=%d createdObservations=%d, want 1 and 1", s.totalRecords, s.createdObservations)
+	}
+	summary := strings.Join(s.summary(), "\n")
+	if !strings.Contains(summary, "Stopped at daily iNaturalist API request budget") {
+		t.Errorf("Summary does not report budget stop:\n%s", summary)
 	}
 }

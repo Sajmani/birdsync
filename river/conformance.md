@@ -318,7 +318,7 @@ Watched failing: 2026-08-09, by removing `id_above` from the request; it first h
 Criterion: [birdsync.requestsPaced](requirements/composed/internal/birdsync/acceptance.md#requestspaced)
 Guardrails: `TestClientPacesRequests` (`inat/client_test.go`), `TestDefaultMinRequestIntervalMatchesGuidance` (`inat/client_test.go`)
 Gates: yes, in CI
-Specman status: verified — the per-day cap is not checked
+Specman status: verified
 Not yet watched failing under River. Specman's `verified` status meant the check had been watched failing, but nothing records how or when, so this criterion has no `Watched failing:` line until someone breaks the behavior, sees the guardrail fail, and records it here.
 
 ## badInputRejected
@@ -356,10 +356,9 @@ Watched failing: 2026-08-10, by planting a British word in prose, a generated in
 ## pacingPerDay
 
 Criterion: [birdsync.pacingPerDay](requirements/composed/internal/birdsync/acceptance.md#pacingperday)
-Guardrails: none mapped yet. Written by composition on 2026-11-05; an existing test may already
-check it, and mapping one is the next step
-Gates: no
-Not watched failing.
+Guardrails: `TestClientEnforcesMaxRequests` (`inat/client_test.go`), `TestDailyRequestBudget` (`birdsync_test.go`)
+Gates: yes, in CI
+Watched failing: 2026-11-08, by disabling the `c.requestCount >= c.maxRequests` guard in `inat/client.go` and forcing `estimateRecentWriteRequests` to return 0 in `birdsync.go`; both tests failed (`4th request error = <nil>, want ErrRequestBudgetExceeded` and `got 2 creates, 2 uploads, 2 updates; want 1, 1, 1`)
 
 ## downloadOrderedByID
 
@@ -548,9 +547,10 @@ requirement, a test of an implementation detail, or a test of behavior nobody wa
 Requirements the code is known not to satisfy, none of them yet an accepted gap. Each has a
 drafted decision for the owner in [`proposals.md`](proposals.md).
 
-- [birdsync.requestRate](requirements/composed/internal/birdsync/birdsync.md#requestrate): the daily cap of about 10,000 requests is not enforced
 - [birdsync.macaulayAssetsAttributed](requirements/composed/internal/birdsync/birdsync.md#macaulayassetsattributed): not known to be met; the attribution guidelines it depends on were never retrieved
 
 [inatapi.authenticateOnlyWhenNeeded](requirements/imported/inaturalist.org/inatapi/inatapi.md#authenticateonlywhenneeded) was listed here until 2026-11-04, when the owner decided that
 every request birdsync makes needs authentication, so the rule is met
 ([decisions.authenticationIsNecessary](requirements/decisions.md#authenticationisnecessary)).
+[birdsync.requestRate](requirements/composed/internal/birdsync/birdsync.md#requestrate) was listed here until 2026-11-08, when the 9,000-request 24-hour budget was implemented
+([decisions.dailyRequestBudget](requirements/decisions.md#dailyrequestbudget)).

@@ -358,7 +358,7 @@ Covers: [requestRate](birdsync.md#requestrate)
 
 Consecutive requests from one client are spaced by at least the minimum interval, and the default interval matches one per second.
 
-Limit: the daily cap is not checked.
+Limit: covers per-second spacing; the 24-hour budget is covered by [pacingPerDay](#pacingperday).
 
 ## badInputRejected
 
@@ -400,16 +400,20 @@ No Markdown or Go file outside vendored documents uses a listed British spelling
 
 ## pacingPerDay
 
-**No more than 10,000 iNaturalist requests in a day**
+**No more than 9,000 iNaturalist requests in a rolling 24-hour window**
 
 Covers: [requestRate](birdsync.md#requestrate)
 
-Given an export whose sync would need more than 10,000 requests, with a clock birdsync takes
-from the test, the test server receives no more than 10,000 requests in any 24-hour span.
+`inat.Client` defaults to a 9,000-request cap and refuses requests past its configured cap
+before sending them, and `birdsync()` estimates prior 24-hour write requests from the
+downloaded observations' `created_at` timestamps and media (ignoring observations created more
+than 24 hours ago), counts the download and write requests of the current run, stops cleanly at
+an observation boundary before exceeding the 24-hour budget without leaving a partial
+observation, and reports the stop in the end-of-run summary.
 
-Currently expected to fail: [`imports.md`](../../../imports.md) records the daily half as
-unenforced. Whether the span is within a run or across runs is open; the criterion is written
-for within a run, and does not cover requests across separate runs until the owner decides.
+Limit: parallel processes and `--after`/`--before` runs that omit recently created observations
+with older observation dates are accepted residuals
+([decisions.dailyRequestBudget](../../../decisions.md#dailyrequestbudget)).
 
 ## downloadOrderedByID
 

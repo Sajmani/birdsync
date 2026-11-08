@@ -14,6 +14,10 @@ import (
 	"github.com/google/uuid"
 )
 
+// DownloadPageSize is the per_page value DownloadObservations requests, matching
+// the largest observation page size the iNaturalist API serves.
+const DownloadPageSize = 200
+
 // DownloadObservations downloads and returns all observations for inatUserID.
 // The dates d1 and d2 specify the start and end of the observation date range if nonzero.
 // The fields list specifies which fields are populated in the results.
@@ -32,7 +36,7 @@ func (c *Client) DownloadObservations(inatUserID string, d1, d2 time.Time, field
 	// If using the API to fetch a lot of results, please use the highest supported per_page value.
 	// For example you can get up to 200 observations in a single request,
 	// which would be faster and more efficient than fetching the default 30 results at a time.
-	const perPage = 200
+	const perPage = DownloadPageSize
 
 	// Page with id_above rather than page numbers. From the same page:
 	//

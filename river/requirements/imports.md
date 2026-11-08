@@ -25,7 +25,7 @@ by the discovery step of adopting River, on 2026-11-03. The owner adopted `uuid`
 | Scope | Every request to the iNaturalist API, `api.inaturalist.org` |
 | Adopted parts | All eight transcribed items in [`inatapi.md`](imported/inaturalist.org/inatapi/inatapi.md) |
 | Owner | iNaturalist |
-| Status | partial: the daily half of `requestRate` is not enforced, and no accepted-gap decision covers it yet. `authenticateOnlyWhenNeeded` is met ([decisions.authenticationIsNecessary](decisions.md#authenticationisnecessary)) |
+| Status | adopted ([decisions.authenticationIsNecessary](decisions.md#authenticationisnecessary), [decisions.dailyRequestBudget](decisions.md#dailyrequestbudget)) |
 
 Bulk access routes, such as observation exports and the GBIF dataset, serve consumers of
 iNaturalist data rather than a user syncing their own, and are not adopted.

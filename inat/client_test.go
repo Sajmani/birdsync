@@ -260,3 +260,43 @@ func TestDefaultMinRequestIntervalMatchesGuidance(t *testing.T) {
 		t.Error("NewClient does not pace by default; a caller that forgets to set it would run unthrottled")
 	}
 }
+
+// TestClientEnforcesMaxRequests checks the client-side half of
+// tech.dailyRequestBudget: once a Client has sent maxRequests calls, roundTrip
+// refuses the next one with ErrRequestBudgetExceeded before hitting the
+// server, and DefaultMaxRequests stays conservatively below iNaturalist's
+// 10,000-per-day guideline.
+func TestClientEnforcesMaxRequests(t *testing.T) {
+	if DefaultMaxRequests != 9000 || DefaultMaxRequests >= 10000 {
+		t.Errorf("DefaultMaxRequests = %d, want 9000 (< 10000)", DefaultMaxRequests)
+	}
+	if NewClient("http://example.invalid", "", "").maxRequests != DefaultMaxRequests {
+		t.Error("NewClient does not set DefaultMaxRequests by default")
+	}
+
+	var serverHits int
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		serverHits++
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer server.Close()
+
+	client := newTestClient(server.URL, "test-token", "test-user-agent")
+	client.SetMaxRequests(3)
+
+	for i := range 3 {
+		if err := client.CreateObservation(Observation{}); err != nil {
+			t.Fatalf("request %d: CreateObservation() error = %v", i+1, err)
+		}
+	}
+	err := client.CreateObservation(Observation{})
+	if !errors.Is(err, ErrRequestBudgetExceeded) {
+		t.Fatalf("4th request error = %v, want ErrRequestBudgetExceeded (tech.dailyRequestBudget)", err)
+	}
+	if serverHits != 3 {
+		t.Errorf("Server received %d requests, want 3: budget check must stop before sending", serverHits)
+	}
+	if got := client.RequestCount(); got != 3 {
+		t.Errorf("RequestCount() = %d, want 3", got)
+	}
+}

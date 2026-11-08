@@ -12,30 +12,6 @@ item is deleted from here once settled. Search `^## ` for the list.
 River keeps undecided drafts here, outside `goals/` and `decisions.md`. See
 [`bindings.md`](bindings.md).
 
-## dailyCapGap
-
-**Decide how to meet the daily half of [birdsync.requestRate](requirements/composed/internal/birdsync/birdsync.md#requestrate)**
-
-The owner, 2026-11-04: enforcing a daily cap across runs needs state outside the tool. The rate
-limiter keeps successive runs under the cap; the remaining risk is several birdsync instances
-running in parallel, which is unlikely given what birdsync is for. If that ever needs
-preventing, the best detector is to query iNaturalist for the observations created in the last
-24 hours, and their media, and estimate the requests made from them.
-
-**One thing to check before deciding:** the limiter paces to about one request per second, and
-one second per request is 86,400 a day. So a single long run can pass 10,000 on its own: a first
-sync of about 3,000 observations with media is roughly 10,000 requests (create, uploads, update),
-and at the measured 0.2 requests per second it runs about 14 hours. The successive-runs argument
-holds only for runs under about 10,000 requests each.
-
-Options:
-
-1. **Accept the gap** for parallel runs and very large first syncs, with `Expires:`.
-2. **Count within a run (no outside state):** pause, or stop with a message, once one run reaches
-   about 10,000 requests in 24 hours. This covers the long single run; parallel instances remain
-   the accepted residual, detectable later by the owner's query-based estimate. Adopting it is a
-   new local requirement for the owner to approve.
-
 ## githubActionsTerms
 
 **Read GitHub's terms for Actions, and the licenses of `actions/checkout` and `actions/setup-go`**

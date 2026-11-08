@@ -29,6 +29,12 @@ var (
 	before             dateTimeFlag
 	after              dateTimeFlag
 	positionalAccuracy int
+
+	// Seams for testing the 24-hour iNaturalist API request budget
+	// (tech.dailyRequestBudget) deterministically without real clocks or
+	// nine thousand mock records.
+	dailyRequestBudget = inat.DefaultMaxRequests
+	nowFunc            = time.Now
 )
 
 func init() {
@@ -76,8 +82,9 @@ type stats struct {
 	// A Macaulay Library asset ID doesn't say whether it's a photo or a sound,
 	// and a dry run doesn't download it to find out, so these can't be split
 	// into uploadedPhotos and uploadedSounds.
-	pendingMedia int
-	errors       int
+	pendingMedia         int
+	errors               int
+	stoppedAtDailyBudget bool
 }
 
 func main() {
@@ -162,12 +169,70 @@ func (s stats) summary() []string {
 	if s.errors > 0 {
 		add("Failed to upload %d media assets", s.errors)
 	}
+	if s.stoppedAtDailyBudget {
+		add("Stopped at daily iNaturalist API request budget (%d requests/24h); re-run in 24 hours to continue", dailyRequestBudget)
+	}
 	return lines
+}
+
+// downloadPageRequests returns the number of GET /observations requests
+// DownloadObservations made to return resultCount observations. It always stops
+// on the first page shorter than DownloadPageSize (including an empty page
+// after an exact multiple), which is (resultCount / DownloadPageSize) + 1.
+func downloadPageRequests(resultCount int) int {
+	return (resultCount / inat.DownloadPageSize) + 1
+}
+
+// parseCreatedAt parses the created_at timestamp returned by the iNaturalist
+// API. v2 returns ISO-8601/RFC3339 timestamps, with fallbacks for alternate
+// layouts seen across API responses.
+func parseCreatedAt(s string) (time.Time, bool) {
+	if s == "" {
+		return time.Time{}, false
+	}
+	for _, layout := range []string{
+		time.RFC3339Nano,
+		time.RFC3339,
+		"2006-01-02T15:04:05-0700",
+		"2006-01-02 15:04:05 -0700",
+		"2006-01-02 15:04:05 MST",
+		time.DateOnly,
+	} {
+		if t, err := time.Parse(layout, s); err == nil {
+			return t, true
+		}
+	}
+	return time.Time{}, false
+}
+
+// estimateRecentWriteRequests estimates how many write requests have already
+// been made on the user's iNaturalist account in the 24 hours ending at now,
+// using only the observations birdsync already downloaded
+// (decisions.dailyRequestBudget). Each observation created in that window took
+// one create request, plus one upload per attached or permanently failed asset,
+// plus one description update when assets were handled.
+func estimateRecentWriteRequests(results []inat.Result, now time.Time) int {
+	cutoff := now.Add(-24 * time.Hour)
+	var total int
+	for _, r := range results {
+		createdAt, ok := parseCreatedAt(r.CreatedAt)
+		if !ok || createdAt.Before(cutoff) {
+			continue
+		}
+		total++ // POST /observations
+		uploaded, failed := iNatMLAssets(r)
+		mediaAttempts := max(len(r.Photos)+len(r.Sounds), uploaded.Len()) + failed.Len()
+		total += mediaAttempts
+		if mediaAttempts > 0 {
+			total++ // PUT /observations/{uuid}
+		}
+	}
+	return total
 }
 
 func birdsync(eBirdCSVFilename string, ebirdClient ebirdClient, inatUserID string, inatClient inatClient) stats {
 	results, err := inatClient.DownloadObservations(inatUserID, after.Time(), before.Time(),
-		"description", "observed_on", "photos.all", "sounds.all", "taxon.all", "ofvs.all")
+		"created_at", "description", "observed_on", "photos.all", "sounds.all", "taxon.all", "ofvs.all")
 	if err != nil {
 		// Nothing useful can happen without the existing observations: syncing
 		// blind would duplicate everything the user already has.
@@ -207,6 +272,8 @@ func birdsync(eBirdCSVFilename string, ebirdClient ebirdClient, inatUserID strin
 		}
 	}
 	debugf("Previously synced %d observations\n", len(previouslySynced))
+
+	usedRequests := downloadPageRequests(len(results)) + estimateRecentWriteRequests(results, nowFunc())
 
 	log.Printf("Reading eBird observations from %s", eBirdCSVFilename)
 	records, err := ebirdClient.Records(eBirdCSVFilename)
@@ -276,6 +343,7 @@ func birdsync(eBirdCSVFilename string, ebirdClient ebirdClient, inatUserID strin
 						continue
 					}
 					err = inatClient.UploadMedia(filename, isPhoto, id, obs.UUID.String())
+					usedRequests++
 					// The download is a temp file that belongs to us now, so
 					// remove it whether or not the upload worked. Syncing an
 					// account with thousands of assets used to leave one file
@@ -323,6 +391,7 @@ func birdsync(eBirdCSVFilename string, ebirdClient ebirdClient, inatUserID strin
 				prettyPrintln(obs)
 			} else {
 				err = inatClient.UpdateObservation(obs)
+				usedRequests++
 				if err != nil {
 					log.Fatalf("UpdateObservation %s: %v", obs.URLWithSpecies(), err)
 				}
@@ -343,6 +412,16 @@ func birdsync(eBirdCSVFilename string, ebirdClient ebirdClient, inatUserID strin
 			if addedMediaIDs.Len() == 0 {
 				s.previouslySkips++
 				continue
+			}
+			if !dryRun {
+				needed := addedMediaIDs.Len() + 1
+				if usedRequests+needed > dailyRequestBudget {
+					log.Printf("Stopping before line %d (%s): %d estimated iNaturalist API requests in the last 24 hours; adding %d media asset(s) needs %d more, exceeding the %d daily budget. Re-run in 24 hours to continue.",
+						rec.Line, key, usedRequests, addedMediaIDs.Len(), needed, dailyRequestBudget)
+					s.totalRecords--
+					s.stoppedAtDailyBudget = true
+					break
+				}
 			}
 			addMedia(r.UUID, r.Description, addedMediaIDs)
 			continue
@@ -447,9 +526,21 @@ func birdsync(eBirdCSVFilename string, ebirdClient ebirdClient, inatUserID strin
 				key, assetIDs.Len())
 			prettyPrintln(obs)
 		} else {
+			needed := 1
+			if assetIDs.Len() > 0 {
+				needed += assetIDs.Len() + 1
+			}
+			if usedRequests+needed > dailyRequestBudget {
+				log.Printf("Stopping before line %d (%s): %d estimated iNaturalist API requests in the last 24 hours; syncing this observation needs up to %d more, exceeding the %d daily budget. Re-run in 24 hours to continue.",
+					rec.Line, key, usedRequests, needed, dailyRequestBudget)
+				s.totalRecords--
+				s.stoppedAtDailyBudget = true
+				break
+			}
 			debugf("Syncing eBird observation %s to iNaturalist (%d media assets)\n",
 				key, assetIDs.Len())
 			err = inatClient.CreateObservation(obs)
+			usedRequests++
 			if err != nil {
 				log.Fatalf("CreateObservation: %v", err)
 			}

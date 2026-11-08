@@ -106,3 +106,25 @@ with page numbers, and stops when a page comes back short.
 `total_results` shrinks as the cursor advances, so it cannot decide when to stop. The client
 requires the cursor to advance on every page: without that check, a server ignoring `id_above`
 makes the loop re-fetch one page forever.*
+
+## dailyRequestBudget
+
+**birdsync caps iNaturalist API requests at 9,000 per rolling 24 hours**
+
+Subject: `inat.daily_request_budget`
+Value: `9000/24h`
+Goals: [goals.communityNotBurdened](../../../goals/goals.md#communitynotburdened), [goals.accountsStaySafe](../../../goals/goals.md#accountsstaysafe)
+
+`inat.Client` refuses requests past a per-client cap of 9,000, and `birdsync()` estimates prior
+24-hour write requests from the `created_at` timestamps and media of the downloaded observations,
+adds the download and write requests of the current run, and stops cleanly at an observation
+boundary before exceeding 9,000 requests in 24 hours, logging instructions to re-run in 24 hours.
+
+*Rationale: [inatapi.requestRate](../../imported/inaturalist.org/inatapi/inatapi.md#requestrate)
+asks for "around 10k API requests a day". Setting the budget at 9,000 leaves a 10% margin for
+manual browsing or uncounted calls. Estimating prior 24-hour writes from the observation download
+birdsync already performs ([decisions.dailyRequestBudget](../../decisions.md#dailyrequestbudget))
+tracks usage across back-to-back runs with zero extra API requests and no state file on disk.
+Stopping before starting an observation rather than mid-observation avoids leaving an observation
+created without its media, and [product.idempotentRerun](../product/identity.md#idempotentrerun)
+lets the next run continue where this one stopped.*

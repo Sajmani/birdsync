@@ -3,6 +3,7 @@ package inat
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -28,12 +29,14 @@ type Client struct {
 	userAgent string
 	baseURL   string
 
-	// mu guards the pacing state. birdsync is single-threaded today, but a
-	// client that silently stopped pacing under concurrency would be a nasty
-	// way to earn an IP block.
+	// mu guards the pacing and request-budget state. birdsync is
+	// single-threaded today, but a client that silently stopped pacing or
+	// counting under concurrency would be a nasty way to earn an IP block.
 	mu                 sync.Mutex
 	minRequestInterval time.Duration
 	lastRequest        time.Time
+	maxRequests        int
+	requestCount       int
 }
 
 func NewClient(baseURL, apiToken, userAgent string) *Client {
@@ -42,6 +45,7 @@ func NewClient(baseURL, apiToken, userAgent string) *Client {
 		apiToken:           apiToken,
 		userAgent:          userAgent,
 		minRequestInterval: DefaultMinRequestInterval,
+		maxRequests:        DefaultMaxRequests,
 	}
 }
 
@@ -63,6 +67,16 @@ func (c *Client) BaseURL() string {
 // fast as the server answers (birdsync.requestRate).
 const DefaultMinRequestInterval = time.Second
 
+// DefaultMaxRequests caps the requests one Client sends at 9,000, leaving a
+// 10% margin below iNaturalist's "around 10k API requests a day" guideline
+// (tech.dailyRequestBudget). Because every HTTP call passes through roundTrip,
+// this bounds downloads and --dryrun runs as well as writes.
+const DefaultMaxRequests = 9000
+
+// ErrRequestBudgetExceeded is returned when sending another request would
+// exceed the client's per-run request cap.
+var ErrRequestBudgetExceeded = errors.New("daily iNaturalist API request budget exceeded")
+
 // SetMinRequestInterval overrides the pacing. Tests set it to zero; nothing
 // else should raise the rate above the default without a reason to think
 // iNaturalist has changed its guidance.
@@ -72,22 +86,44 @@ func (c *Client) SetMinRequestInterval(d time.Duration) {
 	c.minRequestInterval = d
 }
 
-// pace blocks until enough time has passed since the previous request.
-func (c *Client) pace() {
+// SetMaxRequests overrides the per-client request cap for tests.
+func (c *Client) SetMaxRequests(n int) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
+	c.maxRequests = n
+}
+
+// RequestCount returns the number of HTTP requests this client has sent.
+func (c *Client) RequestCount() int {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	return c.requestCount
+}
+
+// pace checks the per-client request cap and blocks until enough time has
+// passed since the previous request.
+func (c *Client) pace() error {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	if c.requestCount >= c.maxRequests {
+		return fmt.Errorf("%w (%d requests)", ErrRequestBudgetExceeded, c.maxRequests)
+	}
 	if !c.lastRequest.IsZero() {
 		if wait := c.minRequestInterval - time.Since(c.lastRequest); wait > 0 {
 			time.Sleep(wait)
 		}
 	}
 	c.lastRequest = time.Now()
+	c.requestCount++
+	return nil
 }
 
 func (c *Client) roundTrip(req *http.Request) (string, error) {
 	// Every request in this package goes through here, which is the only
-	// reason one pacing call is enough.
-	c.pace()
+	// reason one pacing and budget check is enough.
+	if err := c.pace(); err != nil {
+		return "", err
+	}
 	req.Header.Set("User-Agent", c.userAgent)
 	req.Header.Set("Authorization", c.apiToken)
 

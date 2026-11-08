@@ -589,3 +589,41 @@ tech.maxPageSize sha256:3e70df34eefab7db73ee2cc9d83490f9d78e4bc584a86940068b4bd0
 tech.requestPacing sha256:6510a97f49d15ccce60477361dc74f296458044aae560b1e82da2443417fdcb7
 tech.userAgent sha256:55fa2e311e0751625bf89a00ca14f4cc1031b291523bb12a74326363449eec9e
 ```
+
+---
+
+## dailyRequestBudget
+
+**birdsync enforces a 9,000-request daily budget in the client and across runs via downloaded created_at timestamps**
+
+Date: 2026-11-08
+Decided by: Sajmani
+Status: accepted
+Affects: [inatapi.requestRate](imported/inaturalist.org/inatapi/inatapi.md#requestrate), [inatterms.rateAndVolume](imported/inaturalist.org/inatterms/inatterms.md#rateandvolume), [inatterms.dontBehaveLikeMachine](imported/inaturalist.org/inatterms/inatterms.md#dontbehavelikemachine), [tech.dailyRequestBudget](local/tech/etiquette.md#dailyrequestbudget)
+
+### Decided
+
+birdsync meets the daily half of [inatapi.requestRate](imported/inaturalist.org/inatapi/inatapi.md#requestrate)
+("around 10k API requests a day") without external state by enforcing a conservative 9,000-request
+budget in two places ([tech.dailyRequestBudget](local/tech/etiquette.md#dailyrequestbudget)):
+`inat.Client` refuses requests past 9,000 in a single run (covering downloads and `--dryrun`), and
+`birdsync()` requests `created_at` in the existing-observation download so it can estimate write
+requests already made on the account in the past 24 hours (one create per recent observation, one
+upload per attached or permanently failed asset, and one description update when assets were
+handled), add the download and write requests of the current run, and stop cleanly before starting
+an observation that would push the 24-hour total past 9,000. Because re-running birdsync is
+idempotent ([product.idempotentRerun](local/product/identity.md#idempotentrerun)), the user can
+resume 24 hours later with the same command.
+
+Two small residuals are accepted as negligible: concurrent birdsync processes started before
+either finishes writing, and runs narrowed with `--after` or `--before` that omit observations
+observed outside that date window even if synced earlier the same day.
+
+### Sums
+
+```
+inatapi.requestRate sha256:d74d7fa37dba61d3f71c184b00150432dbc73ae88cc099044e37f8bef901f976
+inatterms.dontBehaveLikeMachine sha256:23a4d147281025f155f8be5e9845937558ac5093c056d745dd9439dd561c4238
+inatterms.rateAndVolume sha256:31b383a584ace928b6292b3ff22e3096288c7350911191148f3d309e585c9278
+tech.dailyRequestBudget sha256:407b28a3dd428824dc860c2b03a9f27758432f910441d553dfd589dbd84e310c
+```

@@ -89,7 +89,11 @@ The skip counts for `--fuzzy`, `--after`, `--before`, and `--verifiable` are onl
 those flags are in effect. A "Skipped N eBird observations with unparseable fields" line
 appears if any rows had a date, time, or coordinate birdsync couldn't read; those rows are
 skipped and the rest of the run continues. A final "Failed to upload N media assets" line appears if any
-media downloads or uploads failed; those failures are logged but don't stop the run.
+media downloads or uploads failed; those failures are logged but don't stop the run. If a very
+large sync reaches birdsync's 9,000-request daily iNaturalist API budget (leaving a margin below
+iNaturalist's 10,000-requests-per-day guideline), birdsync stops cleanly before starting the next
+observation and prints a reminder to re-run in 24 hours; the next run skips everything already
+uploaded and picks up where it left off.
 
 Under `--dryrun` every line that would report work says "Would" instead: "Would create N",
 "Would update N", and a single "Would upload N media assets to iNaturalist". A dry run

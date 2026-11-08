@@ -223,20 +223,25 @@ Imported requirements that apply to birdsync as written, needing nothing birdsyn
 
 Composed from: [inatapi.requestRate](../../../imported/inaturalist.org/inatapi/inatapi.md#requestrate),
 [inatterms.rateAndVolume](../../../imported/inaturalist.org/inatterms/inatterms.md#rateandvolume),
-[inatterms.dontBehaveLikeMachine](../../../imported/inaturalist.org/inatterms/inatterms.md#dontbehavelikemachine)
+[inatterms.dontBehaveLikeMachine](../../../imported/inaturalist.org/inatterms/inatterms.md#dontbehavelikemachine),
+[tech.dailyRequestBudget](../../../local/tech/etiquette.md#dailyrequestbudget),
+[decisions.dailyRequestBudget](../../../decisions.md#dailyrequestbudget)
 Goals: [goals.communityNotBurdened](../../../../goals/goals.md#communitynotburdened), [goals.accountsStaySafe](../../../../goals/goals.md#accountsstaysafe)
 
 birdsync sends requests to `api.inaturalist.org` at no more than about one per second, and no
-more than about 10,000 in a day, whatever the size of the export and in every mode, including
-`--dryrun`.
+more than 9,000 in a rolling 24-hour window (within iNaturalist's guideline of around 10,000 a
+day), whatever the size of the export and in every mode, including `--dryrun`.
 
 The terms (Mandatory) require posting at a rate that does not hinder other users and warn
 against adding a lot of content very quickly; they give no number. The API's recommended
-practices (Governing) give the number. Composition reads iNaturalist's own published limit as
+practices (Governing) give the numbers. Composition reads iNaturalist's own published limit as
 the measure of the Mandatory rule, so neither the per-second nor the daily half can be given up
-locally. birdsync enforces the per-second half in one place, the client every iNaturalist request
-passes through (`docs/arch.md`). The daily half is not enforced yet, so this requirement is
-currently unmet; a daily request budget is drafted in `river/proposals.md` (`dailyCapGap`).
+locally. `inat.Client` enforces the one-second spacing and a 9,000-request cap per run at the
+single choke point every iNaturalist request passes through (`docs/arch.md`), and `birdsync()`
+estimates prior 24-hour write requests from the `created_at` timestamps and media of the
+downloaded observations so back-to-back runs stay within the same 9,000-request budget, stopping
+cleanly at an observation boundary with instructions to re-run in 24 hours
+([decisions.dailyRequestBudget](../../../decisions.md#dailyrequestbudget)).
 ## observationDownloadPageSize
 
 **The existing-observation download asks for 200 observations per page**

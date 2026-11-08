@@ -121,13 +121,21 @@ A hand-written client for the [iNaturalist API v2](https://api.inaturalist.org/v
 Note the asymmetry between `Observation` (what birdsync sends) and `Result` (what the API
 returns); they are not the same shape.
 
-#### Request pacing
+#### Request pacing and daily budget
 
 `Client.roundTrip` waits out a minimum interval before each request (`SetMinRequestInterval`;
-the default matches iNaturalist's one per second). Every request in the package passes through
-it, which is the only reason a single choke point suffices. It meets the per-second half of
-[birdsync.requestRate](../river/requirements/composed/internal/birdsync/birdsync.md#requestrate);
-the daily half is not enforced yet.
+the default matches iNaturalist's one per second) and refuses requests past `DefaultMaxRequests`
+(9,000, leaving a 10% margin below iNaturalist's 10,000-per-day guideline). Every request in the
+package passes through `roundTrip`, which is why a single choke point bounds downloads and
+`--dryrun` runs as well as writes ([birdsync.requestRate](../river/requirements/composed/internal/birdsync/birdsync.md#requestrate)).
+
+To keep back-to-back runs within the same 24-hour budget without storing local state, `birdsync()`
+requests `created_at` when downloading the user's observations and estimates write requests already
+made in the past 24 hours (one create per recent observation, one upload per attached or
+permanently failed asset, and one description update when assets were handled). Before starting an
+observation or media update whose writes would push the 24-hour total past 9,000, `birdsync()`
+stops cleanly so no observation is left created without its media, and reports the stop in the
+summary ([`dailyRequestBudget`](../river/requirements/decisions.md#dailyrequestbudget)).
 
 The per-second limit was already being met before the limiter existed, by an argument nobody had
 written down: observations are fetched in large pages, and between writes birdsync downloads a
