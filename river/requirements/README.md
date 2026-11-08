@@ -12,7 +12,7 @@ is in [`../bindings.md`](../bindings.md).
 | [`imports.md`](imports.md) | Every imported source, considered source, and its status |
 | [`precedence.md`](precedence.md) | Which source outranks which |
 | [`decisions.md`](decisions.md) | How each conflict and judgment was settled, oldest first |
-| [`composed/internal/birdsync/`](composed/internal/birdsync/birdsync.md) | The composed requirements and their acceptance criteria |
+| [`composed/internal/birdsync/`](composed/internal/birdsync/README.md) | The composed requirements and their acceptance criteria, split into area files |
 
 Never edit `composed/` by hand: change a source and recompose. Search `^## ` in any file for its
 items, or `## <name>` for one.

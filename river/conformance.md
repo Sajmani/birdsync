@@ -1,33 +1,33 @@
 # Conformance
 
 What birdsync's code is checked against, and how. This is the mutable record of which guardrail
-implements each acceptance criterion in [`acceptance.md`](requirements/composed/internal/birdsync/acceptance.md), and whether it has been
+implements each acceptance criterion in [`composed/internal/birdsync/`](requirements/composed/internal/birdsync/README.md), and whether it has been
 watched failing. A criterion has been watched failing only if its section here carries a
 `Watched failing:` line. Search `^## ` for the criteria, or `## <name>` for one.
 
 ## Built against
 
-- Package: [`composed/internal/birdsync`](requirements/composed/internal/birdsync/birdsync.md)
+- Package: [`composed/internal/birdsync`](requirements/composed/internal/birdsync/README.md)
 - Version: **none approved**. The package has no `Approves:` line in `decisions.md`, so this
   record maps guardrails to a draft. Recheck it when the owner approves a version.
-- Checked on: 2026-11-05, with `go test -race ./...` passing and `river check` passing.
+- Checked on: 2026-11-08, with `go test -race ./...` passing and `river check` passing.
 
 ## Counts
 
-Computed on 2026-11-05 by script, not maintained by hand. Recount rather than editing these
+Computed on 2026-11-08 by script, not maintained by hand. Recount rather than editing these
 numbers.
 
-- Requirements in sources: 125 (106 local, 19 imported). 100 local are live; 6 are withdrawn and excluded
+- Requirements in sources: 126 (107 local, 19 imported). 101 local are live; 6 are withdrawn and excluded
 - Live local requirements covered by a criterion, directly or through a composed requirement
-  they are composed into: 72. Uncovered: 28, counted, not failed
-- Composed requirements: 11. Criteria: 56. Watched failing on record: 8. Watched not failing: 1.
-  Not recorded: 32. New on 2026-11-05, with no guardrail yet: 15
-- Test functions: 48. Cited by a criterion: 44. Project checks: 2. Cited by none: 2
+  they are composed into: 73. Uncovered: 28, counted, not failed
+- Composed requirements: 11. Criteria: 56. Watched failing on record: 9. Watched not failing: 1.
+  Not recorded: 32. With no guardrail yet: 14
+- Test functions: 50. Cited by a criterion: 46. Project checks: 2. Cited by none: 2
 - Annotations harvested: 43, from 6 files. Annotated tests no criterion cites: 2
 
 ## buildsEverywhere
 
-Criterion: [birdsync.buildsEverywhere](requirements/composed/internal/birdsync/acceptance.md#buildseverywhere)
+Criterion: [birdsync.buildsEverywhere](requirements/composed/internal/birdsync/engineering.md#buildseverywhere)
 Guardrails: `go build ./...`, in CI
 Gates: yes, in CI
 Specman status: verified
@@ -35,7 +35,7 @@ Not yet watched failing under River. Specman's `verified` status meant the check
 
 ## vetPasses
 
-Criterion: [birdsync.vetPasses](requirements/composed/internal/birdsync/acceptance.md#vetpasses)
+Criterion: [birdsync.vetPasses](requirements/composed/internal/birdsync/engineering.md#vetpasses)
 Guardrails: `go vet ./...`, in CI
 Gates: yes, in CI
 Specman status: verified
@@ -43,7 +43,7 @@ Not yet watched failing under River. Specman's `verified` status meant the check
 
 ## formatted
 
-Criterion: [birdsync.formatted](requirements/composed/internal/birdsync/acceptance.md#formatted)
+Criterion: [birdsync.formatted](requirements/composed/internal/birdsync/engineering.md#formatted)
 Guardrails: `gofmt -l .`, in CI
 Gates: yes, in CI
 Specman status: verified
@@ -51,7 +51,7 @@ Not yet watched failing under River. Specman's `verified` status meant the check
 
 ## suitePassesUnderRace
 
-Criterion: [birdsync.suitePassesUnderRace](requirements/composed/internal/birdsync/acceptance.md#suitepassesunderrace)
+Criterion: [birdsync.suitePassesUnderRace](requirements/composed/internal/birdsync/engineering.md#suitepassesunderrace)
 Guardrails: `go test -race ./...`, in CI
 Gates: yes, in CI
 Specman status: verified
@@ -59,7 +59,7 @@ Not yet watched failing under River. Specman's `verified` status meant the check
 
 ## noLiveHostsInTests
 
-Criterion: [birdsync.noLiveHostsInTests](requirements/composed/internal/birdsync/acceptance.md#nolivehostsintests)
+Criterion: [birdsync.noLiveHostsInTests](requirements/composed/internal/birdsync/engineering.md#nolivehostsintests)
 Guardrails: `TestNoLiveServiceHostsInTests` (`guard_test.go`)
 Gates: yes, in CI
 Specman status: verified
@@ -67,7 +67,7 @@ Watched failing: 2026-08-09, by adding a scratch `_test.go` naming the live API 
 
 ## dryRunIssuesNoWrites
 
-Criterion: [birdsync.dryRunIssuesNoWrites](requirements/composed/internal/birdsync/acceptance.md#dryrunissuesnowrites)
+Criterion: [birdsync.dryRunIssuesNoWrites](requirements/composed/internal/birdsync/dryrun.md#dryrunissuesnowrites)
 Guardrails: `TestDryRunIssuesNoWrites` (`birdsync_test.go`)
 Gates: yes, in CI
 Specman status: verified
@@ -75,7 +75,7 @@ Watched failing: 2026-08-09, by changing `if dryRun` to `if false` at the `Creat
 
 ## createdObservationIdentity
 
-Criterion: [birdsync.createdObservationIdentity](requirements/composed/internal/birdsync/acceptance.md#createdobservationidentity)
+Criterion: [birdsync.createdObservationIdentity](requirements/composed/internal/birdsync/observations.md#createdobservationidentity)
 Guardrails: `TestCreatedObservationContent` (`birdsync_test.go`)
 Gates: yes, in CI
 Specman status: verified
@@ -83,7 +83,7 @@ Not yet watched failing under River. Specman's `verified` status meant the check
 
 ## createdObservationPlacement
 
-Criterion: [birdsync.createdObservationPlacement](requirements/composed/internal/birdsync/acceptance.md#createdobservationplacement)
+Criterion: [birdsync.createdObservationPlacement](requirements/composed/internal/birdsync/observations.md#createdobservationplacement)
 Guardrails: `TestCreatedObservationContent` (`birdsync_test.go`)
 Gates: yes, in CI
 Specman status: verified
@@ -91,7 +91,7 @@ Not yet watched failing under River. Specman's `verified` status meant the check
 
 ## createdObservationMedia
 
-Criterion: [birdsync.createdObservationMedia](requirements/composed/internal/birdsync/acceptance.md#createdobservationmedia)
+Criterion: [birdsync.createdObservationMedia](requirements/composed/internal/birdsync/media.md#createdobservationmedia)
 Guardrails: `TestCreatedObservationContent` (`birdsync_test.go`)
 Gates: yes, in CI
 Specman status: verified
@@ -99,7 +99,7 @@ Not yet watched failing under River. Specman's `verified` status meant the check
 
 ## updateKeepsPhotos
 
-Criterion: [birdsync.updateKeepsPhotos](requirements/composed/internal/birdsync/acceptance.md#updatekeepsphotos)
+Criterion: [birdsync.updateKeepsPhotos](requirements/composed/internal/birdsync/media.md#updatekeepsphotos)
 Guardrails: `TestClient_UpdateObservation` (`inat/client_test.go`)
 Gates: yes, in CI
 Specman status: verified
@@ -107,7 +107,7 @@ Watched failing: 2026-08-09, by changing `IgnorePhotos: true` to `false`; the te
 
 ## userAgentSent
 
-Criterion: [birdsync.userAgentSent](requirements/composed/internal/birdsync/acceptance.md#useragentsent)
+Criterion: [birdsync.userAgentSent](requirements/composed/internal/birdsync/download.md#useragentsent)
 Guardrails: `TestClient_CreateObservation` (`inat/client_test.go`)
 Gates: yes, in CI
 Specman status: verified
@@ -115,7 +115,7 @@ Not yet watched failing under River. Specman's `verified` status meant the check
 
 ## downloadUsesMaxPageSize
 
-Criterion: [birdsync.downloadUsesMaxPageSize](requirements/composed/internal/birdsync/acceptance.md#downloadusesmaxpagesize)
+Criterion: [birdsync.downloadUsesMaxPageSize](requirements/composed/internal/birdsync/download.md#downloadusesmaxpagesize)
 Guardrails: `TestDownloadObservations` (`inat/inat_test.go`)
 Gates: yes, in CI
 Specman status: verified
@@ -123,7 +123,7 @@ Not yet watched failing under River. Specman's `verified` status meant the check
 
 ## downloadHonorsDateWindow
 
-Criterion: [birdsync.downloadHonorsDateWindow](requirements/composed/internal/birdsync/acceptance.md#downloadhonorsdatewindow)
+Criterion: [birdsync.downloadHonorsDateWindow](requirements/composed/internal/birdsync/download.md#downloadhonorsdatewindow)
 Guardrails: `TestDownloadObservationsDateWindow` (`inat/inat_test.go`), `TestDownloadObservationsNoDateWindow` (`inat/inat_test.go`)
 Gates: yes, in CI
 Specman status: verified
@@ -131,7 +131,7 @@ Not yet watched failing under River. Specman's `verified` status meant the check
 
 ## skipOrderEnforced
 
-Criterion: [birdsync.skipOrderEnforced](requirements/composed/internal/birdsync/acceptance.md#skiporderenforced)
+Criterion: [birdsync.skipOrderEnforced](requirements/composed/internal/birdsync/filtering.md#skiporderenforced)
 Guardrails: `TestBirdsync` (`birdsync_test.go`)
 Gates: yes, in CI
 Specman status: verified
@@ -139,7 +139,7 @@ Not yet watched failing under River. Specman's `verified` status meant the check
 
 ## mediaResyncAdditive
 
-Criterion: [birdsync.mediaResyncAdditive](requirements/composed/internal/birdsync/acceptance.md#mediaresyncadditive)
+Criterion: [birdsync.mediaResyncAdditive](requirements/composed/internal/birdsync/media.md#mediaresyncadditive)
 Guardrails: `TestUpdateMedia` (`birdsync_test.go`)
 Gates: yes, in CI
 Specman status: verified
@@ -147,7 +147,7 @@ Not yet watched failing under River. Specman's `verified` status meant the check
 
 ## fuzzyHandlesBothDateFormats
 
-Criterion: [birdsync.fuzzyHandlesBothDateFormats](requirements/composed/internal/birdsync/acceptance.md#fuzzyhandlesbothdateformats)
+Criterion: [birdsync.fuzzyHandlesBothDateFormats](requirements/composed/internal/birdsync/filtering.md#fuzzyhandlesbothdateformats)
 Guardrails: `TestFuzzyMatchDateFormats` (`birdsync_test.go`)
 Gates: yes, in CI
 Specman status: verified
@@ -155,7 +155,7 @@ Not yet watched failing under River. Specman's `verified` status meant the check
 
 ## fuzzyIgnoresEmptyNames
 
-Criterion: [birdsync.fuzzyIgnoresEmptyNames](requirements/composed/internal/birdsync/acceptance.md#fuzzyignoresemptynames)
+Criterion: [birdsync.fuzzyIgnoresEmptyNames](requirements/composed/internal/birdsync/filtering.md#fuzzyignoresemptynames)
 Guardrails: `TestFuzzyMatchIgnoresEmptyNames` (`birdsync_test.go`)
 Gates: yes, in CI
 Specman status: verified
@@ -163,7 +163,7 @@ Not yet watched failing under River. Specman's `verified` status meant the check
 
 ## dryRunMediaCountUnclassified
 
-Criterion: [birdsync.dryRunMediaCountUnclassified](requirements/composed/internal/birdsync/acceptance.md#dryrunmediacountunclassified)
+Criterion: [birdsync.dryRunMediaCountUnclassified](requirements/composed/internal/birdsync/dryrun.md#dryrunmediacountunclassified)
 Guardrails: `TestDryRunMediaCount` (`birdsync_test.go`)
 Gates: yes, in CI
 Specman status: partial — see [below](#criteria-that-do-not-bite)
@@ -171,7 +171,7 @@ Watched not failing: 2026-08-09, the `if dryRun` → `if false` mutation at the 
 
 ## mediaChangesReported
 
-Criterion: [birdsync.mediaChangesReported](requirements/composed/internal/birdsync/acceptance.md#mediachangesreported)
+Criterion: [birdsync.mediaChangesReported](requirements/composed/internal/birdsync/media.md#mediachangesreported)
 Guardrails: `TestMediaChange` (`media_test.go`)
 Gates: yes, in CI
 Specman status: verified
@@ -179,7 +179,7 @@ Not yet watched failing under River. Specman's `verified` status meant the check
 
 ## mlAssetDownload
 
-Criterion: [birdsync.mlAssetDownload](requirements/composed/internal/birdsync/acceptance.md#mlassetdownload)
+Criterion: [birdsync.mlAssetDownload](requirements/composed/internal/birdsync/media.md#mlassetdownload)
 Guardrails: `TestDownloadMLAsset_Photo` (`ebird/ebird_test.go`), `TestDownloadMLAsset_Sound` (`ebird/ebird_test.go`)
 Gates: yes, in CI
 Specman status: verified
@@ -187,7 +187,7 @@ Not yet watched failing under River. Specman's `verified` status meant the check
 
 ## recordObservedParsing
 
-Criterion: [birdsync.recordObservedParsing](requirements/composed/internal/birdsync/acceptance.md#recordobservedparsing)
+Criterion: [birdsync.recordObservedParsing](requirements/composed/internal/birdsync/filtering.md#recordobservedparsing)
 Guardrails: `TestRecord_Observed` (`ebird/ebird_test.go`)
 Gates: yes, in CI
 Specman status: verified
@@ -195,7 +195,7 @@ Not yet watched failing under River. Specman's `verified` status meant the check
 
 ## csvReadByHeader
 
-Criterion: [birdsync.csvReadByHeader](requirements/composed/internal/birdsync/acceptance.md#csvreadbyheader)
+Criterion: [birdsync.csvReadByHeader](requirements/composed/internal/birdsync/filtering.md#csvreadbyheader)
 Guardrails: `TestRecords` (`ebird/ebird_test.go`)
 Gates: yes, in CI
 Specman status: verified
@@ -203,7 +203,7 @@ Not yet watched failing under River. Specman's `verified` status meant the check
 
 ## syncKeyValidity
 
-Criterion: [birdsync.syncKeyValidity](requirements/composed/internal/birdsync/acceptance.md#synckeyvalidity)
+Criterion: [birdsync.syncKeyValidity](requirements/composed/internal/birdsync/filtering.md#synckeyvalidity)
 Guardrails: `TestObservationID_Valid` (`ebird/ebird_test.go`)
 Gates: yes, in CI
 Specman status: verified
@@ -211,7 +211,7 @@ Not yet watched failing under River. Specman's `verified` status meant the check
 
 ## ciRunsStandingChecks
 
-Criterion: [birdsync.ciRunsStandingChecks](requirements/composed/internal/birdsync/acceptance.md#cirunsstandingchecks)
+Criterion: [birdsync.ciRunsStandingChecks](requirements/composed/internal/birdsync/engineering.md#cirunsstandingchecks)
 Guardrails: `.github/workflows/ci.yml`
 Gates: yes, in CI
 Specman status: verified
@@ -219,7 +219,7 @@ Not yet watched failing under River. Specman's `verified` status meant the check
 
 ## summaryLabels
 
-Criterion: [birdsync.summaryLabels](requirements/composed/internal/birdsync/acceptance.md#summarylabels)
+Criterion: [birdsync.summaryLabels](requirements/composed/internal/birdsync/dryrun.md#summarylabels)
 Guardrails: `TestSummaryDryRunLabels` (`birdsync_test.go`), `TestSummaryRealRunLabels` (`birdsync_test.go`), `TestSummaryConditionalLines` (`birdsync_test.go`)
 Gates: yes, in CI
 Specman status: verified (landed as a pending criterion)
@@ -227,7 +227,7 @@ Not yet watched failing under River. Specman's `verified` status meant the check
 
 ## untaxonedObservationRecognized
 
-Criterion: [birdsync.untaxonedObservationRecognized](requirements/composed/internal/birdsync/acceptance.md#untaxonedobservationrecognized)
+Criterion: [birdsync.untaxonedObservationRecognized](requirements/composed/internal/birdsync/filtering.md#untaxonedobservationrecognized)
 Guardrails: `TestDownloadObservationsNoTaxonFilter` (`inat/inat_test.go`), `TestUntaxonedObservationIsRecognized` (`birdsync_test.go`)
 Gates: yes, in CI
 Specman status: verified (landed as a pending criterion)
@@ -235,7 +235,7 @@ Not yet watched failing under River. Specman's `verified` status meant the check
 
 ## invalidRecordsSkipped
 
-Criterion: [birdsync.invalidRecordsSkipped](requirements/composed/internal/birdsync/acceptance.md#invalidrecordsskipped)
+Criterion: [birdsync.invalidRecordsSkipped](requirements/composed/internal/birdsync/failures.md#invalidrecordsskipped)
 Guardrails: `TestInvalidRecordsAreSkipped` (`birdsync_test.go`)
 Gates: yes, in CI
 Specman status: verified (landed as a pending criterion)
@@ -243,7 +243,7 @@ Not yet watched failing under River. Specman's `verified` status meant the check
 
 ## tempFilesCleanedUp
 
-Criterion: [birdsync.tempFilesCleanedUp](requirements/composed/internal/birdsync/acceptance.md#tempfilescleanedup)
+Criterion: [birdsync.tempFilesCleanedUp](requirements/composed/internal/birdsync/media.md#tempfilescleanedup)
 Guardrails: `TestTempFilesAreCleanedUp` (`birdsync_test.go`)
 Gates: yes, in CI
 Specman status: verified (landed as a pending criterion)
@@ -251,7 +251,7 @@ Not yet watched failing under River. Specman's `verified` status meant the check
 
 ## noLogFatalOutsideMain
 
-Criterion: [birdsync.noLogFatalOutsideMain](requirements/composed/internal/birdsync/acceptance.md#nologfataloutsidemain)
+Criterion: [birdsync.noLogFatalOutsideMain](requirements/composed/internal/birdsync/engineering.md#nologfataloutsidemain)
 Guardrails: `TestNoLogFatalInLibraryPackages` (`guard_test.go`)
 Gates: yes, in CI
 Specman status: verified (landed as a pending criterion)
@@ -259,7 +259,7 @@ Watched failing: 2026-08-09, by restoring a `log.Fatal` in `inat`; the test fail
 
 ## toolsAreReadOnly
 
-Criterion: [birdsync.toolsAreReadOnly](requirements/composed/internal/birdsync/acceptance.md#toolsarereadonly)
+Criterion: [birdsync.toolsAreReadOnly](requirements/composed/internal/birdsync/scope.md#toolsarereadonly)
 Guardrails: `TestToolsAreReadOnly` (`guard_test.go`)
 Gates: yes, in CI
 Specman status: verified
@@ -267,7 +267,7 @@ Watched failing: 2026-08-09, by adding a scratch tool calling `DeleteObservation
 
 ## canonicalExtensions
 
-Criterion: [birdsync.canonicalExtensions](requirements/composed/internal/birdsync/acceptance.md#canonicalextensions)
+Criterion: [birdsync.canonicalExtensions](requirements/composed/internal/birdsync/media.md#canonicalextensions)
 Guardrails: `TestFileExtension` (`ebird/ebird_test.go`), `TestDownloadMLAsset_Photo` (`ebird/ebird_test.go`), `TestDownloadMLAsset_Sound` (`ebird/ebird_test.go`)
 Gates: yes, in CI
 Specman status: verified
@@ -275,7 +275,7 @@ Not yet watched failing under River. Specman's `verified` status meant the check
 
 ## failedUploadRetried
 
-Criterion: [birdsync.failedUploadRetried](requirements/composed/internal/birdsync/acceptance.md#faileduploadretried)
+Criterion: [birdsync.failedUploadRetried](requirements/composed/internal/birdsync/media.md#faileduploadretried)
 Guardrails: `TestFailedUploadIsRetriedNextRun` (`birdsync_test.go`), `TestAllUploadsFailingLeavesNoUpdate` (`birdsync_test.go`)
 Gates: yes, in CI
 Specman status: verified
@@ -283,7 +283,7 @@ Not yet watched failing under River. Specman's `verified` status meant the check
 
 ## permanentVersusTransientUpload
 
-Criterion: [birdsync.permanentVersusTransientUpload](requirements/composed/internal/birdsync/acceptance.md#permanentversustransientupload)
+Criterion: [birdsync.permanentVersusTransientUpload](requirements/composed/internal/birdsync/failures.md#permanentversustransientupload)
 Guardrails: `TestPermanentUploadFailureIsNotRetried` (`birdsync_test.go`), `TestTransientUploadFailureIsRetried` (`birdsync_test.go`), `TestStatusErrorPermanence` (`inat/client_test.go`)
 Gates: yes, in CI
 Specman status: verified
@@ -291,7 +291,7 @@ Watched failing: 2026-08-09, by forcing `Permanent()` to `true`, then to `false`
 
 ## statusErrorCarriesBody
 
-Criterion: [birdsync.statusErrorCarriesBody](requirements/composed/internal/birdsync/acceptance.md#statuserrorcarriesbody)
+Criterion: [birdsync.statusErrorCarriesBody](requirements/composed/internal/birdsync/download.md#statuserrorcarriesbody)
 Guardrails: `TestStatusErrorIncludesBody` (`inat/client_test.go`), `TestStatusErrorDropsHTMLBody` (`inat/client_test.go`), `TestStatusErrorCollapsesWhitespace` (`inat/client_test.go`)
 Gates: yes, in CI
 Specman status: verified
@@ -299,7 +299,7 @@ Not yet watched failing under River. Specman's `verified` status meant the check
 
 ## failedAssetsReported
 
-Criterion: [birdsync.failedAssetsReported](requirements/composed/internal/birdsync/acceptance.md#failedassetsreported)
+Criterion: [birdsync.failedAssetsReported](requirements/composed/internal/birdsync/failures.md#failedassetsreported)
 Guardrails: `TestMediaChange` (`media_test.go`)
 Gates: yes, in CI
 Specman status: verified
@@ -307,7 +307,7 @@ Not yet watched failing under River. Specman's `verified` status meant the check
 
 ## downloadPagesByID
 
-Criterion: [birdsync.downloadPagesByID](requirements/composed/internal/birdsync/acceptance.md#downloadpagesbyid)
+Criterion: [birdsync.downloadPagesByID](requirements/composed/internal/birdsync/download.md#downloadpagesbyid)
 Guardrails: `TestDownloadObservationsPagesByID` (`inat/inat_test.go`), `TestDownloadObservationsCursorMustAdvance` (`inat/inat_test.go`)
 Gates: yes, in CI
 Specman status: verified
@@ -315,7 +315,7 @@ Watched failing: 2026-08-09, by removing `id_above` from the request; it first h
 
 ## requestsPaced
 
-Criterion: [birdsync.requestsPaced](requirements/composed/internal/birdsync/acceptance.md#requestspaced)
+Criterion: [birdsync.requestsPaced](requirements/composed/internal/birdsync/download.md#requestspaced)
 Guardrails: `TestClientPacesRequests` (`inat/client_test.go`), `TestDefaultMinRequestIntervalMatchesGuidance` (`inat/client_test.go`)
 Gates: yes, in CI
 Specman status: verified
@@ -323,7 +323,7 @@ Not yet watched failing under River. Specman's `verified` status meant the check
 
 ## badInputRejected
 
-Criterion: [birdsync.badInputRejected](requirements/composed/internal/birdsync/acceptance.md#badinputrejected)
+Criterion: [birdsync.badInputRejected](requirements/composed/internal/birdsync/failures.md#badinputrejected)
 Guardrails: `TestRecordsRejectsBadInput` (`ebird/ebird_test.go`)
 Gates: yes, in CI
 Specman status: verified
@@ -331,7 +331,7 @@ Not yet watched failing under River. Specman's `verified` status meant the check
 
 ## readmeCommunitySection
 
-Criterion: [birdsync.readmeCommunitySection](requirements/composed/internal/birdsync/acceptance.md#readmecommunitysection)
+Criterion: [birdsync.readmeCommunitySection](requirements/composed/internal/birdsync/observations.md#readmecommunitysection)
 Guardrails: Human review of README.md
 Gates: no; informs, by human review
 Specman status: verified
@@ -339,7 +339,7 @@ Not yet watched failing under River. Specman's `verified` status meant the check
 
 ## downloadCleansUpOnError
 
-Criterion: [birdsync.downloadCleansUpOnError](requirements/composed/internal/birdsync/acceptance.md#downloadcleansuponerror)
+Criterion: [birdsync.downloadCleansUpOnError](requirements/composed/internal/birdsync/media.md#downloadcleansuponerror)
 Guardrails: `TestDownloadMLAssetCleansUpOnError` (`ebird/ebird_test.go`)
 Gates: yes, in CI
 Specman status: verified
@@ -347,7 +347,7 @@ Not yet watched failing under River. Specman's `verified` status meant the check
 
 ## americanSpellings
 
-Criterion: [birdsync.americanSpellings](requirements/composed/internal/birdsync/acceptance.md#americanspellings)
+Criterion: [birdsync.americanSpellings](requirements/composed/internal/birdsync/engineering.md#americanspellings)
 Guardrails: `TestAmericanSpellings` (`guard_test.go`)
 Gates: yes, in CI
 Specman status: verified — five behaviors mutation-tested
@@ -355,14 +355,14 @@ Watched failing: 2026-08-10, by planting a British word in prose, a generated in
 
 ## pacingPerDay
 
-Criterion: [birdsync.pacingPerDay](requirements/composed/internal/birdsync/acceptance.md#pacingperday)
+Criterion: [birdsync.pacingPerDay](requirements/composed/internal/birdsync/download.md#pacingperday)
 Guardrails: `TestClientEnforcesMaxRequests` (`inat/client_test.go`), `TestDailyRequestBudget` (`birdsync_test.go`)
 Gates: yes, in CI
 Watched failing: 2026-11-08, by disabling the `c.requestCount >= c.maxRequests` guard in `inat/client.go` and forcing `estimateRecentWriteRequests` to return 0 in `birdsync.go`; both tests failed (`4th request error = <nil>, want ErrRequestBudgetExceeded` and `got 2 creates, 2 uploads, 2 updates; want 1, 1, 1`)
 
 ## downloadOrderedByID
 
-Criterion: [birdsync.downloadOrderedByID](requirements/composed/internal/birdsync/acceptance.md#downloadorderedbyid)
+Criterion: [birdsync.downloadOrderedByID](requirements/composed/internal/birdsync/download.md#downloadorderedbyid)
 Guardrails: none mapped yet. Written by composition on 2026-11-05; an existing test may already
 check it, and mapping one is the next step
 Gates: no
@@ -370,7 +370,7 @@ Not watched failing.
 
 ## downloadStopsOnShortPage
 
-Criterion: [birdsync.downloadStopsOnShortPage](requirements/composed/internal/birdsync/acceptance.md#downloadstopsonshortpage)
+Criterion: [birdsync.downloadStopsOnShortPage](requirements/composed/internal/birdsync/download.md#downloadstopsonshortpage)
 Guardrails: none mapped yet. Written by composition on 2026-11-05; an existing test may already
 check it, and mapping one is the next step
 Gates: no
@@ -378,7 +378,7 @@ Not watched failing.
 
 ## jwtFromEnvironmentInHeader
 
-Criterion: [birdsync.jwtFromEnvironmentInHeader](requirements/composed/internal/birdsync/acceptance.md#jwtfromenvironmentinheader)
+Criterion: [birdsync.jwtFromEnvironmentInHeader](requirements/composed/internal/birdsync/auth.md#jwtfromenvironmentinheader)
 Guardrails: none mapped yet. Written by composition on 2026-11-05; an existing test may already
 check it, and mapping one is the next step
 Gates: no
@@ -386,7 +386,7 @@ Not watched failing.
 
 ## jwtFromPromptUnwrapped
 
-Criterion: [birdsync.jwtFromPromptUnwrapped](requirements/composed/internal/birdsync/acceptance.md#jwtfrompromptunwrapped)
+Criterion: [birdsync.jwtFromPromptUnwrapped](requirements/composed/internal/birdsync/auth.md#jwtfrompromptunwrapped)
 Guardrails: none mapped yet. Written by composition on 2026-11-05; an existing test may already
 check it, and mapping one is the next step
 Gates: no
@@ -394,7 +394,7 @@ Not watched failing.
 
 ## noBuiltInCredentials
 
-Criterion: [birdsync.noBuiltInCredentials](requirements/composed/internal/birdsync/acceptance.md#nobuiltincredentials)
+Criterion: [birdsync.noBuiltInCredentials](requirements/composed/internal/birdsync/auth.md#nobuiltincredentials)
 Guardrails: none mapped yet. Written by composition on 2026-11-05; an existing test may already
 check it, and mapping one is the next step
 Gates: no
@@ -402,7 +402,7 @@ Not watched failing.
 
 ## writesCarrySuppliedToken
 
-Criterion: [birdsync.writesCarrySuppliedToken](requirements/composed/internal/birdsync/acceptance.md#writescarrysuppliedtoken)
+Criterion: [birdsync.writesCarrySuppliedToken](requirements/composed/internal/birdsync/auth.md#writescarrysuppliedtoken)
 Guardrails: none mapped yet. Written by composition on 2026-11-05; an existing test may already
 check it, and mapping one is the next step
 Gates: no
@@ -410,7 +410,7 @@ Not watched failing.
 
 ## tokenOnlyWhereNeeded
 
-Criterion: [birdsync.tokenOnlyWhereNeeded](requirements/composed/internal/birdsync/acceptance.md#tokenonlywhereneeded)
+Criterion: [birdsync.tokenOnlyWhereNeeded](requirements/composed/internal/birdsync/auth.md#tokenonlywhereneeded)
 Guardrails: none mapped yet. Written by composition on 2026-11-05; an existing test may already
 check it, and mapping one is the next step
 Gates: no
@@ -418,7 +418,7 @@ Not watched failing.
 
 ## authenticatedDownloadSeesPrivate
 
-Criterion: [birdsync.authenticatedDownloadSeesPrivate](requirements/composed/internal/birdsync/acceptance.md#authenticateddownloadseesprivate)
+Criterion: [birdsync.authenticatedDownloadSeesPrivate](requirements/composed/internal/birdsync/auth.md#authenticateddownloadseesprivate)
 Guardrails: none mapped yet. Written by composition on 2026-11-05; an existing test may already
 check it, and mapping one is the next step
 Gates: no
@@ -426,7 +426,7 @@ Not watched failing.
 
 ## createsMatchExportRecords
 
-Criterion: [birdsync.createsMatchExportRecords](requirements/composed/internal/birdsync/acceptance.md#createsmatchexportrecords)
+Criterion: [birdsync.createsMatchExportRecords](requirements/composed/internal/birdsync/scope.md#createsmatchexportrecords)
 Guardrails: none mapped yet. Written by composition on 2026-11-05; an existing test may already
 check it, and mapping one is the next step
 Gates: no
@@ -434,7 +434,7 @@ Not watched failing.
 
 ## noIdentificationsCommentsOrMessages
 
-Criterion: [birdsync.noIdentificationsCommentsOrMessages](requirements/composed/internal/birdsync/acceptance.md#noidentificationscommentsormessages)
+Criterion: [birdsync.noIdentificationsCommentsOrMessages](requirements/composed/internal/birdsync/scope.md#noidentificationscommentsormessages)
 Guardrails: none mapped yet. Written by composition on 2026-11-05; an existing test may already
 check it, and mapping one is the next step
 Gates: no
@@ -442,7 +442,7 @@ Not watched failing.
 
 ## mediaRequestsOnlyListedAssets
 
-Criterion: [birdsync.mediaRequestsOnlyListedAssets](requirements/composed/internal/birdsync/acceptance.md#mediarequestsonlylistedassets)
+Criterion: [birdsync.mediaRequestsOnlyListedAssets](requirements/composed/internal/birdsync/media.md#mediarequestsonlylistedassets)
 Guardrails: none mapped yet. Written by composition on 2026-11-05; an existing test may already
 check it, and mapping one is the next step
 Gates: no
@@ -450,7 +450,7 @@ Not watched failing.
 
 ## mediaAttachedToListingRecord
 
-Criterion: [birdsync.mediaAttachedToListingRecord](requirements/composed/internal/birdsync/acceptance.md#mediaattachedtolistingrecord)
+Criterion: [birdsync.mediaAttachedToListingRecord](requirements/composed/internal/birdsync/media.md#mediaattachedtolistingrecord)
 Guardrails: none mapped yet. Written by composition on 2026-11-05; an existing test may already
 check it, and mapping one is the next step
 Gates: no
@@ -458,7 +458,7 @@ Not watched failing.
 
 ## assetNamedInDescription
 
-Criterion: [birdsync.assetNamedInDescription](requirements/composed/internal/birdsync/acceptance.md#assetnamedindescription)
+Criterion: [birdsync.assetNamedInDescription](requirements/composed/internal/birdsync/media.md#assetnamedindescription)
 Guardrails: none mapped yet. Written by composition on 2026-11-05; an existing test may already
 check it, and mapping one is the next step
 Gates: no
@@ -466,7 +466,7 @@ Not watched failing.
 
 ## attributionMeetsGuidelines
 
-Criterion: [birdsync.attributionMeetsGuidelines](requirements/composed/internal/birdsync/acceptance.md#attributionmeetsguidelines)
+Criterion: [birdsync.attributionMeetsGuidelines](requirements/composed/internal/birdsync/media.md#attributionmeetsguidelines)
 Guardrails: none mapped yet. Written by composition on 2026-11-05; an existing test may already
 check it, and mapping one is the next step
 Gates: no
@@ -547,10 +547,10 @@ requirement, a test of an implementation detail, or a test of behavior nobody wa
 Requirements the code is known not to satisfy, none of them yet an accepted gap. Each has a
 drafted decision for the owner in [`proposals.md`](proposals.md).
 
-- [birdsync.macaulayAssetsAttributed](requirements/composed/internal/birdsync/birdsync.md#macaulayassetsattributed): not known to be met; the attribution guidelines it depends on were never retrieved
+- [birdsync.macaulayAssetsAttributed](requirements/composed/internal/birdsync/media.md#macaulayassetsattributed): not known to be met; the attribution guidelines it depends on were never retrieved
 
 [inatapi.authenticateOnlyWhenNeeded](requirements/imported/inaturalist.org/inatapi/inatapi.md#authenticateonlywhenneeded) was listed here until 2026-11-04, when the owner decided that
 every request birdsync makes needs authentication, so the rule is met
 ([decisions.authenticationIsNecessary](requirements/decisions.md#authenticationisnecessary)).
-[birdsync.requestRate](requirements/composed/internal/birdsync/birdsync.md#requestrate) was listed here until 2026-11-08, when the 9,000-request 24-hour budget was implemented
+[birdsync.requestRate](requirements/composed/internal/birdsync/download.md#requestrate) was listed here until 2026-11-08, when the 9,000-request 24-hour budget was implemented
 ([decisions.dailyRequestBudget](requirements/decisions.md#dailyrequestbudget)).

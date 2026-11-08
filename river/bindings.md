@@ -11,8 +11,8 @@ Drafted at adoption on 2026-11-03 and confirmed by the owner, Sajmani, on 2026-1
 
 | Stage | Status | Notes |
 | --- | --- | --- |
-| Requirements | adopted | Sources in `requirements/local/` and `requirements/imported/`, composed into `requirements/composed/internal/birdsync/` |
-| Verification | adopted | Criteria in the composed package's `acceptance.md`. Guardrails are Go tests and CI, mapped in [`conformance.md`](conformance.md) |
+| Requirements | adopted | Sources in `requirements/local/` and `requirements/imported/`, composed into area files in `requirements/composed/internal/birdsync/` |
+| Verification | adopted | Criteria in the area files of [`requirements/composed/internal/birdsync/`](requirements/composed/internal/birdsync/README.md). Guardrails are Go tests and CI, mapped in [`conformance.md`](conformance.md) |
 | Implementation | informal | The design record is [`docs/arch.md`](../docs/arch.md), kept in step with the code by convention, not by River |
 | Release | informal | No release process: users install `@latest` |
 

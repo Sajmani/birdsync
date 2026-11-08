@@ -23,7 +23,8 @@ import (
 // The check is a substring scan, so it catches the realistic mistake — pasting
 // a real URL into a test — and not a determined one, such as assembling the
 // host from parts or reading it from the environment. That limit is recorded
-// in acceptance.md rather than papered over; the alternative, parsing every
+// on the criterion in river/requirements/composed/internal/birdsync/engineering.md
+// rather than papered over; the alternative, parsing every
 // expression that could produce a hostname, would cost more than it catches.
 func TestNoLiveServiceHostsInTests(t *testing.T) {
 	// The real hosts, spelled in pieces so that this file does not trip its

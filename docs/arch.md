@@ -127,7 +127,7 @@ returns); they are not the same shape.
 the default matches iNaturalist's one per second) and refuses requests past `DefaultMaxRequests`
 (9,000, leaving a 10% margin below iNaturalist's 10,000-per-day guideline). Every request in the
 package passes through `roundTrip`, which is why a single choke point bounds downloads and
-`--dryrun` runs as well as writes ([birdsync.requestRate](../river/requirements/composed/internal/birdsync/birdsync.md#requestrate)).
+`--dryrun` runs as well as writes ([birdsync.requestRate](../river/requirements/composed/internal/birdsync/download.md#requestrate)).
 
 To keep back-to-back runs within the same 24-hour budget without storing local state, `birdsync()`
 requests `created_at` when downloading the user's observations and estimates write requests already
