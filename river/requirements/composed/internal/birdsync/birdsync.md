@@ -19,6 +19,16 @@ Sources at composition: `product` and `tech` (local, at this commit), and `inata
 `inatterms` and `mlterms` (Mandatory), vendored at the versions recorded in
 [`imports.md`](../../../imports.md), the one place versions are recorded.
 
+## Composed from
+
+- inatapi (Governing)
+- inatterms (Mandatory)
+- mlterms (Mandatory)
+- product (Local: product)
+- tech (Local: tech)
+- decisions
+- precedence
+
 ## Included from product
 
 ### Purpose
@@ -194,9 +204,6 @@ Sources at composition: `product` and `tech` (local, at this commit), and `inata
 
 Imported requirements that apply to birdsync as written, needing nothing birdsync-specific composed from them.
 
-
-composed from them.
-
 ### iNaturalist API
 
 - [inatapi.singleIPAndMediaCaps](../../../imported/inaturalist.org/inatapi/inatapi.md#singleipandmediacaps) — One IP; media download volume caps
@@ -204,8 +211,6 @@ composed from them.
 ### iNaturalist terms
 
 - [inatterms.contributorKeepsRights](../../../imported/inaturalist.org/inatterms/inatterms.md#contributorkeepsrights) — A contributor keeps their rights, and licenses by default as CC BY-NC
-- [inatterms.accountHolderResponsible](../../../imported/inaturalist.org/inatterms/inatterms.md#accountholderresponsible) — The account holder is responsible for everything done under the account
-- [inatterms.duplicatesUndesirable](../../../imported/inaturalist.org/inatterms/inatterms.md#duplicatesundesirable) — Duplicates are undesirable but not an offense
 
 ### Macaulay Library terms
 
@@ -236,12 +241,12 @@ currently unmet; a daily request budget is drafted in `river/proposals.md` (`dai
 
 **The existing-observation download asks for 200 observations per page**
 
-Composed from: [inatapi.largestPageSize](../../../imported/inaturalist.org/inatapi/inatapi.md#largestpagesize),
-[product.downloadExistingObservations](../../../local/product/download.md#downloadexistingobservations)
+Composed from: [inatapi.largestPageSize](../../../imported/inaturalist.org/inatapi/inatapi.md#largestpagesize)
 Goals: [goals.communityNotBurdened](../../../../goals/goals.md#communitynotburdened)
 
-Every page request in the download of the user's existing iNaturalist observations sets
-`per_page=200`, the largest page the API serves for observations.
+Every page request in the download of the user's existing iNaturalist observations
+([product.downloadExistingObservations](../../../local/product/download.md#downloadexistingobservations))
+sets `per_page=200`, the largest page the API serves for observations.
 
 The value is the source's own ("you can get up to 200 observations in a single request"). This
 replaces the withdrawn local [tech.maxPageSize](../../../local/tech/etiquette.md#maxpagesize)
@@ -251,15 +256,14 @@ replaces the withdrawn local [tech.maxPageSize](../../../local/tech/etiquette.md
 **The existing-observation download pages by id_above, in ascending id order**
 
 Composed from: [inatapi.idAbovePastTenThousand](../../../imported/inaturalist.org/inatapi/inatapi.md#idabovepasttenthousand),
-[product.largeAccounts](../../../local/product/download.md#largeaccounts),
-[product.downloadExistingObservations](../../../local/product/download.md#downloadexistingobservations),
 [decisions.pageByIDAbove](../../../decisions.md#pagebyidabove)
 Goals: [goals.birdersKeepOneRecord](../../../../goals/goals.md#birderskeeponerecord), [goals.accountsStaySafe](../../../../goals/goals.md#accountsstaysafe)
 
-The download of the user's existing observations sorts by id ascending (`order_by=id`,
-`order=asc`), sets `id_above` on each request after the first to the highest observation ID in
-the page before, never pages by `page`, ends at the first page shorter than the page size, and
-fails with an error if a page does not advance the cursor.
+The download of the user's existing observations
+([product.downloadExistingObservations](../../../local/product/download.md#downloadexistingobservations))
+sorts by id ascending (`order_by=id`, `order=asc`), sets `id_above` on each request after the
+first to the highest observation ID in the page before, never pages by `page`, ends at the first
+page shorter than the page size, and fails with an error if a page does not advance the cursor.
 
 This is how birdsync meets [product.largeAccounts](../../../local/product/download.md#largeaccounts)
 within the API's 10,000-result ceiling on page numbers, as decided in
@@ -285,35 +289,35 @@ that holds for every user.
 
 **birdsync authenticates with the user's JWT in the Authorization header**
 
-Composed from: [inatapi.jwtAuthorization](../../../imported/inaturalist.org/inatapi/inatapi.md#jwtauthorization),
-[product.credentialsFromEnvironment](../../../local/product/auth.md#credentialsfromenvironment),
-[product.promptForMissingCredentials](../../../local/product/auth.md#promptformissingcredentials),
-[product.tokenFraming](../../../local/product/auth.md#tokenframing),
-[product.unauthorizedSaysRefreshToken](../../../local/product/auth.md#unauthorizedsaysrefreshtoken)
+Composed from: [inatapi.jwtAuthorization](../../../imported/inaturalist.org/inatapi/inatapi.md#jwtauthorization)
 Goals: [goals.birdersKeepOneRecord](../../../../goals/goals.md#birderskeeponerecord), [goals.accountsStaySafe](../../../../goals/goals.md#accountsstaysafe)
 
 Every authenticated request birdsync sends to `api.inaturalist.org` carries, in its HTTP
 `Authorization` header, the JWT the user obtained from `https://www.inaturalist.org/users/api_token`,
 whether it came from `INAT_API_TOKEN` as the bare token or from the prompt in its
-`{"api_token":"TOKEN"}` framing.
+`{"api_token":"TOKEN"}` framing
+([product.credentialsFromEnvironment](../../../local/product/auth.md#credentialsfromenvironment),
+[product.promptForMissingCredentials](../../../local/product/auth.md#promptformissingcredentials),
+[product.tokenFraming](../../../local/product/auth.md#tokenframing)).
 
 The local sources say where the token comes from and how a 401 from its 24-hour expiry is
-reported; none says how it is sent, which is what the Governing source prescribes.
+reported ([product.unauthorizedSaysRefreshToken](../../../local/product/auth.md#unauthorizedsaysrefreshtoken));
+none says how it is sent, which is what the Governing source prescribes.
 ## ownAccountOnly
 
 **birdsync posts only as the person running it, with their own token**
 
 Composed from: [inatapi.noGroupAccounts](../../../imported/inaturalist.org/inatapi/inatapi.md#nogroupaccounts),
 [inatterms.accountHolderResponsible](../../../imported/inaturalist.org/inatterms/inatterms.md#accountholderresponsible),
-[product.credentialsFromEnvironment](../../../local/product/auth.md#credentialsfromenvironment),
-[product.promptForMissingCredentials](../../../local/product/auth.md#promptformissingcredentials),
-[product.copiesObservations](../../../local/product/scope.md#copiesobservations),
 [decisions.inputIdentityIsTheAccountHolders](../../../decisions.md#inputidentityistheaccountholders)
 Goals: [goals.accountsStaySafe](../../../../goals/goals.md#accountsstaysafe)
 
-Every write birdsync makes to iNaturalist is authenticated with a token supplied at run time by
-the person running it; birdsync contains, ships, and falls back to no account or token of its
-own.
+Every write birdsync makes to iNaturalist
+([product.copiesObservations](../../../local/product/scope.md#copiesobservations)) is
+authenticated with a token supplied at run time by the person running it
+([product.credentialsFromEnvironment](../../../local/product/auth.md#credentialsfromenvironment),
+[product.promptForMissingCredentials](../../../local/product/auth.md#promptformissingcredentials));
+birdsync contains, ships, and falls back to no account or token of its own.
 
 That keeps birdsync from being a group account: each user posts as themselves. Whether the
 person running birdsync is the person whose eBird export it reads is the account holder's
@@ -327,10 +331,8 @@ the user pastes from the api_token page meets that is not settled by precedence
 **birdsync sends its token to iNaturalist only on requests that need it**
 
 Composed from: [inatapi.authenticateOnlyWhenNeeded](../../../imported/inaturalist.org/inatapi/inatapi.md#authenticateonlywhenneeded),
-[decisions.authenticationIsNecessary](../../../decisions.md#authenticationisnecessary),
-[product.downloadExistingObservations](../../../local/product/download.md#downloadexistingobservations),
-[product.idempotentRerun](../../../local/product/identity.md#idempotentrerun),
-[inatterms.duplicatesUndesirable](../../../imported/inaturalist.org/inatterms/inatterms.md#duplicatesundesirable)
+[inatterms.duplicatesUndesirable](../../../imported/inaturalist.org/inatterms/inatterms.md#duplicatesundesirable),
+[decisions.authenticationIsNecessary](../../../decisions.md#authenticationisnecessary)
 Goals: [goals.communityNotBurdened](../../../../goals/goals.md#communitynotburdened), [goals.accountsStaySafe](../../../../goals/goals.md#accountsstaysafe)
 
 birdsync sends its token to `api.inaturalist.org` only on a write, or on a read whose
@@ -338,23 +340,25 @@ unauthenticated answer would omit observations birdsync must see to avoid creati
 every other request to iNaturalist is sent without it.
 
 The owner ruled in [decisions.authenticationIsNecessary](../../../decisions.md#authenticationisnecessary)
-that the download of existing observations is such a read: without the token it omits private
-and geoprivacy-obscured observations, each of which the next run would create again. So the
-rule is met today with every request authenticated, and needs no exception from iNaturalist.
+that the download of existing observations
+([product.downloadExistingObservations](../../../local/product/download.md#downloadexistingobservations))
+is such a read: without the token it omits private and geoprivacy-obscured observations, each of
+which the next run would create again ([product.idempotentRerun](../../../local/product/identity.md#idempotentrerun)).
+So the rule is met today with every request authenticated, and needs no exception from iNaturalist.
 Media downloads go to the Macaulay Library and are outside it.
 ## postsOnlyUsersOwnRecords
 
 **Every observation birdsync posts is a record from the user's own export, and it posts nothing else of its own**
 
 Composed from: [inatterms.noMachineGeneratedContent](../../../imported/inaturalist.org/inatterms/inatterms.md#nomachinegeneratedcontent),
-[decisions.notMachineGeneratedContent](../../../decisions.md#notmachinegeneratedcontent),
-[product.copiesObservations](../../../local/product/scope.md#copiesobservations),
-[product.csvExportInput](../../../local/product/scope.md#csvexportinput),
-[product.syncKey](../../../local/product/identity.md#synckey)
+[decisions.notMachineGeneratedContent](../../../decisions.md#notmachinegeneratedcontent)
 Goals: [goals.accountsStaySafe](../../../../goals/goals.md#accountsstaysafe), [goals.communityNotBurdened](../../../../goals/goals.md#communitynotburdened)
 
-Every observation birdsync creates corresponds to one record in the eBird export the user
-supplied, and birdsync posts no identification, comment, or message of its own.
+Every observation birdsync creates
+([product.copiesObservations](../../../local/product/scope.md#copiesobservations),
+[product.syncKey](../../../local/product/identity.md#synckey)) corresponds to one record in the
+eBird export the user supplied ([product.csvExportInput](../../../local/product/scope.md#csvexportinput)),
+and birdsync posts no identification, comment, or message of its own.
 
 [decisions.notMachineGeneratedContent](../../../decisions.md#notmachinegeneratedcontent) holds
 that birdsync is not machine-generated content because a human decided each observation and the
@@ -369,8 +373,7 @@ both true.
 Composed from: [inatterms.accountHolderResponsible](../../../imported/inaturalist.org/inatterms/inatterms.md#accountholderresponsible),
 [inatterms.dontBehaveLikeMachine](../../../imported/inaturalist.org/inatterms/inatterms.md#dontbehavelikemachine),
 [decisions.notMachineGeneratedContent](../../../decisions.md#notmachinegeneratedcontent),
-[product.documentCommunityObligations](../../../local/product/community.md#documentcommunityobligations),
-[product.documentSyncedObservationsIdentifiable](../../../local/product/community.md#documentsyncedobservationsidentifiable)
+[product.documentCommunityObligations](../../../local/product/community.md#documentcommunityobligations)
 Goals: [goals.accountsStaySafe](../../../../goals/goals.md#accountsstaysafe), [goals.communityNotBurdened](../../../../goals/goals.md#communitynotburdened)
 
 birdsync's documentation tells users that iNaturalist holds them responsible for everything
@@ -381,8 +384,9 @@ messages may be suspended, so they should answer comments and messages on synced
 birdsync cannot answer comments for the user; the part of
 [inatterms.dontBehaveLikeMachine](../../../imported/inaturalist.org/inatterms/inatterms.md#dontbehavelikemachine)
 it can reach is pacing ([requestRate](#requestrate)), accuracy
-([product.verifiableDefaultOn](../../../local/product/filtering.md#verifiabledefaulton)), and
-telling the user. Reviewing what was created matters most: [inatterms.noMachineGeneratedContent](../../../imported/inaturalist.org/inatterms/inatterms.md#nomachinegeneratedcontent)
+([product.verifiableDefaultOn](../../../local/product/filtering.md#verifiabledefaulton)),
+identifiability ([product.documentSyncedObservationsIdentifiable](../../../local/product/community.md#documentsyncedobservationsidentifiable)),
+and telling the user. Reviewing what was created matters most: [inatterms.noMachineGeneratedContent](../../../imported/inaturalist.org/inatterms/inatterms.md#nomachinegeneratedcontent)
 permits a script to post only where a human decided each observation, so a user who reviews
 nothing moves birdsync to the prohibited side of that rule
 ([product.documentCommunityObligations](../../../local/product/community.md#documentcommunityobligations)).
@@ -394,14 +398,15 @@ Composed from: [mlterms.downloadOwnMedia](../../../imported/ebird.org/mlterms/ml
 [mlterms.noOthersMediaWithoutPermission](../../../imported/ebird.org/mlterms/mlterms.md#noothersmediawithoutpermission),
 [mlterms.mediaOwnedByUploader](../../../imported/ebird.org/mlterms/mlterms.md#mediaownedbyuploader),
 [inatterms.accountHolderResponsible](../../../imported/inaturalist.org/inatterms/inatterms.md#accountholderresponsible),
-[product.copiesObservations](../../../local/product/scope.md#copiesobservations),
 [decisions.ownMediaAssumption](../../../decisions.md#ownmediaassumption),
 [decisions.inputIdentityIsTheAccountHolders](../../../decisions.md#inputidentityistheaccountholders)
 Goals: [goals.accountsStaySafe](../../../../goals/goals.md#accountsstaysafe), [goals.birdersKeepOneRecord](../../../../goals/goals.md#birderskeeponerecord)
 
 birdsync downloads from the Macaulay Library only assets whose catalog numbers appear in a
-record of the eBird export the user supplied, attaches each only to the observation made from
-the record that lists it, and never searches for, requests, or downloads any other asset.
+record of the eBird export the user supplied
+([product.copiesObservations](../../../local/product/scope.md#copiesobservations)), attaches
+each only to the observation made from the record that lists it, and never searches for,
+requests, or downloads any other asset.
 
 A user may download their own media and no one else's without permission; media belong to the
 account that uploaded them. birdsync cannot tell whose an asset is, so it relies on the export
@@ -415,25 +420,26 @@ decisions reopen on a counter-example birdsync itself could have detected.
 
 **Each Macaulay Library asset birdsync uploads is attributed on its observation**
 
-Composed from: [mlterms.attributionExpected](../../../imported/ebird.org/mlterms/mlterms.md#attributionexpected),
-[product.descriptionContents](../../../local/product/observations.md#descriptioncontents),
-[product.mediaFilename](../../../local/product/media.md#mediafilename)
+Composed from: [mlterms.attributionExpected](../../../imported/ebird.org/mlterms/mlterms.md#attributionexpected)
 Goals: [goals.birdersKeepOneRecord](../../../../goals/goals.md#birderskeeponerecord)
 
 Every Macaulay Library asset birdsync uploads is attributed as the Macaulay Library's media
 attribution guidelines require.
 
 What birdsync does today is name each uploaded asset in its observation's description with a
-`Macaulay Library Asset:` line linking `https://macaulaylibrary.org/asset/<id>`, and upload it
-under the filename `ML<asset ID>`. Whether that meets the guidelines is unknown: the guidelines
-page was not retrieved ([`imports.md`](../../../imports.md), `mlterms`, Status), and its
-contents are not supplied from memory. Until it is read, this requirement is uncovered.
+`Macaulay Library Asset:` line linking `https://macaulaylibrary.org/asset/<id>`
+([product.descriptionContents](../../../local/product/observations.md#descriptioncontents)), and
+upload it under the filename `ML<asset ID>`
+([product.mediaFilename](../../../local/product/media.md#mediafilename)). Whether that meets the
+guidelines is unknown: the guidelines page was not retrieved ([`imports.md`](../../../imports.md),
+`mlterms`, Status), and its contents are not supplied from memory. Until it is read, this
+requirement is uncovered.
 
 ## Excluded
 
-- [product.avesOnlyDownload](../../../local/product/download.md#avesonlydownload) — The download is restricted to Aves. Excluded by [decisions.noTaxonFilterOnDownload](../../../decisions.md#notaxonfilterondownload)
-- [product.malformedRecordAborts](../../../local/product/failures.md#malformedrecordaborts) — A malformed record aborts the run. Excluded by [decisions.badRecordsSkippedNotFatal](../../../decisions.md#badrecordsskippednotfatal)
-- [tech.neverRunMutatingTools](../../../local/tech/safety.md#neverrunmutatingtools) — Nothing runs the mutating tools. Excluded by [decisions.mutatingToolsDeleted](../../../decisions.md#mutatingtoolsdeleted)
-- [tech.maxPageSize](../../../local/tech/etiquette.md#maxpagesize) — Downloads request the maximum page size. Excluded by [decisions.restatementsComposed](../../../decisions.md#restatementscomposed)
-- [tech.requestPacing](../../../local/tech/etiquette.md#requestpacing) — iNaturalist requests are paced. Excluded by [decisions.restatementsComposed](../../../decisions.md#restatementscomposed)
-- [tech.idAbovePaging](../../../local/tech/etiquette.md#idabovepaging) — The download pages by id_above. Excluded by [decisions.restatementsComposed](../../../decisions.md#restatementscomposed)
+- [product.avesOnlyDownload](../../../local/product/download.md#avesonlydownload) *(excluded)* — The download is restricted to Aves. Excluded by [decisions.noTaxonFilterOnDownload](../../../decisions.md#notaxonfilterondownload)
+- [product.malformedRecordAborts](../../../local/product/failures.md#malformedrecordaborts) *(excluded)* — A malformed record aborts the run. Excluded by [decisions.badRecordsSkippedNotFatal](../../../decisions.md#badrecordsskippednotfatal)
+- [tech.neverRunMutatingTools](../../../local/tech/safety.md#neverrunmutatingtools) *(excluded)* — Nothing runs the mutating tools. Excluded by [decisions.mutatingToolsDeleted](../../../decisions.md#mutatingtoolsdeleted)
+- [tech.maxPageSize](../../../local/tech/etiquette.md#maxpagesize) *(excluded)* — Downloads request the maximum page size. Excluded by [decisions.restatementsComposed](../../../decisions.md#restatementscomposed)
+- [tech.requestPacing](../../../local/tech/etiquette.md#requestpacing) *(excluded)* — iNaturalist requests are paced. Excluded by [decisions.restatementsComposed](../../../decisions.md#restatementscomposed)
+- [tech.idAbovePaging](../../../local/tech/etiquette.md#idabovepaging) *(excluded)* — The download pages by id_above. Excluded by [decisions.restatementsComposed](../../../decisions.md#restatementscomposed)

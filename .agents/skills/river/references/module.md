@@ -1,4 +1,8 @@
-# The bundle
+# The River module
+
+A **River module** is the `river/` directory: goals, gradients, requirements, and the records
+kept about them, declared once in `river/README.md` with a `module` path and the River version.
+It is not a Go module, though it borrows go.mod's form. Below, "module" means a River module.
 
 Part of River's method. Search `^## ` for the sections; read only the one you need.
 
@@ -6,15 +10,18 @@ Part of River's method. Search `^## ` for the sections; read only the one you ne
 
 ```
 river/
+  README.md                  what is here, and the module declaration (River 2.0)
   bindings.md                how THIS project works, and which stages it adopts
   conformance.md             what is built, against which version, and which criteria are met
+  proposals.md               drafts awaiting a person, and open questions
   goals/                     package goals
   gradients/                 package gradients
   requirements/
-    README.md                what is here, and the module declaration
+    README.md                what requirements/ holds
     imports.md               every imported source, with its pinned version
     precedence.md            standing rules: which source outranks which
     decisions.md             log of how each conflict and judgment was settled
+    sums.md                  a sum per input to composition, written by `river sum`, never by hand (2.0)
     local/<name>/            a source written here: one source, one package
     imported/<import path>/  another module's source, pinned, with PROVENANCE.md
     composed/
@@ -22,19 +29,24 @@ river/
       internal/<name>/       a composed package private to this repository
 ```
 
+A composed package holds a `README.md` (what it is composed from, the precedence applied, and
+what is excluded) and one file per area, each with that area's requirements and their criteria
+([`composition.md`](composition.md), *Files within a package*). `conformance.md`'s format is in
+[`verification.md`](verification.md), *Recording conformance*.
+
 Each composed file says it is composed and from what, and is changed by recomposing, never by
 hand. Where a composed package sits is the record of who may import it: moving it into
 `exported/` exports it, and no other file lists exports. These names were chosen by testing
 candidate layouts on zero-context agents acting as new engineers.
 
-The method is not in the bundle: it is this skill, kept beside the bundle at
-`.agents/skills/river/` ([`adopting.md`](adopting.md)). The checks are not in the bundle either:
+The method is not in the module: it is this skill, kept beside the module at
+`.agents/skills/river/` ([`adopting.md`](adopting.md)). The checks are not in the module either:
 the `river` CLI runs them ([`checks.md`](checks.md)).
 
-**Put the bundle in `river/` at the repository root**, unless you have a reason not to; if you
+**Put the module in `river/` at the repository root**, unless you have a reason not to; if you
 put it elsewhere, say where in `bindings.md`. Paths inside it are relative to its root, and your
 agent instruction file (`AGENTS.md` or equivalent) says that the project uses River and where the
-bundle is, so an agent that has not loaded the skill still learns to.
+module is, so an agent that has not loaded the skill still learns to.
 
 **Everything is plain Markdown.** No database, no server, no format that needs a tool to read.
 
@@ -58,7 +70,7 @@ searches and opens ranges; it should not have to read a file whole to find one i
   reader follows it in one step and a renamed item breaks a link the checker reports. Exported and
   imported packages, which move between modules, link only within their own directory.
 
-## Keeping the bundle's files
+## Keeping the module's files
 
 What each file under `requirements/` must contain, so that anyone adding to it keeps it
 consistent. **Read this before writing to any of them.** An existing entry is a good example of
@@ -84,7 +96,10 @@ retrieved). Mark anything not yet retrieved as such; never fill it in from memor
 tier goes in `precedence.md`.
 
 **`precedence.md`** — one table of tiers, highest first, naming the sources in each. A source is
-added to a tier when it is imported.
+added to a tier when it is imported. Below it, optionally, an item table (`| Item | Tier |
+Decision |`): one row per source item whose tier differs from its package's, linking the item and
+the decision behind it ([`requirements.md`](requirements.md), *Precedence*). Tiers are recorded
+here and nowhere else: a decision says who and why, not the tier.
 
 **Composed packages** — each opens by saying what it is composed from and that it is changed by
 recomposing. **Without a composition tool, recompose by hand:** rewrite the file from its sources,
@@ -96,10 +111,47 @@ accepted as unmet stays listed, with the decision beside it, as an excluded one 
 **A person approves each composed version, in `decisions.md`, with its hash** (`tech.approvalsCarryHashes`).
 The entry carries `Approves: <package>, sha256:<hash>`: the SHA-256 of the package's `.md` files,
 each contributing its path relative to the package directory, a newline and its bytes, in path
-order. The commit that adds the entry identifies the published version. A published package is
-never edited; a change is a recomposition and a new approval. The checker fails a package whose
-latest approval names a different hash (`stale-approval`), so a hand edit, by a person or an agent,
+order. **From River 2.0 the approval also covers what the package was composed from**, as
+`go.sum` covers a module's dependencies. The package lists its sources under `## Composed from`
+(`- product (Local)`); `requirements/sums.md`, written by `river sum` and never by hand, records a
+SHA-256 per input to composition; and the approval ends with a `### Sums` section holding the
+`sums.md` lines for **every input the package was composed from**. Today those are the source items
+it includes, composes from, or excludes, every decision it cites or whose `Affects:` names one of
+them, and every row of `precedence.md`'s tier table; as the method adds inputs, approvals cover
+them too. `river hash <package-dir>`
+prints the whole record:
+
+    Approves: app, sha256:9be64dc7…
+
+    ### Sums
+
+    ```
+    decisions.dropGamma sha256:ecca6c31…
+    precedence.governing sha256:76feefa0…
+    product.alphaRule sha256:db2ea2c9…
+    terms.RateLimit sha256:1a7a8758…
+    ```
+
+The commit that adds the entry identifies the published version. A published package is never
+edited; a change is a recomposition and a new approval. The checker fails a package whose latest
+approval names a different hash, or any of whose inputs have changed, been withdrawn, or been
+removed since, or gained a decision affecting them (`stale-approval`, naming each), so a hand edit, by a person or an agent,
 is caught at the next run; a package never approved is reported as awaiting approval, not failed.
+`PROVENANCE.md` hashes stay out of the approval: they vouch for a transcription, not for what was
+approved. A River 1.x module records `Approves:` alone.
 
 **An agent that needs a new or changed requirement** adds it to a source under `local/`,
 recomposes, and asks the package's owner to approve the result. It never edits a composed file.
+
+## Proposals
+
+**Drafts awaiting a person, and open questions, go in `river/proposals.md`**, and nowhere else.
+A file in `goals/` defines accepted goals, an entry in `decisions.md` claims a decision was made,
+and a composed package is approved by hash, so a draft in any of them says something false or
+changes what was approved. Proposed goals, decisions, imports, withdrawals, and stage choices wait
+here, each as `## <id>` with a bold title, what is proposed, and what the person must decide. The
+file opens with `package proposals`.
+
+**An item leaves when it is decided:** recorded where it belongs (a goal file, `decisions.md`,
+`imports.md`, `bindings.md`), or dropped, with the outcome, if the person declines it. Never put a
+question or a draft inside a composed package; the CLI counts open proposals as a note.

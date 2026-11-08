@@ -7,6 +7,8 @@ description: >-
   requirements, or add a guardrail for an acceptance criterion. It is River's method: it tells the
   agent what to read before editing code, which changes need a person's approval, how to run
   River's checks, and where the full rules are.
+metadata:
+  river: "2.0"
 ---
 
 # River
@@ -18,7 +20,7 @@ is approved are never your calls.
 
 ## Before you edit code
 
-1. Find the bundle: `river/` at the repository root, or wherever the project's `AGENTS.md` (or
+1. Find the River module: `river/` at the repository root, or wherever the project's `AGENTS.md` (or
    `river/bindings.md`) says.
 2. Read the composed packages that govern the code you will touch:
    `river/requirements/composed/{exported,internal}/<name>/`. Search for `## <id>` and read only
@@ -45,15 +47,18 @@ never the test or the requirement.
 2. Draft the change in a source under `river/requirements/local/<source>/`. Cite the goals it
    serves (`Goals:`), as links. An imported source (`imported/`) belongs to another team: propose
    the change to its owner instead of editing it.
-3. Recompose: apply `river/requirements/precedence.md` to every source and write the result into
-   the composed package, each item naming its sources in `Composed from:`. Follow
+3. Recompose from composition's three inputs, the sources, `river/requirements/precedence.md`,
+   and `river/requirements/decisions.md`, and write the result into the composed package, each
+   item naming its sources in `Composed from:`. Follow
    [`references/composition.md`](references/composition.md).
 4. If precedence does not settle a conflict, **stop and ask** the named owner. Record what they
    decide as a new entry in `river/requirements/decisions.md` (append-only; see the format in
    [`references/decisions.md`](references/decisions.md)).
-5. Ask the owner to approve the composed version. Give them the line to record:
+5. Ask the owner to approve the composed version. Give them the record to add:
    `river hash river/requirements/composed/<scope>/<name>` prints
-   `Approves: <name>, sha256:<hash>`. Only the person adds that approval to `decisions.md`.
+   `Approves: <name>, sha256:<hash>` and, from River 2.0, a `### Sums` block for the inputs
+   the package accounts for ([`references/module.md`](references/module.md), *Keeping the
+   module's files*). Only the person adds that approval to `decisions.md`.
 
 ## Adding a guardrail
 
@@ -61,18 +66,23 @@ never the test or the requirement.
    source code with requirement IDs.
 2. **Watch it fail**: break the behavior it guards (or plant a bad input), run it, see it fail, and
    restore. A guardrail never seen failing does not count.
-3. Record the mapping and the observation in `river/conformance.md`:
-   `Watched failing: <date>, by <how>`.
+3. Record the mapping and the observation in the criterion's section of `river/conformance.md`,
+   never in the criterion: `Watched failing: <date>, by <how>`. The format is in
+   [`references/verification.md`](references/verification.md), *Recording conformance*.
 
 ## Checking
 
-Run `river check` from the repository root (or `river check <bundle>`). It exits 1 on any problem,
+Run `river check` from the repository root (or `river check <module>`). It exits 1 on any problem,
 printing `[code] path: message`; notes (`note [code] ...`) are for a person's attention and never
 fail. Fix every problem before calling a change done. Common codes:
 
 | Code | Meaning | Fix |
 | --- | --- | --- |
-| `stale-approval` | A composed package changed after its approval | Recompose from sources and ask the owner to approve |
+| `stale-approval` | A composed package, or a source item, decision, or precedence row its approval covered, changed after the approval; the message names them | Recompose from sources and ask the owner to approve |
+| `unaccounted-requirement` | A source item is not accounted for: no composed package includes it, composes from it, or excludes it | Recompose, accounting for it |
+| `covers-unresolved`, `covers-withdrawn` | A criterion covers an item that does not exist or is withdrawn | Repoint `Covers:` to the live requirement |
+| `stale-sums` | `requirements/sums.md` is out of date (River 2.0) | Run `river sum`; never edit it by hand |
+| `decision-review` (note) | An item a decision affects changed since it was decided | Ask the person whether it still holds |
 | `unknown-goal` | A requirement cites a goal that does not exist | Cite an existing goal, or ask whether a goal is missing |
 | `unlinked-reference` | A `package.identifier` reference is not a link | Link it to its definition |
 | `missing-package-decl` | A file defining items lacks `package <name>` on line 1 | Add it |
@@ -82,8 +92,12 @@ fail. Fix every problem before calling a change done. Common codes:
 Both discovery notes become problems once `imports.md` contains the line `Discovery: complete`.
 Only a person adds that line, after working through every note.
 
+The `## Module` block in `river/README.md` declares the River version the module follows (`river 2.0`);
+`river version` lists the ones the CLI supports. `river sum` rewrites `requirements/sums.md` after
+any edit to a source, `decisions.md`, or `precedence.md` (River 2.0). `river upgrade` migrates a module to the latest version.
+
 Install the CLI with `go install ./cmd/river` from a River checkout at the skill's pin (until River
-publishes a module path). More in [`references/checks.md`](references/checks.md).
+publishes a module path). Every code and command is in [`references/checks.md`](references/checks.md).
 
 ## Adopting River in a repository
 
@@ -100,13 +114,13 @@ project goes in its `river/bindings.md`. Read only the reference you need, and o
 | Reference | What it covers |
 | --- | --- |
 | [`overview.md`](references/overview.md) | The four stages and four processes, who decides, what is new |
-| [`bundle.md`](references/bundle.md) | The `river/` layout, writing files to be read in part, what each requirements file holds |
+| [`module.md`](references/module.md) | The `river/` layout, writing files to be read in part, what each requirements file holds |
 | [`goals.md`](references/goals.md) | Goals versus requirements; gradients, targets, and backstops |
 | [`requirements.md`](references/requirements.md) | Sources, precedence tiers, composition rules, conflicts, the anatomy of an item |
-| [`composition.md`](references/composition.md) | The composition procedure, step by step |
+| [`composition.md`](references/composition.md) | Composition's three inputs, the procedure, obligations and horizontal requirements, collisions, packages and files |
 | [`decisions.md`](references/decisions.md) | The `decisions.md` entry format and its append-only rules |
 | [`verification.md`](references/verification.md) | Acceptance criteria, unverifiable requirements, guardrails |
 | [`lifecycle.md`](references/lifecycle.md) | Implementation and designs, release and experimentation, optimization, revision |
 | [`discovery.md`](references/discovery.md) | Finding what governs a new dependency |
-| [`checks.md`](references/checks.md) | The `river` CLI and what a bundle's checks must cover |
+| [`checks.md`](references/checks.md) | The `river` CLI and what a module's checks must cover |
 | [`adopting.md`](references/adopting.md) | Installing this skill, adopting stage by stage, migrating existing requirements |

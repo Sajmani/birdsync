@@ -16,13 +16,3 @@ is in [`../bindings.md`](../bindings.md).
 
 Never edit `composed/` by hand: change a source and recompose. Search `^## ` in any file for its
 items, or `## <name>` for one.
-
-## Module
-
-```
-module github.com/Sajmani/birdsync/river
-```
-
-The module path names this bundle. Package names are unique within it, so a qualified name
-such as [product.syncKey](local/product/identity.md#synckey) resolves without an import block.
-Nothing is exported yet, so no other module imports from it.

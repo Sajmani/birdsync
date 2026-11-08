@@ -21,8 +21,8 @@ Drafted at adoption on 2026-11-03 and confirmed by the owner, Sajmani, on 2026-1
 | | |
 | --- | --- |
 | River skill | Pinned in [`.agents/skills/PROVENANCE.md`](../.agents/skills/PROVENANCE.md), and only there |
-| River CLI | Built from River at the skill's pin; CI reads the pin from `PROVENANCE.md`. The CLI reports no version of its own |
-| Bundle | `river/` at the repository root |
+| River CLI | Built from River at the skill's pin; CI reads the pin from `PROVENANCE.md` |
+| Module | `river/` at the repository root ([`README.md`](README.md), declaring `river 2.0`) |
 | Where `river check` runs | CI (`.github/workflows/ci.yml`, job `river`), which is skipped until the repository variable `RIVER_REPO` names a clonable River repository, because River is not published yet. Also before calling any change done (`AGENTS.md`). There is no pre-commit hook and no release step |
 | `goals/` | [`goals/goals.md`](goals/goals.md), five goals accepted by the owner on 2026-11-04 |
 
@@ -54,8 +54,8 @@ Additions to the method, none of them changing it:
 - **`Subject:` and `Value:`** carry specman's machine-checkable subject and value, where an
   item had one.
 - **[`proposals.md`](proposals.md)** holds drafts awaiting the owner: candidate goals,
-  decisions, and approvals. River has no place for undecided drafts. Keeping them here keeps
-  them out of `goals/` and `decisions.md`, which hold only what a person has decided.
+  decisions, and approvals, outside `goals/` and `decisions.md`, which hold only what a person
+  has decided.
 - **Vendored HTML is scanned before commit.** Strip active content and credential-shaped
   strings, such as presigned `X-Amz-*` query parameters, from a vendored page before committing
   it. Record each redaction, with the hash as served and as stored, in that source's

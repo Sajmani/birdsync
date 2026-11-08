@@ -22,7 +22,15 @@ a failure state, and both are counted.
 **A project that already keeps requirements another way** (a spec directory, a requirements
 document, a predecessor method) migrates them rather than starting over: every existing
 requirement becomes a source item, included, excluded, or composed from, so none drops out
-silently, and the old files are retired only after the migration accounts for each.
+silently, and the old files are retired only after the migration accounts for each. A
+requirement the predecessor withdrew becomes a source item with `Status: withdrawn — <why>`,
+excluded with the decision that withdrew it ([`requirements.md`](requirements.md), *Status of a
+source item*).
+
+**Start a small project with one composed package, split into area files**, one per area of its
+sources. Split into more packages only when a second approver, importer, or releasable artifact
+appears, or when approving one part keeps re-approving another
+([`composition.md`](composition.md), *Splitting into packages*).
 
 ## Installing the skill
 
@@ -32,7 +40,8 @@ nothing about any particular project; what is true of yours goes in `bindings.md
 Copy the skill directory unchanged into your repository at `.agents/skills/river/`, the
 project-skill location of the Agent Skills convention, which most coding agents load from. If an
 agent you use reads skills only from its own directory (`.claude/skills/`, for one), point that
-location at the same copy rather than keeping a second one. Beside the copy, add `PROVENANCE.md`:
+location at the same copy rather than keeping a second one. Beside the copy, add
+`.agents/skills/PROVENANCE.md`:
 
 ```markdown
 # PROVENANCE
@@ -50,6 +59,15 @@ River's skill, copied unchanged.
 Keeping every other file byte-identical to its origin makes refreshing the skill a reviewable
 diff: recopy it whole and update the pin. Put amendments in `bindings.md` and say what they change.
 
+**`river check` reads the copy.** From River 2.0 it fails a module with no copy at
+`.agents/skills/river/` in the repository holding it, no `.agents/skills/PROVENANCE.md`, or no pin
+there (`skill-copy-missing`, `skill-provenance-missing`, `skill-pin-missing`; notes for 1.x). The
+skill states the River version it describes in its `SKILL.md` frontmatter (`metadata:` then
+`river: "2.0"`; a skill that states none describes 1.0). When that differs from the module's
+declared version, `river check` notes it (`skill-version-mismatch`): run `river upgrade`, or re-pin
+the skill. `river upgrade --check` shows both versions. River's own repository holds the skill's
+origin, `skills/river/`, and keeps no copy of it.
+
 **The method is not a requirements source.** It is a pinned external document, but it
 contributes no requirements to your composed set. Its pin belongs in `PROVENANCE.md` and nowhere
 else: recording it in `imports.md` too gives two records of one pin, which a single recorded hash
@@ -63,10 +81,10 @@ publishes a module path).
 1. **Ask which stages the project adopts.** Record each stage as adopted or **informal** in
    `river/bindings.md`.
 2. **Install the skill** as above.
-3. **Create the bundle** at `river/` (or where the project says, recorded in `bindings.md`):
-   `goals/`, `requirements/README.md` with a `## Module` block, `requirements/precedence.md`,
+3. **Create the module** at `river/` (or where the project says, recorded in `bindings.md`):
+   `README.md` with a `## Module` block, `goals/`, `requirements/README.md`, `requirements/precedence.md`,
    `requirements/decisions.md`, and `requirements/local/<source>/`. The layout is in
-   [`bundle.md`](bundle.md).
+   [`module.md`](module.md).
 4. **Recover requirements first**, from the existing code, tests, and documentation, one item per
    `## <id>` heading with a bold title and a first paragraph that is the complete rule
    ([`requirements.md`](requirements.md), *Anatomy*). Leave `Goals:` empty where you cannot cite a

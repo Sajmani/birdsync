@@ -9,7 +9,7 @@ and a person decides. The owner (Sajmani) accepts, changes, or rejects each item
 goals then go into `goals/`, accepted decisions into `requirements/decisions.md`, and each
 item is deleted from here once settled. Search `^## ` for the list.
 
-River's method has no place for undecided drafts, so this file is a local convention. See
+River keeps undecided drafts here, outside `goals/` and `decisions.md`. See
 [`bindings.md`](bindings.md).
 
 ## dailyCapGap

@@ -14,7 +14,7 @@ criteria and no traceability table is kept; a stored reverse index drifts from w
 and this one is derivable.
 
 A criterion citing no requirement is an error, not an orphan. A guardrail may predate the
-bundle; a criterion cannot, because composition produces it from a requirement.
+module; a criterion cannot, because composition produces it from a requirement.
 
 **A criterion must have been watched failing before it is trusted.** A check that cannot fail is
 indistinguishable from one that passes, and it is worse than nothing because it reports safety.
@@ -22,14 +22,18 @@ Likewise, a criterion's expected value comes from the requirement, never from a 
 current code: a check built from existing output can only confirm that behavior has not
 changed, including when it was wrong.
 
-**Record each observation in the criterion, in a fixed field**, one line each:
+**Record each observation in `river/conformance.md`, in the criterion's section, in a fixed
+field**, one line each:
 
 ```
 Watched failing: 2026-10-16, by adding color:#777777 to an inline style; every species page failed
 ```
 
-A criterion with no such line has not been watched failing. Prose elsewhere in the criterion may
-tell the story, but a person or a tool deciding whether the criterion is trusted reads this field.
+A criterion with no such line has not been watched failing. Prose may tell the story, but a
+person or a tool deciding whether the criterion is trusted reads this field. **The observation
+never goes in the criterion itself:** the criterion lives in a composed package, which is approved
+by hash, so recording an observation there would force a recomposition and a new approval each
+time a guardrail is watched failing ([*Recording conformance*](#recording-conformance)).
 
 **A criterion is met or not as a whole.** Where parts of a claim can be met at different times (two
 behaviors, two pages, an original check and a later extension), make each part its own criterion,
@@ -61,8 +65,8 @@ is recorded and weighed. Which one may differ by stage: an expensive check can i
 generation and gate at release. Gating is a property of the guardrail, not a separate kind of
 thing.
 
-**Guardrails are not bundle artifacts.** They live wherever you already keep your tests and your
-deployment configuration. The bundle **cites** them; it does not contain them, because requiring
+**Guardrails are not module artifacts.** They live wherever you already keep your tests and your
+deployment configuration. The module **cites** them; it does not contain them, because requiring
 otherwise would mean moving your tests as a condition of adoption. A scanner you already run is
 a guardrail in this sense, and citing it is the whole of the integration.
 
@@ -88,3 +92,30 @@ project begins with a suite full of orphans. An orphan is one of three things an
 tell which without looking: an undocumented requirement, a test of an implementation detail, or
 a test of behavior nobody wants any more. The default is **keep and count**. Deleting
 unexplained tests makes the codebase less safe in exchange for a tidier table.
+
+## Recording conformance
+
+**`river/conformance.md` is the mutable record of which guardrails implement which criteria, and
+what has been seen.** It is descriptive: where it and the repository disagree, it is wrong. It
+holds one section per criterion, headed by the criterion's qualified name, with fixed fields:
+
+```markdown
+## app.ServedContrast
+
+Criterion: [app.ServedContrast](requirements/composed/internal/app/app.md#servedcontrast)
+Guardrails: `page_test.go` TestServedPageContrast
+Gates: CI on every change; release
+Watched failing: 2026-10-22, by setting the panel text to #777777; the test failed on the panel
+Watched failing: 2026-10-24, by adding an SVG label painted with fill; the test failed
+```
+
+- **`Criterion:`** links the criterion in its composed package.
+- **`Guardrails:`** names each test, checker, monitor, or human review that implements it, where
+  it lives, or `none`.
+- **`Gates:`** says where each guardrail gates and where it only informs, or `informs only`.
+- **`Watched failing:`** one line per observation: the date, how the behavior was broken, and
+  what failed. None means not yet watched failing.
+
+When a criterion's `Covers:` is repointed, as when a composed item replaces a local one, its
+section here keeps its observations ([`composition.md`](composition.md), *Replacing a local
+item*).
