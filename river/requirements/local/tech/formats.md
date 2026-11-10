@@ -21,16 +21,16 @@ The eBird CSV is read by header name, never by column position, with
 
 ## datesViaObserved
 
-**eBird dates are compared via Record.Observed()**
+**eBird dates are parsed and compared via Record.Observed()**
 
 Formerly: T-019
 Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
-Any comparison of an eBird observation date goes through `Record.Observed()`,
-never `Record.Date` directly.
+`Record.Observed()` parses both eBird CSV date formats — `2006-01-02` (with optional `03:04 PM`
+time) and `1/2/2006` (with optional `3:04 PM` time) — and any comparison of an eBird observation
+date goes through `Record.Observed()`, never `Record.Date` directly.
 
-*Rationale: eBird writes `2006-01-02` or `1/2/2006`, with an optional time. Keying on the
-raw field was a real bug; regression test: `TestFuzzyMatchDateFormats`.*
+*Rationale: keying on the raw field was a real bug; regression test: `TestFuzzyMatchDateFormats`.*
 
 ## emptyNameNotIndexed
 

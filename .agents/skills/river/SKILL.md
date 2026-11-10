@@ -58,7 +58,7 @@ never the test or the requirement.
    `river hash river/requirements/composed/<scope>/<name>` prints
    `Approves: <name>, sha256:<hash>` and, from River 2.0, a `### Sums` block for the inputs
    the package accounts for ([`references/module.md`](references/module.md), *Keeping the
-   module's files*). Only the person adds that approval to `decisions.md`.
+   River module's files*). Only the person adds that approval to `decisions.md`.
 
 ## Adding a guardrail
 
@@ -72,7 +72,7 @@ never the test or the requirement.
 
 ## Checking
 
-Run `river check` from the repository root (or `river check <module>`). It exits 1 on any problem,
+Run `river check` from the repository root (or `river check <module>` for a River module elsewhere). It exits 1 on any problem,
 printing `[code] path: message`; notes (`note [code] ...`) are for a person's attention and never
 fail. Fix every problem before calling a change done. Common codes:
 
@@ -81,7 +81,7 @@ fail. Fix every problem before calling a change done. Common codes:
 | `stale-approval` | A composed package, or a source item, decision, or precedence row its approval covered, changed after the approval; the message names them | Recompose from sources and ask the owner to approve |
 | `unaccounted-requirement` | A source item is not accounted for: no composed package includes it, composes from it, or excludes it | Recompose, accounting for it |
 | `covers-unresolved`, `covers-withdrawn` | A criterion covers an item that does not exist or is withdrawn | Repoint `Covers:` to the live requirement |
-| `stale-sums` | `requirements/sums.md` is out of date (River 2.0) | Run `river sum`; never edit it by hand |
+| `stale-sums` | `requirements/sums.md` is out of date (River 2.0) | Run `river sum -w`; never edit it by hand |
 | `decision-review` (note) | An item a decision affects changed since it was decided | Ask the person whether it still holds |
 | `unknown-goal` | A requirement cites a goal that does not exist | Cite an existing goal, or ask whether a goal is missing |
 | `unlinked-reference` | A `package.identifier` reference is not a link | Link it to its definition |
@@ -93,15 +93,15 @@ Both discovery notes become problems once `imports.md` contains the line `Discov
 Only a person adds that line, after working through every note.
 
 The `## Module` block in `river/README.md` declares the River version the module follows (`river 2.0`);
-`river version` lists the ones the CLI supports. `river sum` rewrites `requirements/sums.md` after
-any edit to a source, `decisions.md`, or `precedence.md` (River 2.0). `river upgrade` migrates a module to the latest version.
+`river version` lists the ones the CLI supports. `river sum -w` rewrites `requirements/sums.md` after
+any edit to a source, `decisions.md`, or `precedence.md` (River 2.0); `river sum` prints what `-w` would write, or the `### Sums` block for named items. `river upgrade` migrates a module and its skill copy to the latest version.
 
 Install the CLI with `go install ./cmd/river` from a River checkout at the skill's pin (until River
-publishes a module path). Every code and command is in [`references/checks.md`](references/checks.md).
+publishes a Go module path), and install or refresh the skill copy with `river install-skill`. Every code and command is in [`references/checks.md`](references/checks.md).
 
 ## Adopting River in a repository
 
-Follow [`references/adopting.md`](references/adopting.md): install this skill in the repository,
+Follow [`references/adopting.md`](references/adopting.md): install this skill in the repository with `river install-skill`,
 then start with requirements recovered from the existing code, tests, and documentation; leave
 goals unmapped until a person maps them.
 
@@ -122,5 +122,5 @@ project goes in its `river/bindings.md`. Read only the reference you need, and o
 | [`verification.md`](references/verification.md) | Acceptance criteria, unverifiable requirements, guardrails |
 | [`lifecycle.md`](references/lifecycle.md) | Implementation and designs, release and experimentation, optimization, revision |
 | [`discovery.md`](references/discovery.md) | Finding what governs a new dependency |
-| [`checks.md`](references/checks.md) | The `river` CLI and what a module's checks must cover |
+| [`checks.md`](references/checks.md) | The `river` CLI and what a River module's checks must cover |
 | [`adopting.md`](references/adopting.md) | Installing this skill, adopting stage by stage, migrating existing requirements |

@@ -3,7 +3,10 @@ package goals
 # Goals — birdsync
 
 Why birdsync exists. Accepted by the owner, Sajmani, on 2026-11-04, from candidates drafted at
-adoption. Requirements cite goals in their `Goals:` field; a goal never lists its requirements.
+adoption. Every local requirement in `requirements/local/` and every composed requirement in
+[`requirements/composed/internal/birdsync/`](../requirements/composed/internal/birdsync/README.md)
+cites the goals it serves in its `Goals:` field; a goal never lists its requirements, and
+included bullets in the composed package link to their source items without repeating `Goals:`.
 `communityGainsResearchGrade` and `communityNotBurdened` pull against each other: more
 observations are a gain to the community and a cost to its identifiers. Each requirement says
 which it serves.

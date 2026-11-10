@@ -37,11 +37,17 @@ appears, or when approving one part keeps re-approving another
 **This skill is the method.** It is identical in every project that uses River, so it says
 nothing about any particular project; what is true of yours goes in `bindings.md`.
 
-Copy the skill directory unchanged into your repository at `.agents/skills/river/`, the
-project-skill location of the Agent Skills convention, which most coding agents load from. If an
-agent you use reads skills only from its own directory (`.claude/skills/`, for one), point that
-location at the same copy rather than keeping a second one. Beside the copy, add
-`.agents/skills/PROVENANCE.md`:
+Build or install the `river` CLI from a River checkout at the commit you are adopting (`go install
+./cmd/river`, until River publishes a Go module path), then run `river install-skill` from your
+repository root:
+
+```
+river install-skill [--origin <url>]
+```
+
+The command writes the embedded skill directory unchanged into `.agents/skills/river/`, the
+project-skill location of the Agent Skills convention, and writes `.agents/skills/PROVENANCE.md`
+beside it with the CLI's commit pin (`Pin`), origin, retrieval date, and local-amendments pointer:
 
 ```markdown
 # PROVENANCE
@@ -50,38 +56,40 @@ River's skill, copied unchanged.
 
 | | |
 | --- | --- |
-| Origin | <canonical repository URL>, `skills/river/` |
+| Origin | <repository>, `skills/river/` |
 | Pin | `<commit>` |
-| Retrieved | <YYYY-MM-DD>, by <how> |
-| Local amendments | none; any are listed in `bindings.md` |
+| Retrieved | <YYYY-MM-DD>, by `river install-skill` |
+| Local amendments | none; any are listed in `river/bindings.md` |
 ```
 
-Keeping every other file byte-identical to its origin makes refreshing the skill a reviewable
-diff: recopy it whole and update the pin. Put amendments in `bindings.md` and say what they change.
+Neither the user nor the agent creates `PROVENANCE.md` by hand. If an agent you use reads skills
+only from its own directory (`.claude/skills/`, for one), point that location at
+`.agents/skills/river/` rather than keeping a second copy. Keeping every skill file byte-identical
+to its origin makes refreshing the skill a reviewable diff: re-run `river install-skill` (or run
+`river upgrade`) with a newer `river` binary, which replaces `.agents/skills/river/`, removes any
+renamed files, and updates `Pin` while preserving `Origin` and `Local amendments`. Put amendments
+in `bindings.md` and say what they change.
 
-**`river check` reads the copy.** From River 2.0 it fails a module with no copy at
+**`river check` reads the copy.** From River 2.0 it fails a River module with no copy at
 `.agents/skills/river/` in the repository holding it, no `.agents/skills/PROVENANCE.md`, or no pin
 there (`skill-copy-missing`, `skill-provenance-missing`, `skill-pin-missing`; notes for 1.x). The
 skill states the River version it describes in its `SKILL.md` frontmatter (`metadata:` then
 `river: "2.0"`; a skill that states none describes 1.0). When that differs from the module's
-declared version, `river check` notes it (`skill-version-mismatch`): run `river upgrade`, or re-pin
-the skill. `river upgrade --check` shows both versions. River's own repository holds the skill's
-origin, `skills/river/`, and keeps no copy of it.
+declared version, `river check` notes it (`skill-version-mismatch`): run `river upgrade` or
+`river install-skill`. `river upgrade --check` shows both versions. River's own repository holds
+the skill's origin, `skills/river/`, and keeps no copy of it.
 
 **The method is not a requirements source.** It is a pinned external document, but it
 contributes no requirements to your composed set. Its pin belongs in `PROVENANCE.md` and nowhere
 else: recording it in `imports.md` too gives two records of one pin, which a single recorded hash
 exists to prevent.
 
-Install the CLI with `go install ./cmd/river` from a River checkout at the same pin (until River
-publishes a module path).
-
 ## Procedure
 
 1. **Ask which stages the project adopts.** Record each stage as adopted or **informal** in
    `river/bindings.md`.
-2. **Install the skill** as above.
-3. **Create the module** at `river/` (or where the project says, recorded in `bindings.md`):
+2. **Install the skill**: run `river install-skill` from the repository root.
+3. **Create the River module** at `river/` (or where the project says, recorded in `bindings.md`):
    `README.md` with a `## Module` block, `goals/`, `requirements/README.md`, `requirements/precedence.md`,
    `requirements/decisions.md`, and `requirements/local/<source>/`. The layout is in
    [`module.md`](module.md).

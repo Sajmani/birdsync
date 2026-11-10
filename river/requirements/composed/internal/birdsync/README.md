@@ -9,8 +9,12 @@ files in this directory by hand. Composed from every source in `river/requiremen
 `Approves:` line for this package.
 
 Each area file holds that area's included source requirements, any rules composition derived for
-that area, and the acceptance criteria covering them. Which guardrail implements each criterion,
-and whether it has been watched failing, is recorded in [`conformance.md`](../../../../conformance.md).
+that area, and the acceptance criteria covering them. Which goals in
+[`goals/goals.md`](../../../../goals/goals.md) a requirement serves is recorded once, in the
+`Goals:` field of each local source requirement under `river/requirements/local/` (linked from
+each included bullet rather than repeated here) and of each rule under *Composed requirements*.
+Which guardrail implements each criterion, and whether it has been watched failing, is recorded
+in [`conformance.md`](../../../../conformance.md).
 
 | File | Area |
 | --- | --- |

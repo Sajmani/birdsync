@@ -27,7 +27,7 @@ procedure, and the judgment each step needs.
    import's entry, and anyone composing from that source applies it.
 
 A composed package names its sources in a `## Composed from` list. The version of each import is
-in `imports.md`, and the CLI records the content sums of what composition read in the module's
+in `imports.md`, and the CLI records the content sums of what composition read in the River module's
 `sums.md`, so a later change to a source is visible. Neither is repeated in the package.
 
 **If a fact composition needs is in none of the three, stop and ask.** Record the answer as a
@@ -51,19 +51,20 @@ the same three inputs gets the same result ([*Blind recomposition*](#blind-recom
    [*Splitting into packages*](#splitting-into-packages)):
    - name every source it accounts for items from, and `decisions` where it rests on one, under
      `## Composed from`, one per line with its tier (`- product (Local)`); River 2.0 requires
-     the list ([`module.md`](module.md), *Keeping the module's files*);
+     the list ([`module.md`](module.md), *Keeping the River module's files*);
    - list what applies unchanged, one line each, as a link to the source item plus its title,
-     grouped by area;
+     grouped by area (without repeating `Goals:`, which stays on each source item);
    - write out in full only what composition made: a project rule from an obligation, a rule
      over a domain, a rule narrowed by a higher tier, an intermediary's contract. Each such item
-     has `Composed from:` linking every source item and decision it rests on (plain names in an
-     exported package, which links only within its own directory);
+     cites the goals it serves in `Goals:` and has `Composed from:` linking every source item and
+     decision it rests on (plain names in an exported package, which links only within its own
+     directory);
    - mark each excluded item with `*(excluded)*` immediately after its link (`- [pkg.item](…) *(excluded)* — …`),
      usually under `## Excluded`, and link the decision that excluded it. A withdrawn item is
      excluded the same way, linking the decision that withdrew it.
 5. **Check that every source item is accounted for**
    ([*Accounted for*](#accounted-for)). None may be omitted from a package it applies to, or from
-   every package in the module; one that is has silently dropped out. The CLI's accounting check
+   every package in the River module; one that is has silently dropped out. The CLI's accounting check
    reports unaccounted items (`unaccounted-requirement`), but count them yourself while composing.
 6. **Write one acceptance criterion per independently checkable behavior**, each with `Covers:`
    naming what it covers, beside the requirements it covers
@@ -73,9 +74,9 @@ the same three inputs gets the same result ([*Blind recomposition*](#blind-recom
    `decisions.md` before composing on it ([*Overlaps and collisions*](#overlaps-and-collisions)).
 8. **Questions and drafts go in `river/proposals.md`**, never into the composed package
    ([`module.md`](module.md), *Proposals*).
-9. Run `river sum` (River 2.0), so `sums.md` records every input composition read (sources,
+9. Run `river sum -w` (River 2.0), so `sums.md` records every input composition read (sources,
    decisions, precedence), then `river check`;
-   then ask the owner to approve the package ([`module.md`](module.md), *Keeping the module's
+   then ask the owner to approve the package ([`module.md`](module.md), *Keeping the River module's
    files*).
 
 ## Accounted for
@@ -89,7 +90,7 @@ even if its prose says "not applicable" (`note [ambiguous-exclusion]`).
 
 **Which packages owe accounting depends on what each package governs:**
 - **One composed package:** it represents the whole project and must account for every local and
-  imported source item in the module.
+  imported source item in the River module.
 - **Several composed packages** (such as `app` and `dataset`, or exported `framework` and internal
   `build`): an item with `Applies to:` (on the local item, or in an interpretation decision for an
   imported item) must be accounted for in **every** composed package that represents or `Binds:`
@@ -264,7 +265,8 @@ changes what is approved, only how it reads.
 - **Split by area**, mirroring the source files: a source split into `posting.md` and `auth.md`
   gives the package `posting.md` and `auth.md`.
 - **Each area file holds that area's included list, its composed items, and its criteria**, so a
-  reader of one area sees each rule and its check together.
+  reader of one area sees each rule and its check together. Included bullets link to their source
+  items, where their `Goals:` fields live; composed items carry their own `Goals:` fields.
 - **A package `README.md`** carries the `## Composed from` list, the precedence applied, and the
   `## Excluded` list.
 - **Split a file** when it outgrows a few hundred lines, or mixes areas a reader wouldn't load

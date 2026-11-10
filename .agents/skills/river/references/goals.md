@@ -29,8 +29,9 @@ should survive a rewrite of the implementation. One paragraph is enough.
 Write a goal as what someone gets, not what the software lets them do: *readers learn how big
 birds are*, not *readers can see a bird's size*. If one release can ship it, it's a requirement.
 
-Requirements cite goals by package-qualified ID in a `Goals:` field. A goal never lists its
-requirements, so the two cannot drift apart.
+Requirements cite goals by package-qualified ID in a `Goals:` field on each local source item and
+each composed item (included bullets in a composed package link to their source item rather than
+repeating `Goals:`). A goal never lists its requirements, so the two cannot drift apart.
 
 A goal nothing cites yet, and a requirement citing no goal, are both **counted, not rejected**.
 A brownfield project starts with the second; a goal added because the market moved starts with

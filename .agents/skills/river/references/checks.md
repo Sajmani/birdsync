@@ -13,11 +13,12 @@ to River's checks is visible.
 
 | Command | What it does |
 | --- | --- |
-| `river check [module]` | Checks the module (default `river/`); exits 1 on any problem |
-| `river hash <package-dir>` | Prints the record a person adds to approve a composed package: `Approves:`, and from River 2.0 a `### Sums` section |
-| `river sum [module]` | Writes `requirements/sums.md` (River 2.0). Never edit that file by hand |
-| `river sum [module] <item>...` | Prints the `### Sums` section a decision records for the items it affects (`product.x`, `decisions.y`, `precedence.local`) |
-| `river upgrade [--check] [module]` | Migrates the module to the latest River version, writing files but never committing, and lists what needs a person; `--check` reports only |
+| `river check [module]` | Checks the River module (default `river/`); exits 1 on any problem |
+| `river hash <package-dir>` | Prints the `Approves:` line and `### Sums` section to record in `decisions.md` when approving a composed package |
+| `river sum [module] [<item>...]` | Prints `requirements/sums.md` to stdout, or, given item names (`product.x`, `decisions.y`, `precedence.local`), prints the `### Sums` section a decision records for them |
+| `river sum -w [module]` | Writes `requirements/sums.md` (River 2.0). Never edit that file by hand |
+| `river install-skill [--origin <text>] [--pin <commit>] [repo]` | Installs or refreshes `.agents/skills/river/` and `.agents/skills/PROVENANCE.md` in `repo` (default `.`) |
+| `river upgrade [--check] [--pin <commit>] [module]` | Migrates the River module and `.agents/skills/river/` to the latest River version, writing files without committing, and lists what needs a person; `--check` reports only |
 | `river version` | Prints the River version the CLI implements and the versions it checks |
 
 Checks of your own, beyond River's, go in your project's own language and test suite, which
@@ -29,9 +30,9 @@ brownfield project may start that way. If your project was stricter, keep the st
 your own check; otherwise swapping checkers is how a rule disappears without anyone deciding it
 should.
 
-## What a module's checks cover
+## What a River module's checks cover
 
-Run them before calling a change done. At minimum a module should check that:
+Run them before calling a change done. At minimum a River module should check that:
 
 - every requirement's goal citation resolves, and every criterion's requirement citation does
 - identifiers are well formed and unique within their package
@@ -44,7 +45,7 @@ Run them before calling a change done. At minimum a module should check that:
 
 ## Versions
 
-**A module declares the version of River it follows** in the `## Module` block of `README.md`
+**A River module declares the version of River it follows** in the `## Module` block of `README.md`
 at its root, as `river <major>.<minor>` beside `module`, the way `go.mod` declares `go 1.22`:
 
 ```
@@ -68,14 +69,14 @@ the edits a tool can, writes them without committing, and lists what needs you. 
 | Version | Adds |
 | --- | --- |
 | 1.0 | River before versions. An approval records the package's hash (`Approves:`) |
-| 2.0 | `requirements/sums.md`; `## Composed from` on packages; `*(excluded)*` on excluded items; `### Sums` on decisions and approvals; per-item rows in `precedence.md`; `## Module` in root `README.md`; `river upgrade`. New failures (notes on 1.x): `unaccounted-requirement`, `covers-*`, `excluded-*`, `withdrawn-not-excluded`, `decision-missing-sums`, `exported-external-link`, `bad-module-block`, `precedence-*`, `included-and-composed`, `reaffirms-unknown`, `misplaced-module` |
+| 2.0 | `requirements/sums.md`; `## Composed from`; `*(excluded)*` markers; `### Sums` on decisions and approvals; per-item `precedence.md` rows; `## Module` in root `README.md`; `river install-skill` and `river upgrade`. New failures (notes on 1.x): `unaccounted-requirement`, `covers-*`, `excluded-*`, `withdrawn-not-excluded`, `decision-missing-sums`, `exported-external-link`, `bad-module-block`, `precedence-*`, `included-and-composed`, `reaffirms-unknown`, `misplaced-module` |
 
 **Record your own River version**: the skill's pin in its `PROVENANCE.md` and the layout here.
 River keeps no list of adopters.
 
 ## Composition checks
 
-Once a module has composed packages, every source item, local or imported, must be accounted for
+Once a River module has composed packages, every source item, local or imported, must be accounted for
 in each composed package it applies to: included, composed from, or excluded with `*(excluded)*`
 ([`composition.md`](composition.md), *Accounted for*). Fix a problem by recomposing, never by
 editing the composed package.
@@ -97,13 +98,13 @@ editing the composed package.
 | `included-and-composed` | (2.0) A package accounts for one source item in more than one way (included, composed from, or excluded) | Recompose, accounting for each item once |
 | `reaffirms-unknown` | (2.0) A decision's `Reaffirms:` names no entry in `decisions.md` | Name the decision it confirms |
 | `composed-sources` | (2.0) A package has no `## Composed from` list, names a source that does not exist, or accounts for items from one it does not name | List its sources: `- product (Local)` |
-| `stale-sums` | (2.0) `requirements/sums.md` is missing or differs from what `river sum` writes | Run `river sum` |
+| `stale-sums` | (2.0) `requirements/sums.md` is missing or differs from what `river sum -w` writes | Run `river sum -w` |
 | `stale-approval` | The package's files changed since its latest approval, or (2.0) an input the approval's `### Sums` covered (a source item, a decision, a precedence row) changed, was withdrawn, or was removed, or a decision affecting a covered item was recorded since; the message names them | Recompose and ask the owner to approve the record `river hash` prints |
 | `misplaced-module` | The `## Module` block is in `requirements/README.md` under River 2.0, or declared in both READMEs | Keep one, in `README.md` at the module root; `river upgrade` moves it |
-| `skill-copy-missing` | (2.0) No copy of River's skill at `.agents/skills/river/` beside the module | Copy `skills/river/` unchanged there ([`adopting.md`](adopting.md), *Installing the skill*) |
-| `skill-provenance-missing` | (2.0) No `.agents/skills/PROVENANCE.md` for the copy | Add it, with the origin and pin |
-| `skill-pin-missing` | (2.0) `PROVENANCE.md` records no pin, or only a placeholder | Record the commit the copy was taken at |
-| `skill-version-mismatch` (note) | The skill copy describes a River version other than the module declares | `river upgrade` the module, or re-pin the skill |
+| `skill-copy-missing` | (2.0) No copy of River's skill at `.agents/skills/river/` beside the module | Run `river install-skill` ([`adopting.md`](adopting.md), *Installing the skill*) |
+| `skill-provenance-missing` | (2.0) No `.agents/skills/PROVENANCE.md` for the copy | Run `river install-skill` to write `PROVENANCE.md` with its pin |
+| `skill-pin-missing` | (2.0) `PROVENANCE.md` records no pin, or only a placeholder | Run `river install-skill` (with `--pin <commit>` if built outside git) |
+| `skill-version-mismatch` (note) | The skill copy describes a River version other than the module declares | Run `river upgrade` or `river install-skill` |
 | `precedence-unknown-item` | (2.0) A row of `precedence.md`'s item table names no local or imported source item | Fix the name, or remove the row |
 | `precedence-bad-tier` | (2.0) An item row's tier is not Mandatory, Governing, Local, Advisory, or a ranked tier the tier table names | Use one of them |
 | `precedence-no-decision` | (2.0) An item row links no decision, or one that does not exist or is superseded | Link the decision in force that set the tier; ask the person if there is none |

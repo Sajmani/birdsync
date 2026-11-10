@@ -11,7 +11,7 @@ a change that makes the two disagree updates both, and a guardrail can detect dr
 A design is never a record written afterwards. This follows the Elephant-Goldfish Model, which
 reviews a design with zero-context agents before code is written and reports where they drift.
 
-**A design lives with the code, not in the module.** The module holds intent and conformance;
+**A design lives with the code, not in the River module.** The module holds intent and conformance;
 keeping a design in it would put it where people edit requirements rather than where they edit
 code, which is backwards for a document whose only job is to stay in step. `conformance.md` cites
 where the designs are.
@@ -39,7 +39,7 @@ to make future satisfaction cheaper. Porting to a faster language is Optimizatio
 later performance work tractable, and Implementation when it meets a stated performance
 requirement. Say which: only one of them answers to an acceptance criterion.
 
-**It acts on the module too.** Restructuring requirements so that writing code and guardrails
+**It acts on the River module too.** Restructuring requirements so that writing code and guardrails
 from them costs less — a composed package that lists rather than copies, a requirement whose
 rule comes first — is Optimization: nothing required changes.
 
@@ -52,7 +52,7 @@ optimize; it can only rewrite and hope.
 ## Revision
 
 **Revision** is the loop's return arc: what a later stage learns becomes a change to intent.
-Without it a module records what someone believed once.
+Without it a River module records what someone believed once.
 
 **Revision edits what was authored, never what was derived.** A source and a goal are written by
 people; a composed package is produced from them and is immutable once tagged. An edit there is

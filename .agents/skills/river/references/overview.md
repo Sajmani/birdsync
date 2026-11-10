@@ -6,7 +6,7 @@ Part of River's method. Search `^## ` for the sections; read only the one you ne
 
 **River is a process whose state lives in your repository.** Its goals, requirements, the
 decisions that settled their conflicts, and the record of what has been built against which
-version are plain files in a `river/` directory beside the code they govern. Every change to
+version are plain files in a `river/` directory, the **River module**, beside the code they govern. Every change to
 them is reviewed and versioned the way code is, and nothing about the process lives only in a
 server, a tracker or someone's memory.
 

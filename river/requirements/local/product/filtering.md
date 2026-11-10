@@ -99,10 +99,11 @@ legitimate observations.*
 Formerly: P-033
 Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
-Fuzzy matching compares parsed observation dates, not raw CSV date strings.
+Fuzzy matching compares parsed observation dates, not raw CSV date strings, across both eBird CSV
+date formats (`2006-01-02` and `1/2/2006`).
 
-*Rationale: eBird writes dates in two formats; keying on the raw field silently disabled
-`--fuzzy` for anyone whose export used the second one.*
+*Rationale: keying on the raw field silently disabled `--fuzzy` for anyone whose export used the
+second format.*
 
 ## fuzzyOffByDefault
 

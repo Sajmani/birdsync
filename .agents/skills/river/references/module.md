@@ -2,7 +2,7 @@
 
 A **River module** is the `river/` directory: goals, gradients, requirements, and the records
 kept about them, declared once in `river/README.md` with a `module` path and the River version.
-It is not a Go module, though it borrows go.mod's form. Below, "module" means a River module.
+It is not a Go module, though it borrows go.mod's form.
 
 Part of River's method. Search `^## ` for the sections; read only the one you need.
 
@@ -21,7 +21,7 @@ river/
     imports.md               every imported source, with its pinned version
     precedence.md            standing rules: which source outranks which
     decisions.md             log of how each conflict and judgment was settled
-    sums.md                  a sum per input to composition, written by `river sum`, never by hand (2.0)
+    sums.md                  a sum per input to composition, written by `river sum -w`, never by hand (2.0)
     local/<name>/            a source written here: one source, one package
     imported/<import path>/  another module's source, pinned, with PROVENANCE.md
     composed/
@@ -39,7 +39,7 @@ hand. Where a composed package sits is the record of who may import it: moving i
 `exported/` exports it, and no other file lists exports. These names were chosen by testing
 candidate layouts on zero-context agents acting as new engineers.
 
-The method is not in the module: it is this skill, kept beside the module at
+The method is not in the River module: it is this skill, kept beside the module at
 `.agents/skills/river/` ([`adopting.md`](adopting.md)). The checks are not in the module either:
 the `river` CLI runs them ([`checks.md`](checks.md)).
 
@@ -70,7 +70,7 @@ searches and opens ranges; it should not have to read a file whole to find one i
   reader follows it in one step and a renamed item breaks a link the checker reports. Exported and
   imported packages, which move between modules, link only within their own directory.
 
-## Keeping the module's files
+## Keeping the River module's files
 
 What each file under `requirements/` must contain, so that anyone adding to it keeps it
 consistent. **Read this before writing to any of them.** An existing entry is a good example of
@@ -112,8 +112,8 @@ accepted as unmet stays listed, with the decision beside it, as an excluded one 
 The entry carries `Approves: <package>, sha256:<hash>`: the SHA-256 of the package's `.md` files,
 each contributing its path relative to the package directory, a newline and its bytes, in path
 order. **From River 2.0 the approval also covers what the package was composed from**, as
-`go.sum` covers a module's dependencies. The package lists its sources under `## Composed from`
-(`- product (Local)`); `requirements/sums.md`, written by `river sum` and never by hand, records a
+`go.sum` covers a Go module's dependencies. The package lists its sources under `## Composed from`
+(`- product (Local)`); `requirements/sums.md`, written by `river sum -w` and never by hand, records a
 SHA-256 per input to composition; and the approval ends with a `### Sums` section holding the
 `sums.md` lines for **every input the package was composed from**. Today those are the source items
 it includes, composes from, or excludes, every decision it cites or whose `Affects:` names one of

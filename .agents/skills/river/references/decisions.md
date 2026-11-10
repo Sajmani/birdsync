@@ -48,7 +48,7 @@ carry a note after a semicolon.
   `Approves: <name>, sha256:<hash>` among the fields and, from River 2.0, a `### Sums` section at
   the end of the entry, listing the sums of every input the package was composed from: its source
   items, the decisions it cites or that affect them, and the precedence rows
-  ([`module.md`](module.md), *Keeping the module's files*). **Only the approving person adds this
+  ([`module.md`](module.md), *Keeping the River module's files*). **Only the approving person adds this
   record.**
 - **From River 2.0, every in-force decision affecting source items records what it was decided
   against:** a `### Sums` section at the end of the entry, from `river sum <item>...` for the

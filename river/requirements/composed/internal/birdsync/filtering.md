@@ -28,7 +28,7 @@ Sync key, idempotence, CSV and date formats, skip order, and `--fuzzy` matching 
 ### Data format handling
 
 - [tech.csvByHeaderName](../../../local/tech/formats.md#csvbyheadername) — The CSV is read by header name
-- [tech.datesViaObserved](../../../local/tech/formats.md#datesviaobserved) — eBird dates are compared via Record.Observed()
+- [tech.datesViaObserved](../../../local/tech/formats.md#datesviaobserved) — eBird dates are parsed and compared via Record.Observed()
 - [tech.emptyNameNotIndexed](../../../local/tech/formats.md#emptynamenotindexed) — An empty taxon name never enters the fuzzy index
 
 ## Acceptance criteria
@@ -44,12 +44,12 @@ One set of records exercises every skip rule exactly once, in the order `--after
 
 ## fuzzyHandlesBothDateFormats
 
-**Fuzzy matching works with both eBird date formats**
+**Fuzzy matching works with both `2006-01-02` and `1/2/2006` eBird date formats**
 
 Formerly: AC-014
 Covers: [product.fuzzyParsedDates](../../../local/product/filtering.md#fuzzyparseddates), [tech.datesViaObserved](../../../local/tech/formats.md#datesviaobserved), [product.fuzzyMatching](../../../local/product/filtering.md#fuzzymatching)
 
-Fuzzy matching skips a record whose date is written in either eBird format.
+Fuzzy matching skips a record whether eBird wrote its date as `2006-01-02` or as `1/2/2006`.
 
 ## fuzzyIgnoresEmptyNames
 
@@ -62,12 +62,13 @@ An existing observation with an empty name never fuzzy-matches a record.
 
 ## recordObservedParsing
 
-**eBird dates parse in both formats**
+**eBird dates parse in both `2006-01-02` and `1/2/2006` formats**
 
 Formerly: AC-019
 Covers: [tech.datesViaObserved](../../../local/tech/formats.md#datesviaobserved)
 
-`Record.Observed()` parses both eBird date formats, with and without a time.
+`Record.Observed()` parses both eBird CSV date formats — `2006-01-02` (with optional `03:04 PM`
+time) and `1/2/2006` (with optional `3:04 PM` time) — with and without a time.
 
 ## csvReadByHeader
 

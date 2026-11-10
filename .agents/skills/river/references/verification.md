@@ -14,7 +14,7 @@ criteria and no traceability table is kept; a stored reverse index drifts from w
 and this one is derivable.
 
 A criterion citing no requirement is an error, not an orphan. A guardrail may predate the
-module; a criterion cannot, because composition produces it from a requirement.
+River module; a criterion cannot, because composition produces it from a requirement.
 
 **A criterion must have been watched failing before it is trusted.** A check that cannot fail is
 indistinguishable from one that passes, and it is worse than nothing because it reports safety.
@@ -65,7 +65,7 @@ is recorded and weighed. Which one may differ by stage: an expensive check can i
 generation and gate at release. Gating is a property of the guardrail, not a separate kind of
 thing.
 
-**Guardrails are not module artifacts.** They live wherever you already keep your tests and your
+**Guardrails are not River module artifacts.** They live wherever you already keep your tests and your
 deployment configuration. The module **cites** them; it does not contain them, because requiring
 otherwise would mean moving your tests as a condition of adoption. A scanner you already run is
 a guardrail in this sense, and citing it is the whole of the integration.

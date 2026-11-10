@@ -2,7 +2,7 @@ package sums
 
 # Sums
 
-Written by `river sum`, never by hand. One line per composition input, with the SHA-256
+Written by `river sum -w`, never by hand. One line per composition input, with the SHA-256
 of its text: each source item (`<package>.<identifier>`), each decisions.md entry
 (`decisions.<id>`), each row of precedence.md's tier table, with its rank (`precedence.<tier>`),
 and each row of its item table (`precedence.<package>.<identifier>`). An approval or a decision
@@ -86,7 +86,7 @@ product.flagsBeforeArgument sha256:0df71b0a68ad463b92d07978758c01d31c8554b94fdf3
 product.fuzzyMatching sha256:ea3c63d6ab6372f09fef4d4bb89e317eddd805c4da73400a4d9a3c85a3ba011f
 product.fuzzyNeverEmptyName sha256:886c1dd6bf64a7487b3a8ac46e6fc8a43f180553f5e177e1671a472f8540547f
 product.fuzzyOffByDefault sha256:d683a5e1524cb1b1ec9556953e0a1b9840e8b2fdde2274e97e9cae8f915d45d9
-product.fuzzyParsedDates sha256:ec4fb020136a6886ebef87d81192e12a8c91cc79e4014ba433801545cd7aa0fa
+product.fuzzyParsedDates sha256:dc7b34f961ea5bb7986b3995fc1272e96faef677fb9f5e0463cbc44f29ee458a
 product.idempotentRerun sha256:cd83c688a4b9644398e6265321116165b0a871adcf3d03f38816440867e8ce5c
 product.incompleteKeyNotRecognized sha256:c8faa9397239e0d1556012fd49eb3e24d62629186f2cd7e7a2f8e69cca3bb6cb
 product.largeAccounts sha256:d0eb854ab9a2c850c442872f52fbae976f225b528e1322b4bf18b2f0eb9a020e
@@ -132,7 +132,7 @@ tech.commentsExplainWhy sha256:c74fcb1d3b14400a6ddafbae72c02e47740b4dbc288c2aabc
 tech.credentialsNeverExposed sha256:e2dcb4a3bd6e4271788f9bff5a9b2165a46579241b83d552eb2b16ce4c92e5b6
 tech.csvByHeaderName sha256:d8286787f46d4184123ba631c87caf478039c23639bd479e3aa1543351514081
 tech.dailyRequestBudget sha256:407b28a3dd428824dc860c2b03a9f27758432f910441d553dfd589dbd84e310c
-tech.datesViaObserved sha256:d2f982b35f1ce705c456f54178054293b9b4036be838243f168a68e8f61d3adf
+tech.datesViaObserved sha256:90018726da5e6e419cd21f29ef8a127af34d55ced5067cd007bb3e421479ff10
 tech.dryRunGateAtCallSite sha256:0ca213c1d817609fd1ccadb2987c12c809358ac804f96db104ef221ce25de8b6
 tech.dryRunPrefixLogged sha256:3d3406eaaf5e889b36db70458217d1d2e4296b9b0b6c7ed218e7854078edd7b0
 tech.emptyNameNotIndexed sha256:86534ee9f9269cb5ebd133e06638ae50d097b3a42ef44b374e89626da5c82c7d

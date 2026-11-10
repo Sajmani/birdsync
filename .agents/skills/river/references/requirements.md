@@ -74,7 +74,7 @@ whose fields restate the tier.
 more **composed requirements packages** — explicit, versioned artifacts rather than an implied
 state. Its three inputs, sources, precedence, and decisions, count equally; a fact in none of them
 is asked for and recorded before composing on it. Each package names the sources it came from;
-`imports.md` holds their versions, and the CLI records their sums in the module's `sums.md`. The
+`imports.md` holds their versions, and the CLI records their sums in the River module's `sums.md`. The
 procedure is in [`composition.md`](composition.md).
 
 A composed package is named for its **audience or scope**, the way a Go package is, never for a
@@ -199,7 +199,7 @@ deliberate, and it holds the incident a good failing test is built from.
 
 Identifiers are descriptive CamelCase — `noSilentFailures`, not `P-014`. Inside a package its
 own names are bare; everywhere else they are qualified, `product.noSilentFailures`. Package
-names are unique within a module, which is what lets a bare prefix resolve without an import
+names are unique within a River module, which is what lets a bare prefix resolve without an import
 block.
 
 **Every file that defines identifiers opens with `package <name>`** (`tech.declaredPackages`),

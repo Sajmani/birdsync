@@ -267,8 +267,8 @@ func TestDefaultMinRequestIntervalMatchesGuidance(t *testing.T) {
 // server, and DefaultMaxRequests stays conservatively below iNaturalist's
 // 10,000-per-day guideline.
 func TestClientEnforcesMaxRequests(t *testing.T) {
-	if DefaultMaxRequests != 9000 || DefaultMaxRequests >= 10000 {
-		t.Errorf("DefaultMaxRequests = %d, want 9000 (< 10000)", DefaultMaxRequests)
+	if DefaultMaxRequests != 9000 {
+		t.Errorf("DefaultMaxRequests = %d, want 9000", DefaultMaxRequests)
 	}
 	if NewClient("http://example.invalid", "", "").maxRequests != DefaultMaxRequests {
 		t.Error("NewClient does not set DefaultMaxRequests by default")
