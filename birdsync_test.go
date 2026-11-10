@@ -1219,3 +1219,151 @@ func TestDailyRequestBudget(t *testing.T) {
 		t.Errorf("Summary does not report budget stop:\n%s", summary)
 	}
 }
+
+// TestFuzzyMatchSubspecies checks that --fuzzy matches subspecies and eBird
+// subspecific groups to the parent species (and to each other) via their
+// binomial species stem, while refusing to match across species on higher
+// taxa, spuhs ("Empidonax sp."), species slashes ("Larus glaucoides/thayeri"),
+// or hybrids ("Anas platyrhynchos x Anas acuta").
+func TestFuzzyMatchSubspecies(t *testing.T) {
+	origDebug := debug
+	defer func() {
+		debug = origDebug
+		resetFlags()
+	}()
+
+	cases := []struct {
+		name        string
+		ebirdCommon string
+		ebirdSci    string
+		inatCommon  string
+		inatSci     string
+		wantSkip    bool
+	}{
+		{
+			name:        "eBird species matches iNaturalist subspecies (issue #7)",
+			ebirdCommon: "Eurasian Jay",
+			ebirdSci:    "Garrulus glandarius",
+			inatCommon:  "White-faced Jay",
+			inatSci:     "Garrulus glandarius leucotis",
+			wantSkip:    true,
+		},
+		{
+			name:        "eBird slash-subspecies group matches iNaturalist subspecies (issue #7 workaround)",
+			ebirdCommon: "Eurasian Jay (White-faced)",
+			ebirdSci:    "Garrulus glandarius leucotis/oatesi",
+			inatCommon:  "White-faced Jay",
+			inatSci:     "Garrulus glandarius leucotis",
+			wantSkip:    true,
+		},
+		{
+			name:        "eBird bracketed group matches iNaturalist subspecies",
+			ebirdCommon: "Dark-eyed Junco (Oregon)",
+			ebirdSci:    "Junco hyemalis [oreganus Group]",
+			inatCommon:  "Oregon Junco",
+			inatSci:     "Junco hyemalis shufeldti",
+			wantSkip:    true,
+		},
+		{
+			name:        "eBird domestic form matches iNaturalist species",
+			ebirdCommon: "Rock Pigeon (Feral Pigeon)",
+			ebirdSci:    "Columba livia (Feral Pigeon)",
+			inatCommon:  "Rock Pigeon",
+			inatSci:     "Columba livia",
+			wantSkip:    true,
+		},
+		{
+			name:        "different species in same genus does not match",
+			ebirdCommon: "Black-headed Jay",
+			ebirdSci:    "Garrulus lanceolatus",
+			inatCommon:  "White-faced Jay",
+			inatSci:     "Garrulus glandarius leucotis",
+			wantSkip:    false,
+		},
+		{
+			name:        "genus-level iNaturalist identification does not match species",
+			ebirdCommon: "Eurasian Jay",
+			ebirdSci:    "Garrulus glandarius",
+			inatCommon:  "Typical Jays",
+			inatSci:     "Garrulus",
+			wantSkip:    false,
+		},
+		{
+			name:        "eBird spuh does not match species in same genus",
+			ebirdCommon: "Empidonax sp.",
+			ebirdSci:    "Empidonax sp.",
+			inatCommon:  "Least Flycatcher",
+			inatSci:     "Empidonax minimus",
+			wantSkip:    false,
+		},
+		{
+			name:        "eBird species slash does not match single species",
+			ebirdCommon: "Iceland/Thayer's Gull",
+			ebirdSci:    "Larus glaucoides/thayeri",
+			inatCommon:  "Iceland Gull",
+			inatSci:     "Larus glaucoides",
+			wantSkip:    false,
+		},
+		{
+			name:        "eBird hybrid with x does not match parent species",
+			ebirdCommon: "Mallard x Northern Pintail (hybrid)",
+			ebirdSci:    "Anas platyrhynchos x acuta",
+			inatCommon:  "Mallard",
+			inatSci:     "Anas platyrhynchos",
+			wantSkip:    false,
+		},
+		{
+			name:        "iNaturalist hybrid with multiplication sign does not match parent species",
+			ebirdCommon: "Mallard",
+			ebirdSci:    "Anas platyrhynchos",
+			inatCommon:  "Mallard × Northern Pintail",
+			inatSci:     "Anas platyrhynchos × acuta",
+			wantSkip:    false,
+		},
+		{
+			name:        "subgenus parenthetical in second token does not match another species in subgenus",
+			ebirdCommon: "Herring Gull",
+			ebirdSci:    "Larus (Larus) argentatus",
+			inatCommon:  "Lesser Black-backed Gull",
+			inatSci:     "Larus (Larus) fuscus",
+			wantSkip:    false,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			resetFlags()
+			fuzzy = true
+
+			mockEbird := &mockEBirdClient{records: []ebird.Record{{
+				Line:             2,
+				SubmissionID:     "S212386574",
+				CommonName:       tc.ebirdCommon,
+				ScientificName:   tc.ebirdSci,
+				Date:             "2025-02-01",
+				Time:             "09:30 AM",
+				MLCatalogNumbers: "99999",
+			}}}
+			mockInat := &mockINatClient{observations: []inat.Result{{
+				ID:         100,
+				UUID:       uuid.New(),
+				ObservedOn: "2025-02-01",
+				Taxon: inat.Taxon{
+					PreferredCommonName: tc.inatCommon,
+					Name:                tc.inatSci,
+				},
+			}}}
+
+			s := birdsync("MyEBirdData.csv", mockEbird, "myUserID", mockInat)
+			if tc.wantSkip {
+				if s.fuzzySkips != 1 || s.createdObservations != 0 {
+					t.Errorf("fuzzySkips=%d createdObservations=%d, want 1 and 0", s.fuzzySkips, s.createdObservations)
+				}
+			} else {
+				if s.fuzzySkips != 0 || s.createdObservations != 1 {
+					t.Errorf("fuzzySkips=%d createdObservations=%d, want 0 and 1", s.fuzzySkips, s.createdObservations)
+				}
+			}
+		})
+	}
+}

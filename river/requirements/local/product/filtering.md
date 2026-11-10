@@ -77,8 +77,15 @@ Formerly: P-031
 Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 `--fuzzy` skips a record when an existing observation not carrying a sync key
-has the same observation date and the same name, matched against either the common name
-or the scientific name.
+has the same observation date and matches on common name, full scientific name,
+or binomial species stem (`Genus species`, when the scientific name begins with a
+capitalized genus and a plain lowercase specific epithet rather than a higher
+taxon, spuh, species slash, or hybrid).
+
+*Rationale: a manually entered iNaturalist observation refined by identifiers
+from species to subspecies (issue #7), or an eBird subspecific group record,
+carries a different common name and trinomial from the species record while
+naming the same species.*
 
 ## fuzzyNeverEmptyName
 
@@ -113,4 +120,5 @@ Formerly: P-034
 Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 `--fuzzy` is off by default, and its documentation states that it may
-suppress a legitimate record when the same bird was seen twice in one day.
+suppress a legitimate record when the same species (including two subspecies of
+that species) was seen twice in one day.

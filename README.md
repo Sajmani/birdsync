@@ -52,7 +52,7 @@ Birdsync provides command-line flags to customize its behavior:
         This is on by default, so by default birdsync will _not_ sync observations
         that have no photos or sounds. To sync those observations too, pass `--verifiable=false`.
 * `-fuzzy`
-        Don't create a birdsync observation if an observation without a complete birdsync sync key already exists for the same bird on the same date. This fuzzy matching is useful when you've entered the same observation manually into both eBird and iNaturalist, but it may skip legitimate uploads if you saw the same bird twice on the same day.
+        Don't create a birdsync observation if an observation without a complete birdsync sync key already exists for the same bird on the same date (matching on common name, full scientific name, or binomial `Genus species` stem so subspecies and eBird subspecific groups match the parent species). This fuzzy matching is useful when you've entered the same observation manually into both eBird and iNaturalist, but it may skip legitimate uploads if you saw the same species (or two subspecies of it) twice on the same day.
 * `-positional_accuracy_meters` (default `1000`)
         Positional accuracy in meters of the iNaturalist observations created by birdsync.
         Since the latitude and longitude of birdsync observations is set to the checklist location,
@@ -117,8 +117,9 @@ Given (`iNaturalist user name`, `eBird CSV file`):
   couldn't resolve has no taxon, and filtering those out made birdsync unable to see
   observations it had created, so it created them again.
 - Index these iNaturalist observations by ([eBird submission ID](https://www.inaturalist.org/observation_fields/6033), [eBird scientific name](https://www.inaturalist.org/observation_fields/20215))
-- Index any non-birdsync observations by date for fuzzy matching, under both their
-  common name and their scientific name
+- Index any non-birdsync observations by date for fuzzy matching, under their
+  common name, their scientific name, and (when it names a single species or subspecies) their
+  binomial `Genus species` stem
 - For each eBird observation in `eBird CSV file`, in this order:
   - If `--after` is set, skip any eBird observations before that date
   - If `--before` is set, skip any eBird observations after that date
@@ -172,7 +173,7 @@ details and checklist comments (when present), the checklist URL, the eBird prot
 
 Birdsync only works in the eBird → iNaturalist direction because (as far as I can tell) the [eBird API](https://support.ebird.org/en/support/solutions/articles/48000838205-download-ebird-data#API) doesn't support reading or writing personal checklists, only reading "limited, recent and summary outputs of eBird data".
 
-Birdsync cannot detect whether iNaturalist observations that you've created manually are duplicates of those in your eBird checklists unless you mark your existing iNaturalist observations with the [eBird submission ID](https://www.inaturalist.org/observation_fields/6033) and [eBird scientific name](https://www.inaturalist.org/observation_fields/20215) observation fields. The `--fuzzy` matching feature provides a convenient way to avoid creating duplicates, but it may also suppress creating legitimate observations if you happened to see the same bird twice on the same day and entered it once into each tool.
+Birdsync cannot detect whether iNaturalist observations that you've created manually are duplicates of those in your eBird checklists unless you mark your existing iNaturalist observations with the [eBird submission ID](https://www.inaturalist.org/observation_fields/6033) and [eBird scientific name](https://www.inaturalist.org/observation_fields/20215) observation fields. The `--fuzzy` matching feature provides a convenient way to avoid creating duplicates (including when an observation was refined to a subspecies on iNaturalist or entered as a subspecific group on eBird), but it may also suppress creating legitimate observations if you happened to see the same species — or two subspecies of it — twice on the same day and entered one into iNaturalist manually.
 
 `--fuzzy` compares against every observation in your account, not only birds, since
 birdsync downloads them all. It ignores iNaturalist observations that have no taxon name, so

@@ -114,7 +114,7 @@ product.noTaxonFilter sha256:7c63f4369c2b7295650d431c22404bffe8ae1784301638e1faf
 
 Date: 2026-08-09
 Decided by: Sajmani
-Status: accepted
+Status: accepted; reaffirmed by fuzzySpeciesBinomial
 Affects: [product.fuzzyMatching](local/product/filtering.md#fuzzymatching), [product.incompleteKeyNotRecognized](local/product/identity.md#incompletekeynotrecognized)
 Formerly: CR-004
 
@@ -795,4 +795,42 @@ tech.toolsReadOnly sha256:71a2f130e5ee913c0006699546c02cd3a95e10ca275124924946d9
 tech.updateKeepsPhotos sha256:28cb54444c3731e1ecffbaa3024d110ad0675b977e0336903a378e684fd77afa
 tech.userAgent sha256:55fa2e311e0751625bf89a00ca14f4cc1031b291523bb12a74326363449eec9e
 tech.vetClean sha256:586358c0fd40f90f408a05826db8a8be08014fd4007e53b224f49073bbbb0908
+```
+
+---
+
+## fuzzySpeciesBinomial
+
+**Under --fuzzy, unkeyed observations also match by binomial species stem (Genus species)**
+
+Date: 2026-11-10
+Decided by: Sajmani
+Status: accepted
+Reaffirms: fuzzyDocsCorrected
+Affects: [product.fuzzyMatching](local/product/filtering.md#fuzzymatching), [product.fuzzyOffByDefault](local/product/filtering.md#fuzzyoffbydefault), [product.incompleteKeyNotRecognized](local/product/identity.md#incompletekeynotrecognized)
+
+### Decided
+
+Keep exact matching on common name and full scientific name, and additionally index and check the
+binomial species stem (`Genus species`) whenever a scientific name begins with a capitalized genus
+and a plain lowercase specific epithet (excluding single-token higher taxa, `sp.` entries, species
+slashes, and hybrids containing `x` or `×`). Confirm that [fuzzyDocsCorrected](#fuzzydocscorrected)
+still holds: `--fuzzy` applies to every observation lacking a complete birdsync sync key.
+
+### Why
+
+In issue #7, a manually entered iNaturalist observation refined by identifiers from species
+(`Garrulus glandarius`, "Eurasian Jay") to subspecies (`Garrulus glandarius leucotis`,
+"White-faced Jay") failed to fuzzy-match both the species record in eBird and the updated eBird
+subspecific group record (`Garrulus glandarius leucotis/oatesi`, "Eurasian Jay (White-faced)").
+Matching on the binomial stem resolves subspecies and subspecific-group refinements without extra
+API requests or a cross-service taxonomy table ([product.noTaxonomyReconciliation](local/product/scope.md#notaxonomyreconciliation)),
+with the same documented trade-off as seeing the same species twice in one day.
+
+### Sums
+
+```
+product.fuzzyMatching sha256:50d236a6257a7d624d01403dd48cf3ca34950fb25789b5c07c9f2fb2ccecf153
+product.fuzzyOffByDefault sha256:be5f27adc3f9978b23c999b88d260eb11a810123c810941441fab953385d848f
+product.incompleteKeyNotRecognized sha256:c8faa9397239e0d1556012fd49eb3e24d62629186f2cd7e7a2f8e69cca3bb6cb
 ```

@@ -8,20 +8,20 @@ watched failing. A criterion has been watched failing only if its section here c
 ## Built against
 
 - Package: [`composed/internal/birdsync`](requirements/composed/internal/birdsync/README.md)
-- Version: `sha256:a4fc4272df0f979da68b752d0e4cf611a7f027748e63b9adc8d40673253c30c2`, approved in [decisions.birdsyncApproved](requirements/decisions.md#birdsyncapproved).
-- Checked on: 2026-11-10, with `go test -race ./...` passing and `river check` passing.
+- Version: recomposed from [decisions.birdsyncApproved](requirements/decisions.md#birdsyncapproved) for [decisions.fuzzySpeciesBinomial](requirements/decisions.md#fuzzyspeciesbinomial); awaiting owner re-approval (`river hash`).
+- Checked on: 2026-11-10, with `go test -race ./...` passing.
 
 ## Counts
 
-Computed on 2026-11-08 by script, not maintained by hand. Recount rather than editing these
+Computed on 2026-11-10 by script, not maintained by hand. Recount rather than editing these
 numbers.
 
 - Requirements in sources: 126 (107 local, 19 imported). 101 local are live; 6 are withdrawn and excluded
 - Live local requirements covered by a criterion, directly or through a composed requirement
   they are composed into: 73. Uncovered: 28, counted, not failed
-- Composed requirements: 11. Criteria: 56. Watched failing on record: 9. Watched not failing: 1.
+- Composed requirements: 11. Criteria: 57. Watched failing on record: 10. Watched not failing: 1.
   Not recorded: 32. With no guardrail yet: 14
-- Test functions: 50. Cited by a criterion: 46. Project checks: 2. Cited by none: 2
+- Test functions: 51. Cited by a criterion: 47. Project checks: 2. Cited by none: 2
 - Annotations harvested: 43, from 6 files. Annotated tests no criterion cites: 2
 
 ## buildsEverywhere
@@ -159,6 +159,14 @@ Guardrails: `TestFuzzyMatchIgnoresEmptyNames` (`birdsync_test.go`)
 Gates: yes, in CI
 Specman status: verified
 Not yet watched failing under River. Specman's `verified` status meant the check had been watched failing, but nothing records how or when, so this criterion has no `Watched failing:` line until someone breaks the behavior, sees the guardrail fail, and records it here.
+
+## fuzzyMatchesSubspeciesByBinomial
+
+Criterion: [birdsync.fuzzyMatchesSubspeciesByBinomial](requirements/composed/internal/birdsync/filtering.md#fuzzymatchessubspeciesbybinomial)
+Guardrails: `TestFuzzyMatchSubspecies` (`birdsync_test.go`)
+Gates: yes, in CI
+Watched failing: 2026-11-10, by returning `"", false` from `speciesBinomial`; all four subspecies and group subtests of `TestFuzzyMatchSubspecies` failed
+Watched failing: 2026-11-10, by returning `tokens[0] + " " + tokens[1], true` without epithet or hybrid checks; the hybrid and subgenus subtests of `TestFuzzyMatchSubspecies` failed
 
 ## dryRunMediaCountUnclassified
 

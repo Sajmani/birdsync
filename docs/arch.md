@@ -26,8 +26,11 @@ One run does the following:
    - `previouslySynced`, keyed by `ebird.ObservationID` — the pair of eBird observation-field
      values that identifies a birdsync-created observation.
    - `fuzzyMatch`, keyed by observation date plus name, for every observation whose
-     `ObservationID` is *not* valid. Each is indexed twice, under its common name and under its
-     scientific name. Used only when `--fuzzy` is set.
+     `ObservationID` is *not* valid. Each is indexed under its common name, its full scientific
+     name, and — when the scientific name denotes a single species or infraspecific taxon rather
+     than a higher taxon, `sp.` entry, species slash, or hybrid — its `Genus species` binomial stem
+     (`speciesBinomial`), so subspecies refinements and eBird subspecific groups match the parent
+     species (`decisions.fuzzySpeciesBinomial`). Used only when `--fuzzy` is set.
 
    "Not valid" means *either* eBird field is missing (`ebird.ObservationID.Valid`), so an observation
    created by an old version of birdsync that set the checklist ID but not the scientific name

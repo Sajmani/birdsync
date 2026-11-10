@@ -12,6 +12,7 @@ import (
 	"os"
 	"slices"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/Sajmani/birdsync/ebird"
@@ -45,9 +46,9 @@ func init() {
 	flag.BoolVar(&verifiable, "verifiable", true,
 		"Sync only observations that include Macaulay Catalog Numbers (photos or sound)")
 	flag.BoolVar(&fuzzy, "fuzzy", false,
-		"Don't create a birdsync observation if a non-birdsync observation already exists for the same bird on the same date."+
+		"Don't create a birdsync observation if an observation without a complete birdsync sync key already exists for the same species on the same date. "+
 			"This fuzzy matching is useful when you've entered the same observation manually into both eBird and iNaturalist, "+
-			"but it may skip legitimate uploads if you saw the same bird twice on the same day.")
+			"but it may skip legitimate uploads if you saw the same species (or two subspecies of it) twice on the same day.")
 	flag.Var(&before, "before",
 		"Sync only observations observed before the provided DateTime (2006-01-02 15:04:05). The time can be omitted (2006-01-02).")
 	flag.Var(&after, "after",
@@ -230,6 +231,53 @@ func estimateRecentWriteRequests(results []inat.Result, now time.Time) int {
 	return total
 }
 
+// speciesBinomial returns the "Genus species" stem of a scientific name when it
+// denotes a single species or infraspecific taxon (subspecies, eBird
+// subspecific group, or domestic form), and "", false for higher taxa, spuhs
+// ("Empidonax sp."), species slashes ("Larus glaucoides/thayeri"), and hybrids
+// ("Anas platyrhynchos x Anas acuta" or "×")
+// (product.fuzzyMatching, decisions.fuzzySpeciesBinomial).
+func speciesBinomial(sciName string) (string, bool) {
+	tokens := strings.Fields(sciName)
+	if len(tokens) < 2 {
+		return "", false
+	}
+	for _, tok := range tokens {
+		if tok == "x" || tok == "×" {
+			return "", false
+		}
+	}
+	genus, epithet := tokens[0], tokens[1]
+	if !isCapitalizedWord(genus) || !isSpeciesEpithet(epithet) || epithet == "sp" {
+		return "", false
+	}
+	return genus + " " + epithet, true
+}
+
+func isCapitalizedWord(s string) bool {
+	if len(s) < 2 || s[0] < 'A' || s[0] > 'Z' {
+		return false
+	}
+	for i := 1; i < len(s); i++ {
+		if s[i] < 'a' || s[i] > 'z' {
+			return false
+		}
+	}
+	return true
+}
+
+func isSpeciesEpithet(s string) bool {
+	if len(s) < 2 || s[0] < 'a' || s[0] > 'z' || s[len(s)-1] < 'a' || s[len(s)-1] > 'z' {
+		return false
+	}
+	for i := 0; i < len(s); i++ {
+		if (s[i] < 'a' || s[i] > 'z') && s[i] != '-' {
+			return false
+		}
+	}
+	return true
+}
+
 func birdsync(eBirdCSVFilename string, ebirdClient ebirdClient, inatUserID string, inatClient inatClient) stats {
 	results, err := inatClient.DownloadObservations(inatUserID, after.Time(), before.Time(),
 		"created_at", "description", "observed_on", "photos.all", "sounds.all", "taxon.all", "ofvs.all")
@@ -269,6 +317,9 @@ func birdsync(eBirdCSVFilename string, ebirdClient ebirdClient, inatUserID strin
 			}
 			addFuzzy(r.Taxon.PreferredCommonName)
 			addFuzzy(r.Taxon.Name)
+			if stem, ok := speciesBinomial(r.Taxon.Name); ok && stem != r.Taxon.Name {
+				addFuzzy(stem)
+			}
 		}
 	}
 	debugf("Previously synced %d observations\n", len(previouslySynced))
@@ -447,7 +498,13 @@ func birdsync(eBirdCSVFilename string, ebirdClient ebirdClient, inatUserID strin
 				}
 				return false
 			}
-			if checkFuzzy(rec.CommonName) || checkFuzzy(rec.ScientificName) {
+			matched := checkFuzzy(rec.CommonName) || checkFuzzy(rec.ScientificName)
+			if !matched {
+				if stem, ok := speciesBinomial(rec.ScientificName); ok && stem != rec.ScientificName {
+					matched = checkFuzzy(stem)
+				}
+			}
+			if matched {
 				continue
 			}
 		}

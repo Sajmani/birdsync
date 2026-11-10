@@ -60,6 +60,17 @@ Covers: [product.fuzzyNeverEmptyName](../../../local/product/filtering.md#fuzzyn
 
 An existing observation with an empty name never fuzzy-matches a record.
 
+## fuzzyMatchesSubspeciesByBinomial
+
+**Fuzzy matching matches subspecies and subspecific groups by binomial species stem**
+
+Covers: [product.fuzzyMatching](../../../local/product/filtering.md#fuzzymatching)
+
+Under `--fuzzy`, an unkeyed observation and an eBird record on the same date match when their
+scientific names share the same binomial species stem (`Genus species`), including species-to-subspecies
+refinements and eBird subspecific groups, while higher taxa, `sp.` entries, species slashes, and
+hybrids do not match across species by stem.
+
 ## recordObservedParsing
 
 **eBird dates parse in both `2006-01-02` and `1/2/2006` formats**
