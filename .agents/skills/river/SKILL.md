@@ -85,7 +85,8 @@ codes:
 | --- | --- | --- |
 | `awaiting-approval`, `stale-approval` | A composed package has no approval in `requirements/approvals.md`, or changed (in its files or covered inputs) since its approval; the message names what moved | Recompose if inputs moved, review `river diff`, and once the owner approves run `river approve --by <owner>` |
 | `unaccounted-requirement` | A source item is not accounted for: no composed package includes it, composes from it, or excludes it | Recompose, accounting for it |
-| `covers-unresolved`, `covers-withdrawn` | A criterion covers an item that does not exist or is withdrawn | Repoint `Covers:` to the live requirement |
+| `covers-unresolved`, `covers-withdrawn`, `covers-excluded` | A criterion covers an item that does not exist, is withdrawn, or is excluded in that package (`withdrawn-criterion` if the criterion itself is marked withdrawn in `composed/`) | Drop obsolete criteria on recomposition, or repoint `Covers:` to the in-force requirement |
+| `guardrail-withdrawn`, `guardrail-unknown` | A `conformance.md` `Criterion:` entry or a `Verifies:` comment cites a withdrawn, excluded, or nonexistent criterion or requirement | Delete or repoint obsolete guardrails and clean up `conformance.md` |
 | `stale-sums` | `requirements/sums.md` is out of date (River 2.0) | Run `river sum -w`; never edit it by hand |
 | `decision-review` (note) | An item a decision affects changed since it was decided | Ask the person whether it still holds |
 | `unknown-goal` | A requirement cites a goal that does not exist | Cite an existing goal, or ask whether a goal is missing |
@@ -99,7 +100,7 @@ Only a person adds that line, after working through every note.
 
 The `## Module` block in `river/README.md` declares the River version the module follows (`river 2.0`);
 `river version` lists the ones the CLI supports. `river sum -w` rewrites `requirements/sums.md` after
-any edit to a source, `decisions.md`, or `precedence.md` (River 2.0); `river sum` prints what `-w` would write, or the `### Sums` block for named items. `river upgrade` migrates a module and its skill copy to the latest version.
+any edit to a source, `decisions.md`, or `precedence.md` (River 2.0); `river sum` prints what `-w` would write, or the `### Sums` block for named items. `river graph` (`--node <q>`, `--if-withdrawn <id>`, `--if-changed <id>`, `--format text|mermaid`) shows reachability from guardrails through criteria and requirements to goals before or after a change. `river upgrade` migrates a module and its skill copy to the latest version.
 
 Install the CLI with `go install ./cmd/river` from a River checkout at the skill's pin (until River
 publishes a Go module path), and install or refresh the skill copy with `river install-skill`. Every code and command is in [`references/checks.md`](references/checks.md).

@@ -14,7 +14,14 @@ criteria and no traceability table is kept; a stored reverse index drifts from w
 and this one is derivable.
 
 A criterion citing no requirement is an error, not an orphan. A guardrail may predate the
-River module; a criterion cannot, because composition produces it from a requirement.
+River module; a criterion cannot, because composition produces it from a requirement. Composed
+packages hold only **in-force** criteria: when every requirement a criterion covers is withdrawn or
+excluded, recomposition drops the criterion from `composed/` (`withdrawn-criterion` if marked
+`Status: withdrawn` inside `composed/`, `covers-withdrawn` or `covers-excluded` if left covering a
+withdrawn or excluded item), and any guardrail or `conformance.md` entry still citing it fails
+(`guardrail-withdrawn`) so obsolete tests and dead code do not linger. Use `river graph
+--if-withdrawn <id>` before withdrawing a goal or requirement to see every criterion and guardrail
+that becomes unreachable.
 
 **A criterion must have been watched failing before it is trusted.** A check that cannot fail is
 indistinguishable from one that passes, and it is worse than nothing because it reports safety.

@@ -13,7 +13,8 @@ to River's checks is visible.
 
 | Command | What it does |
 | --- | --- |
-| `river check [--allow-unapproved] [module]` | Checks the River module (default `river/`), exiting 1 on any problem; `--allow-unapproved` reports `awaiting-approval` and `stale-approval` as notes |
+| `river check [--allow-unapproved] [module]` | Checks the River module (default `river/`), reporting every finding without early exit and exiting 1 on any problem; `--allow-unapproved` reports `awaiting-approval` and `stale-approval` as notes |
+| `river graph [--format text\|mermaid] [--node <q> \| --if-withdrawn <id> \| --if-changed <id>] [module]` | Shows the reachability graph (goals, requirements, criteria, guardrails, decisions), one node's neighborhood (`--node`), or the cascade of withdrawing (`--if-withdrawn`) or changing (`--if-changed`) a node |
 | `river diff [module] [<package>...]` | Summarizes what changed since each composed package's recorded approval (`awaiting approval`, `approved`, or changed files/inputs and `decision-review` notes) |
 | `river approve [--dry-run] --by <person> [module] [<package>...]` | Verifies `river check --allow-unapproved` has 0 problems, then records approval in `requirements/approvals.md` (`--dry-run` prints without writing) |
 | `river sum [module] [<item>...]` | Prints `requirements/sums.md` to stdout, or, given item names (`product.x`, `decisions.y`, `precedence.local`), prints the `### Sums` section a decision records for them |
@@ -93,7 +94,11 @@ editing the composed package.
 | `exported-external-link` | (2.0) A file in `composed/exported/<pkg>/` links outside `<pkg>/`, which breaks when imported | Write cross-package references in exported packages as plain names |
 | `covers-empty` | A criterion's `Covers:` names nothing | Name the requirements it decides |
 | `covers-unresolved` | A `Covers:` name resolves to nothing | Fix the name, or the criterion |
-| `covers-withdrawn` | A `Covers:` name is a withdrawn item (`Status: withdrawn`) | Repoint it to what replaced the item |
+| `covers-withdrawn` | A `Covers:` name is a withdrawn item (`Status: withdrawn`) | Drop the criterion on recomposition, or repoint `Covers:` to what replaced the item |
+| `covers-excluded` | (2.0) A `Covers:` name is marked `*(excluded)*` in that composed package | Drop the criterion if the requirement no longer applies here, or repoint `Covers:` |
+| `withdrawn-criterion` | (2.0) A criterion or composed item inside `composed/` carries `Status: withdrawn` or `*(withdrawn)*` | Recompose without it: composed packages hold only in-force items |
+| `guardrail-withdrawn` | (2.0) A `conformance.md` `Criterion:` entry or a `Verifies:` comment cites a criterion or requirement that is withdrawn, excluded, or covers only withdrawn/excluded items | Delete or repoint the obsolete guardrail and remove stale `conformance.md` entries |
+| `guardrail-unknown` | (2.0) A `conformance.md` `Criterion:` entry or a `Verifies:` comment names no item, or names something that is not an acceptance criterion or requirement | Fix the citation or remove the stale entry |
 | `decision-unknown-requirement` | An `Affects:` name is no item in its package, local, imported, or composed | Fix the name; if the item is gone, supersede the decision |
 | `decision-missing-sums` | (2.0) An in-force decision affecting source items lacks `### Sums` for all of them | Add `### Sums` from `river sum <item>...` (`river upgrade` backfills 1.x) |
 | `included-and-composed` | (2.0) A package accounts for one source item in more than one way (included, composed from, or excluded) | Recompose, accounting for each item once |

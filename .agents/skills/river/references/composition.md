@@ -68,8 +68,11 @@ the same three inputs gets the same result ([*Blind recomposition*](#blind-recom
    reports unaccounted items (`unaccounted-requirement`), but count them yourself while composing.
 6. **Write one acceptance criterion per independently checkable behavior**, each with `Covers:`
    naming what it covers, beside the requirements it covers
-   ([*Files within a package*](#files-within-a-package)). Where a composed item replaces a local
-   one, keep the local item's criteria ([*Replacing a local item*](#replacing-a-local-item)).
+   ([*Files within a package*](#files-within-a-package)). Drop any criterion whose covered
+   requirements were withdrawn or excluded (`withdrawn-criterion`, `covers-withdrawn`,
+   `covers-excluded`), and clean up its `conformance.md` section and obsolete guardrails
+   (`guardrail-withdrawn`). Where a composed item replaces a local one, keep the local item's
+   criteria ([*Replacing a local item*](#replacing-a-local-item)).
 7. **Where precedence does not decide a conflict, stop.** Ask the owner and record the ruling in
    `decisions.md` before composing on it ([*Overlaps and collisions*](#overlaps-and-collisions)).
 8. **Questions and drafts go in `river/proposals.md`**, never into the composed package
