@@ -8,8 +8,8 @@ watched failing. A criterion has been watched failing only if its section here c
 ## Built against
 
 - Package: [`composed/internal/birdsync`](requirements/composed/internal/birdsync/README.md)
-- Version: recomposed from [decisions.birdsyncApproved](requirements/decisions.md#birdsyncapproved) for [decisions.fuzzySpeciesBinomial](requirements/decisions.md#fuzzyspeciesbinomial); awaiting owner re-approval (`river hash`).
-- Checked on: 2026-11-10, with `go test -race ./...` passing.
+- Version: `sha256:4c69c928087c20f1e10bc201bc1a1f911da07fff0afa934dc63214d50acda855`, approved in [decisions.birdsyncFuzzySubspeciesApproved](requirements/decisions.md#birdsyncfuzzysubspeciesapproved).
+- Checked on: 2026-11-10, with `go test -race ./...` passing and `river check` passing.
 
 ## Counts
 

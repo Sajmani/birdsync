@@ -231,11 +231,12 @@ func estimateRecentWriteRequests(results []inat.Result, now time.Time) int {
 	return total
 }
 
-// speciesBinomial returns the "Genus species" stem of a scientific name when it
-// denotes a single species or infraspecific taxon (subspecies, eBird
-// subspecific group, or domestic form), and "", false for higher taxa, spuhs
-// ("Empidonax sp."), species slashes ("Larus glaucoides/thayeri"), and hybrids
-// ("Anas platyrhynchos x Anas acuta" or "×")
+// speciesBinomial returns the two-word "Genus species" stem of sciName when it
+// names a single species or subspecies (for example "Garrulus glandarius" from
+// "Garrulus glandarius leucotis" or "Junco hyemalis [oreganus Group]"). Names
+// that don't identify one species — genera or families ("Corvidae"),
+// unidentified sp. entries ("Empidonax sp."), species slashes
+// ("Larus glaucoides/thayeri"), and hybrids ("x" or "×") — return "", false
 // (product.fuzzyMatching, decisions.fuzzySpeciesBinomial).
 func speciesBinomial(sciName string) (string, bool) {
 	tokens := strings.Fields(sciName)
