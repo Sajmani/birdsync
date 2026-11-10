@@ -1,0 +1,3 @@
+# Collapse CLI-written River hash files by default in GitHub diffs.
+river/requirements/sums.md linguist-generated=true
+river/requirements/approvals.md linguist-generated=true

@@ -84,4 +84,11 @@ jobs:
           (cd "$RUNNER_TEMP/river-src" && go build -o "$RUNNER_TEMP/river" ./cmd/river)
 
       - name: river check
-        run: '"$RUNNER_TEMP/river" check river'
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            "$RUNNER_TEMP/river" check --allow-unapproved river
+          else
+            "$RUNNER_TEMP/river" check river
+          fi

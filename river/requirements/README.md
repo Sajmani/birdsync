@@ -12,6 +12,8 @@ is in [`../bindings.md`](../bindings.md).
 | [`imports.md`](imports.md) | Every imported source, considered source, and its status |
 | [`precedence.md`](precedence.md) | Which source outranks which |
 | [`decisions.md`](decisions.md) | How each conflict and judgment was settled, oldest first |
+| [`approvals.md`](approvals.md) | Approved version and covered sums of each composed package (`river approve`) |
+| [`sums.md`](sums.md) | Per-item SHA-256 of every composition input (`river sum -w`) |
 | [`composed/internal/birdsync/`](composed/internal/birdsync/README.md) | The composed requirements and their acceptance criteria, split into area files |
 
 Never edit `composed/` by hand: change a source and recompose. Search `^## ` in any file for its

@@ -23,7 +23,7 @@ Drafted at adoption on 2026-11-03 and confirmed by the owner, Sajmani, on 2026-1
 | River skill | Pinned in [`.agents/skills/PROVENANCE.md`](../.agents/skills/PROVENANCE.md), and only there |
 | River CLI | Built from River at the skill's pin; CI reads the pin from `PROVENANCE.md` |
 | Module | `river/` at the repository root ([`README.md`](README.md), declaring `river 2.0`) |
-| Where `river check` runs | CI (`.github/workflows/ci.yml`, job `river`), which is skipped until the repository variable `RIVER_REPO` names a clonable River repository, because River is not published yet. Also before calling any change done (`AGENTS.md`). There is no pre-commit hook and no release step |
+| Where `river check` runs | CI (`.github/workflows/ci.yml`, job `river`: `river check --allow-unapproved` on pull requests and `river check` on `main`; `.github/workflows/river-approve.yml` runs `river approve` on owner PR approval), skipped until `RIVER_REPO` names a clonable River repository. Also before calling any change done (`AGENTS.md`) |
 | `goals/` | [`goals/goals.md`](goals/goals.md), five goals accepted by the owner on 2026-11-04 |
 
 ## Project bindings

@@ -13,8 +13,9 @@ to River's checks is visible.
 
 | Command | What it does |
 | --- | --- |
-| `river check [module]` | Checks the River module (default `river/`); exits 1 on any problem |
-| `river hash <package-dir>` | Prints the `Approves:` line and `### Sums` section to record in `decisions.md` when approving a composed package |
+| `river check [--allow-unapproved] [module]` | Checks the River module (default `river/`), exiting 1 on any problem; `--allow-unapproved` reports `awaiting-approval` and `stale-approval` as notes |
+| `river diff [module] [<package>...]` | Summarizes what changed since each composed package's recorded approval (`awaiting approval`, `approved`, or changed files/inputs and `decision-review` notes) |
+| `river approve [--dry-run] --by <person> [module] [<package>...]` | Verifies `river check --allow-unapproved` has 0 problems, then records approval in `requirements/approvals.md` (`--dry-run` prints without writing) |
 | `river sum [module] [<item>...]` | Prints `requirements/sums.md` to stdout, or, given item names (`product.x`, `decisions.y`, `precedence.local`), prints the `### Sums` section a decision records for them |
 | `river sum -w [module]` | Writes `requirements/sums.md` (River 2.0). Never edit that file by hand |
 | `river install-skill [--origin <text>] [--pin <commit>] [repo]` | Installs or refreshes `.agents/skills/river/` and `.agents/skills/PROVENANCE.md` in `repo` (default `.`) |
@@ -68,8 +69,8 @@ the edits a tool can, writes them without committing, and lists what needs you. 
 
 | Version | Adds |
 | --- | --- |
-| 1.0 | River before versions. An approval records the package's hash (`Approves:`) |
-| 2.0 | `requirements/sums.md`; `## Composed from`; `*(excluded)*` markers; `### Sums` on decisions and approvals; per-item `precedence.md` rows; `## Module` in root `README.md`; `river install-skill` and `river upgrade`. New failures (notes on 1.x): `unaccounted-requirement`, `covers-*`, `excluded-*`, `withdrawn-not-excluded`, `decision-missing-sums`, `exported-external-link`, `bad-module-block`, `precedence-*`, `included-and-composed`, `reaffirms-unknown`, `misplaced-module` |
+| 1.0 | River before versions. An approval in `decisions.md` records the package's hash (`Approves:`) |
+| 2.0 | `requirements/sums.md` and `requirements/approvals.md`; `## Composed from`; `*(excluded)*`; `### Sums` on decisions and approvals; per-item `precedence.md` rows; root `README.md` `## Module`; `river diff`, `approve`, `check --allow-unapproved`, `install-skill`, `upgrade`; strict failures for `awaiting-approval`, `misplaced-approval`, `bad-approval`, accounting, `covers-*`, `excluded-*`, `withdrawn-not-excluded`, `decision-missing-sums`, `exported-external-link`, `precedence-*`, and `skill-*` |
 
 **Record your own River version**: the skill's pin in its `PROVENANCE.md` and the layout here.
 River keeps no list of adopters.
@@ -99,7 +100,10 @@ editing the composed package.
 | `reaffirms-unknown` | (2.0) A decision's `Reaffirms:` names no entry in `decisions.md` | Name the decision it confirms |
 | `composed-sources` | (2.0) A package has no `## Composed from` list, names a source that does not exist, or accounts for items from one it does not name | List its sources: `- product (Local)` |
 | `stale-sums` | (2.0) `requirements/sums.md` is missing or differs from what `river sum -w` writes | Run `river sum -w` |
-| `stale-approval` | The package's files changed since its latest approval, or (2.0) an input the approval's `### Sums` covered (a source item, a decision, a precedence row) changed, was withdrawn, or was removed, or a decision affecting a covered item was recorded since; the message names them | Recompose and ask the owner to approve the record `river hash` prints |
+| `awaiting-approval` | (2.0; note on 1.x or `--allow-unapproved`) A composed package has no approval in `requirements/approvals.md` | Review `river diff` and have the owner run `river approve --by <owner>` |
+| `stale-approval` | (note under `--allow-unapproved`) A composed package's files or covered inputs (`### Sums`) changed since its recorded approval, or a new decision affects a covered item; the message names them | Recompose if inputs moved, review `river diff`, and have the owner run `river approve --by <owner>` |
+| `misplaced-approval` | (2.0) `decisions.md` carries an `Approves:` entry, which River 2.0 keeps in `requirements/approvals.md` | Run `river upgrade` (or remove the entry and run `river approve --by <owner>`) |
+| `bad-approval` | (2.0) An entry in `requirements/approvals.md` lacks `Date:`, `Approved by:`, or `Approves:`, appears twice, or names no composed package | Re-run `river approve --by <owner>`; never edit `approvals.md` by hand |
 | `misplaced-module` | The `## Module` block is in `requirements/README.md` under River 2.0, or declared in both READMEs | Keep one, in `README.md` at the module root; `river upgrade` moves it |
 | `skill-copy-missing` | (2.0) No copy of River's skill at `.agents/skills/river/` beside the module | Run `river install-skill` ([`adopting.md`](adopting.md), *Installing the skill*) |
 | `skill-provenance-missing` | (2.0) No `.agents/skills/PROVENANCE.md` for the copy | Run `river install-skill` to write `PROVENANCE.md` with its pin |
@@ -111,6 +115,33 @@ editing the composed package.
 | `precedence-tier-restated` | (2.0) A decision behind an item row has a `Tier:` field, or a field naming the row's tier | Remove it: the tier lives only in `precedence.md`; the decision says who and why |
 | `precedence-duplicate-item` | (2.0) An item has two rows | Keep one: an item has one tier |
 | `decision-review` (note) | A decision's `### Sums` show an item it affects changed, was withdrawn, or was removed since, and no later entry reaffirms it against current sums | Ask the person: reaffirm it in a new entry (`Reaffirms:`), or supersede it |
+
+## Draft branches, PR CI, and review hooks
+
+While iterating on a River module on a draft branch or pull request, run `river check
+--allow-unapproved` so CI enforces every structural, accounting, reference, and `sums.md` check
+before the owner signs off, and run strict `river check` on `main` and release so unapproved or
+stale composed packages never ship:
+
+```yaml
+- name: Check River module
+  run: |
+    if [ "${{ github.event_name }}" = "pull_request" ]; then
+      river check --allow-unapproved
+    else
+      river check
+    fi
+```
+
+Approval can happen in two ways:
+1. **Direct / agent-assisted:** after reviewing `river diff` and revising as needed, the owner runs
+   `river approve --by <owner>` (or instructs the agent to run it after explicitly approving that
+   state), commits `river/requirements/approvals.md`, and merges once strict `river check` passes.
+2. **Code-review hook:** a CI workflow triggered on an `APPROVED` pull-request review from a
+   package owner runs `river approve --by "${{ github.event.review.user.login }}"` and pushes the
+   updated `river/requirements/approvals.md` to the PR branch (if branch protection dismisses PR
+   approvals when new commits are pushed, run `river approve` before approving, or run it in the
+   merge step from the verified review).
 
 ## Notes, not failures
 

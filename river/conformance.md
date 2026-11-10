@@ -8,7 +8,7 @@ watched failing. A criterion has been watched failing only if its section here c
 ## Built against
 
 - Package: [`composed/internal/birdsync`](requirements/composed/internal/birdsync/README.md)
-- Version: `sha256:4c69c928087c20f1e10bc201bc1a1f911da07fff0afa934dc63214d50acda855`, approved in [decisions.birdsyncFuzzySubspeciesApproved](requirements/decisions.md#birdsyncfuzzysubspeciesapproved).
+- Version: `sha256:4c69c928087c20f1e10bc201bc1a1f911da07fff0afa934dc63214d50acda855`, approved in [approvals.birdsync](requirements/approvals.md#birdsync).
 - Checked on: 2026-11-10, with `go test -race ./...` passing and `river check` passing.
 
 ## Counts

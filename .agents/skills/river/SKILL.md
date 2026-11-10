@@ -54,11 +54,13 @@ never the test or the requirement.
 4. If precedence does not settle a conflict, **stop and ask** the named owner. Record what they
    decide as a new entry in `river/requirements/decisions.md` (append-only; see the format in
    [`references/decisions.md`](references/decisions.md)).
-5. Ask the owner to approve the composed version. Give them the record to add:
-   `river hash river/requirements/composed/<scope>/<name>` prints
-   `Approves: <name>, sha256:<hash>` and, from River 2.0, a `### Sums` block for the inputs
-   the package accounts for ([`references/module.md`](references/module.md), *Keeping the
-   River module's files*). Only the person adds that approval to `decisions.md`.
+5. Run `river sum -w` and `river check --allow-unapproved` so structural, accounting, and reference
+   checks pass, then show `river diff` and ask the owner to approve the composed version. **Never
+   run `river approve` unless the owner has explicitly approved the current recomposed state.** Once
+   the owner approves (in conversation or via a code-review approval hook), `river approve --by
+   <owner>` records the approval in `river/requirements/approvals.md`
+   ([`references/module.md`](references/module.md), *Keeping the River module's files*), and strict
+   `river check` passes.
 
 ## Adding a guardrail
 
@@ -74,11 +76,14 @@ never the test or the requirement.
 
 Run `river check` from the repository root (or `river check <module>` for a River module elsewhere). It exits 1 on any problem,
 printing `[code] path: message`; notes (`note [code] ...`) are for a person's attention and never
-fail. Fix every problem before calling a change done. Common codes:
+fail. While drafting a recomposition or running pull-request CI before sign-off, run `river check
+--allow-unapproved`, which reports `awaiting-approval` and `stale-approval` as notes; on `main` and
+before release, run strict `river check` and fix every problem before calling a change done. Common
+codes:
 
 | Code | Meaning | Fix |
 | --- | --- | --- |
-| `stale-approval` | A composed package, or a source item, decision, or precedence row its approval covered, changed after the approval; the message names them | Recompose from sources and ask the owner to approve |
+| `awaiting-approval`, `stale-approval` | A composed package has no approval in `requirements/approvals.md`, or changed (in its files or covered inputs) since its approval; the message names what moved | Recompose if inputs moved, review `river diff`, and once the owner approves run `river approve --by <owner>` |
 | `unaccounted-requirement` | A source item is not accounted for: no composed package includes it, composes from it, or excludes it | Recompose, accounting for it |
 | `covers-unresolved`, `covers-withdrawn` | A criterion covers an item that does not exist or is withdrawn | Repoint `Covers:` to the live requirement |
 | `stale-sums` | `requirements/sums.md` is out of date (River 2.0) | Run `river sum -w`; never edit it by hand |

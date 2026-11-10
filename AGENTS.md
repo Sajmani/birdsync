@@ -56,9 +56,9 @@ Breaking these costs a user real data.
 - **Never log or echo credentials** (`tech.credentialsNeverExposed`).
 - **Don't add dependencies or touch the `go`/`toolchain` directives** without asking
   (`tech.oneExternalDependency`, `tech.goDirectivePolicy`).
-- **You draft; the owner decides.** Never accept a goal, approve a composed package (an
-  `Approves:` line), settle a conflict precedence cannot settle, or accept a gap. Draft it in
-  `river/proposals.md`.
+- **You draft; the owner decides.** Never accept a goal, run `river approve` unless the owner
+  has explicitly approved that state, settle a conflict precedence cannot settle, or accept a
+  gap. Draft open items in `river/proposals.md`.
 
 ## Working on a change
 

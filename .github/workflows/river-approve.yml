@@ -1,0 +1,54 @@
+name: River Approve
+
+on:
+  pull_request_review:
+    types: [ submitted ]
+
+permissions:
+  contents: write
+
+jobs:
+  approve:
+    name: river approve
+    runs-on: ubuntu-latest
+    if: >-
+      vars.RIVER_REPO != '' &&
+      github.event.review.state == 'approved' &&
+      github.event.review.user.login == github.repository_owner &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version: stable
+
+      - name: build river at the skill's pin
+        env:
+          RIVER_REPO: ${{ vars.RIVER_REPO }}
+        run: |
+          pin=$(sed -n 's/^| Pin | `\(.*\)` |$/\1/p' .agents/skills/PROVENANCE.md)
+          test -n "$pin"
+          git clone --quiet "$RIVER_REPO" "$RUNNER_TEMP/river-src"
+          git -C "$RUNNER_TEMP/river-src" checkout --quiet "$pin"
+          (cd "$RUNNER_TEMP/river-src" && go build -o "$RUNNER_TEMP/river" ./cmd/river)
+
+      - name: record approval if composed packages changed
+        env:
+          REVIEWER: ${{ github.event.review.user.login }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          REVIEW_SHA: ${{ github.event.review.commit_id }}
+        run: |
+          # Refuse if new commits landed after the commit the owner reviewed.
+          test "$PR_HEAD_SHA" = "$REVIEW_SHA"
+          "$RUNNER_TEMP/river" approve --by "$REVIEWER" river
+          if ! git diff --quiet -- river/requirements/approvals.md; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add river/requirements/approvals.md
+            git commit -m "Record River approval by $REVIEWER"
+            git push
+          fi
+          "$RUNNER_TEMP/river" check river

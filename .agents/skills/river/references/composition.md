@@ -75,9 +75,9 @@ the same three inputs gets the same result ([*Blind recomposition*](#blind-recom
 8. **Questions and drafts go in `river/proposals.md`**, never into the composed package
    ([`module.md`](module.md), *Proposals*).
 9. Run `river sum -w` (River 2.0), so `sums.md` records every input composition read (sources,
-   decisions, precedence), then `river check`;
-   then ask the owner to approve the package ([`module.md`](module.md), *Keeping the River module's
-   files*).
+   decisions, precedence), then `river check --allow-unapproved`; review `river diff` with the
+   owner, and once the owner approves, run `river approve --by <owner>` and `river check`
+   ([`module.md`](module.md), *Keeping the River module's files*).
 
 ## Accounted for
 

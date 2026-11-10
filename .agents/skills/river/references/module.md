@@ -21,6 +21,7 @@ river/
     imports.md               every imported source, with its pinned version
     precedence.md            standing rules: which source outranks which
     decisions.md             log of how each conflict and judgment was settled
+    approvals.md             approved version and covered sums per composed package, written by `river approve` (2.0)
     sums.md                  a sum per input to composition, written by `river sum -w`, never by hand (2.0)
     local/<name>/            a source written here: one source, one package
     imported/<import path>/  another module's source, pinned, with PROVENANCE.md
@@ -108,19 +109,23 @@ accepted as unmet stays listed, with the decision beside it, as an excluded one 
 ([`requirements.md`](requirements.md), *Composition*):
 `— <title>. Accepted unmet by decisions.<id>`, the decision linked.
 
-**A person approves each composed version, in `decisions.md`, with its hash** (`tech.approvalsCarryHashes`).
-The entry carries `Approves: <package>, sha256:<hash>`: the SHA-256 of the package's `.md` files,
-each contributing its path relative to the package directory, a newline and its bytes, in path
-order. **From River 2.0 the approval also covers what the package was composed from**, as
-`go.sum` covers a Go module's dependencies. The package lists its sources under `## Composed from`
-(`- product (Local)`); `requirements/sums.md`, written by `river sum -w` and never by hand, records a
-SHA-256 per input to composition; and the approval ends with a `### Sums` section holding the
-`sums.md` lines for **every input the package was composed from**. Today those are the source items
-it includes, composes from, or excludes, every decision it cites or whose `Affects:` names one of
-them, and every row of `precedence.md`'s tier table; as the method adds inputs, approvals cover
-them too. `river hash <package-dir>`
-prints the whole record:
+**`approvals.md` — a person approves each composed version with its hash** (`tech.approvalsCarryHashes`).
+From River 2.0, approvals live in `requirements/approvals.md` (`package approvals`), written by
+`river approve --by <owner>` and never by hand, with one `## <package>` section per composed package
+updated in place rather than appended to `decisions.md` (git history preserves prior approvals, and
+`approvals.md` is not an input in `sums.md`). Each section carries `Date:`, `Approved by:`,
+`Approves: <package>, sha256:<hash>` (the SHA-256 of the package's `.md` files, each contributing
+its path relative to the package directory, a newline, and its bytes, in path order), and a
+`### Sums` block holding the `sums.md` lines for **every input the package was composed from** — the
+source items it includes, composes from, or excludes, every decision it cites or whose `Affects:`
+names one of them, and every row of `precedence.md`'s tables:
 
+    ## app
+
+    **Approved version of composed/internal/app**
+
+    Date: 2026-11-10
+    Approved by: Sam
     Approves: app, sha256:9be64dc7…
 
     ### Sums
@@ -132,16 +137,23 @@ prints the whole record:
     terms.RateLimit sha256:1a7a8758…
     ```
 
-The commit that adds the entry identifies the published version. A published package is never
-edited; a change is a recomposition and a new approval. The checker fails a package whose latest
-approval names a different hash, or any of whose inputs have changed, been withdrawn, or been
-removed since, or gained a decision affecting them (`stale-approval`, naming each), so a hand edit, by a person or an agent,
-is caught at the next run; a package never approved is reported as awaiting approval, not failed.
-`PROVENANCE.md` hashes stay out of the approval: they vouch for a transcription, not for what was
-approved. A River 1.x module records `Approves:` alone.
+The commit that updates the entry identifies the approved version. A composed package is never
+edited by hand; a change is a recomposition and a new approval. Under River 2.0, strict `river
+check` fails both a never-approved package (`awaiting-approval`) and one whose files or covered
+inputs changed since approval (`stale-approval`, naming each); `river check --allow-unapproved`
+reports both as notes so draft branches and pull requests can check everything else before the owner
+signs off ([`checks.md`](checks.md), *Draft branches, PR CI, and review hooks*). `river diff`
+summarizes what changed since the recorded approval. Repositories on GitHub may mark
+`river/requirements/sums.md` and `river/requirements/approvals.md` `linguist-generated=true` in
+`.gitattributes` so pull requests collapse machine-written hash blocks by default. `PROVENANCE.md`
+hashes stay out of the approval: they vouch for a transcription, not for what was approved. A River
+1.x module records `Approves:` in `decisions.md`, and `river upgrade` moves those entries into
+`approvals.md`.
 
 **An agent that needs a new or changed requirement** adds it to a source under `local/`,
-recomposes, and asks the package's owner to approve the result. It never edits a composed file.
+recomposes, runs `river sum -w` and `river check --allow-unapproved`, shows `river diff`, and waits
+for the package's owner to approve before running `river approve --by <owner>`. It never edits a
+composed file by hand or runs `river approve` without the owner's approval of that state.
 
 ## Proposals
 

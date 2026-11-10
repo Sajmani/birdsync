@@ -22,7 +22,6 @@ Supersedes: <id>     (only when it replaces an earlier decision in whole)
 Amends: <id>, <id>   (only when it changes earlier decisions in part)
 Affects: product.x   (the requirements it changes or settles, not ones it merely cites)
 Expires: 2027-01-01  (only for an accepted gap: when it must be looked at again)
-Approves: app, sha256:<hash>  (only for approving a composed version)
 Reaffirms: <id>      (only when confirming that an earlier decision under review still holds)
 
 ### Decided
@@ -44,12 +43,12 @@ carry a note after a semicolon.
   sections, recording in the commit that it did.
 - **Accepting a gap is a decision:** `Affects:` names the unmet requirement, and `Expires:` is
   required. An accepted gap with no review date is indistinguishable from a forgotten one.
-- **An approval of a composed version** adds the record `river hash <package-dir>` prints:
-  `Approves: <name>, sha256:<hash>` among the fields and, from River 2.0, a `### Sums` section at
-  the end of the entry, listing the sums of every input the package was composed from: its source
-  items, the decisions it cites or that affect them, and the precedence rows
-  ([`module.md`](module.md), *Keeping the River module's files*). **Only the approving person adds this
-  record.**
+- **Composed-package approvals live in `requirements/approvals.md` from River 2.0**, written by
+  `river approve --by <owner>` after the owner approves the recomposed state, rather than in a
+  River module's `decisions.md` (`misplaced-approval` if `Approves:` appears here under 2.0; `river
+  upgrade` moves 1.x `Approves:` entries into `approvals.md`; see [`module.md`](module.md), *Keeping
+  the River module's files*). **Never run `river approve` unless the owner has approved that
+  state.**
 - **From River 2.0, every in-force decision affecting source items records what it was decided
   against:** a `### Sums` section at the end of the entry, from `river sum <item>...` for the
   source items in `Affects:` (`decision-missing-sums` if missing; `river upgrade` backfills
