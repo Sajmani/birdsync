@@ -35,13 +35,6 @@ The owner adopted `uuid` on 2026-11-04 ([decisions.uuidAdopted](requirements/dec
 - **User-Agent on the Macaulay Library CDN.** `inatapi` covers only iNaturalist. Should birdsync
   identify itself to the CDN too? Nothing requires it.
 
-## approveComposedPackage
-
-**Approve `composed/internal/birdsync`, once the items above are settled**
-
-`river hash river/requirements/composed/internal/birdsync` prints the line to record. Only
-the owner adds it to `decisions.md`. Recompose first if any decision above changes a source.
-
 ## discoveryComplete
 
 **Add `Discovery: complete` to `imports.md` once `githubActionsTerms` is settled**

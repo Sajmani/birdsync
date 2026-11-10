@@ -5,8 +5,7 @@ package birdsync
 **Composed, not authored.** Change it by changing a source and recomposing, never by editing
 files in this directory by hand. Composed from every source in `river/requirements/local/` and
 `river/requirements/imported/`, under [`precedence.md`](../../../precedence.md) and
-[`decisions.md`](../../../decisions.md). **Not yet approved**: `decisions.md` carries no
-`Approves:` line for this package.
+[`decisions.md`](../../../decisions.md), where its approval hash is recorded.
 
 Each area file holds that area's included source requirements, any rules composition derived for
 that area, and the acceptance criteria covering them. Which goals in

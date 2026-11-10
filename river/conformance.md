@@ -8,9 +8,8 @@ watched failing. A criterion has been watched failing only if its section here c
 ## Built against
 
 - Package: [`composed/internal/birdsync`](requirements/composed/internal/birdsync/README.md)
-- Version: **none approved**. The package has no `Approves:` line in `decisions.md`, so this
-  record maps guardrails to a draft. Recheck it when the owner approves a version.
-- Checked on: 2026-11-08, with `go test -race ./...` passing and `river check` passing.
+- Version: `sha256:a4fc4272df0f979da68b752d0e4cf611a7f027748e63b9adc8d40673253c30c2`, approved in [decisions.birdsyncApproved](requirements/decisions.md#birdsyncapproved).
+- Checked on: 2026-11-10, with `go test -race ./...` passing and `river check` passing.
 
 ## Counts
 
