@@ -30,6 +30,7 @@ package birdsync
 **A dry run issues no writes**
 
 Formerly: AC-006
+
 Covers: [product.dryRunNoWrites](../../../local/product/dryrun.md#dryrunnowrites), [tech.dryRunGateAtCallSite](../../../local/tech/safety.md#dryrungateatcallsite), [tech.clientInterfaces](../../../local/tech/testing.md#clientinterfaces)
 
 A `--dryrun` sync through a recording fake makes no create, update, or upload call, while reads still happen.
@@ -39,6 +40,7 @@ A `--dryrun` sync through a recording fake makes no create, update, or upload ca
 **A dry run reports one unclassified media count**
 
 Formerly: AC-016
+
 Covers: [product.dryRunMediaCount](../../../local/product/dryrun.md#dryrunmediacount)
 
 Under `--dryrun` the media count is a single unclassified number.
@@ -50,6 +52,7 @@ Limit: does not detect a broken dry-run gate; [dryRunIssuesNoWrites](#dryrunissu
 **The summary labels and conditional lines are right**
 
 Formerly: AC-023
+
 Covers: [product.dryRunCounterLabels](../../../local/product/reporting.md#dryruncounterlabels), [tech.honestDryRunCounters](../../../local/tech/safety.md#honestdryruncounters), [product.endOfRunSummary](../../../local/product/reporting.md#endofrunsummary), [product.conditionalSkipCounters](../../../local/product/reporting.md#conditionalskipcounters), [product.conditionalFailureCount](../../../local/product/reporting.md#conditionalfailurecount)
 
 The summary says `Would create` and `Would update` under `--dryrun`, and the real labels otherwise. A counter line appears only when its flag is in effect, and the failure line only when non-zero.

@@ -1,8 +1,10 @@
+package bindings
+
 # Bindings
 
 How birdsync applies River. The method itself is the skill at
-[`.agents/skills/river/`](../.agents/skills/river/SKILL.md), copied unchanged and pinned in its
-[`PROVENANCE.md`](../.agents/skills/PROVENANCE.md). Everything true of this project rather than
+[`.agents/skills/river/`](../../.agents/skills/river/SKILL.md), copied unchanged and pinned in its
+[`PROVENANCE.md`](../../.agents/skills/PROVENANCE.md). Everything true of this project rather than
 of River goes here.
 
 ## Stages
@@ -12,19 +14,23 @@ Drafted at adoption on 2026-11-03 and confirmed by the owner, Sajmani, on 2026-1
 | Stage | Status | Notes |
 | --- | --- | --- |
 | Requirements | adopted | Sources in `requirements/local/` and `requirements/imported/`, composed into area files in `requirements/composed/internal/birdsync/` |
-| Verification | adopted | Criteria in the area files of [`requirements/composed/internal/birdsync/`](requirements/composed/internal/birdsync/README.md). Guardrails are Go tests and CI, mapped in [`conformance.md`](conformance.md) |
-| Implementation | informal | The design record is [`docs/arch.md`](../docs/arch.md), kept in step with the code by convention, not by River |
+| Verification | adopted | Criteria in the area files of [`requirements/composed/internal/birdsync/`](../requirements/composed/internal/birdsync/README.md). Guardrails are Go tests and CI, mapped in [`conformance.md`](../conformance/conformance.md) |
+| Implementation | informal | The design record is [`docs/arch.md`](../../docs/arch.md), kept in step with the code by convention, not by River |
 | Release | informal | No release process: users install `@latest` |
 
 ## Tools
 
 | | |
 | --- | --- |
-| River skill | Pinned in [`.agents/skills/PROVENANCE.md`](../.agents/skills/PROVENANCE.md), and only there |
+| River skill | Pinned in [`.agents/skills/PROVENANCE.md`](../../.agents/skills/PROVENANCE.md), and only there |
 | River CLI | Built from River at the skill's pin; CI reads the pin from `PROVENANCE.md` |
-| Module | `river/` at the repository root ([`README.md`](README.md), declaring `river 2.0`) |
-| Where `river check` runs | CI (`.github/workflows/ci.yml`, job `river`: `river check --allow-unapproved` on pull requests and `river check` on `main`; `.github/workflows/river-approve.yml` runs `river approve` on owner PR approval), skipped until `RIVER_REPO` names a clonable River repository. Also before calling any change done (`AGENTS.md`) |
-| `goals/` | [`goals/goals.md`](goals/goals.md), five goals accepted by the owner on 2026-11-04 |
+| Module | `river/` at the repository root ([`README.md`](../README.md), declaring `river 3.0`) |
+| Where `river check` runs | CI (`.github/workflows/ci.yml`, job `river`: `river check`, plus `river diff --base` into the job summary on pull requests), skipped until `RIVER_REPO` names a clonable River repository. Also before calling any change done (`AGENTS.md`) |
+| `goals/` | [`goals/goals.md`](../goals/goals.md), five goals accepted by the owner on 2026-11-04 |
+
+## Review
+
+Review rule: commits on main, merged by Sajmani through pull requests or pushed by Sajmani
 
 ## Project bindings
 
@@ -32,9 +38,9 @@ Carried over from specman's project bindings (`spec/tech.md`, *Project bindings*
 
 | Binding | Value |
 | --- | --- |
-| Owner | The repository owner, Sajmani, approves every composed package, accepted gap, and decision |
+| Owner | The repository owner, Sajmani, approves every change to the requirements, accepted gap, and decision, by reviewing its pull request |
 | Standing checks | `go build ./...`, `go vet ./...`, `gofmt -l .` (must print nothing), `go test -race ./...`, `river check` |
-| Hard safety constraints | [tech.dryRunGateAtCallSite](requirements/local/tech/safety.md#dryrungateatcallsite), [tech.noLiveServicesInTests](requirements/local/tech/testing.md#noliveservicesintests), [tech.credentialsNeverExposed](requirements/local/tech/safety.md#credentialsneverexposed), [tech.toolsReadOnly](requirements/local/tech/safety.md#toolsreadonly), [tech.neverRunTools](requirements/local/tech/safety.md#neverruntools) |
+| Hard safety constraints | [tech.dryRunGateAtCallSite](../requirements/local/tech/safety.md#dryrungateatcallsite), [tech.noLiveServicesInTests](../requirements/local/tech/testing.md#noliveservicesintests), [tech.credentialsNeverExposed](../requirements/local/tech/safety.md#credentialsneverexposed), [tech.toolsReadOnly](../requirements/local/tech/safety.md#toolsreadonly), [tech.neverRunTools](../requirements/local/tech/safety.md#neverruntools) |
 | External systems | `api.inaturalist.org` and `cdn.download.ams.birds.cornell.edu` are never contacted from a test. Use `httptest` through the base-URL seams |
 | Subject vocabulary | `Subject:` fields are dotted paths rooted at `build`, `cli`, `http`, `inat`, `log`, `media`, `observation`, or `sync`. The owner adds roots |
 | Source refresh | Imported sources are reviewed when a source changes, and at least once a year. `www.inaturalist.org/pages/*` refuses automated clients, so refreshing those needs a person with a browser |
@@ -53,7 +59,7 @@ Additions to the method, none of them changing it:
   package groups by it.
 - **`Subject:` and `Value:`** carry specman's machine-checkable subject and value, where an
   item had one.
-- **[`proposals.md`](proposals.md)** holds drafts awaiting the owner: candidate goals,
+- **[`proposals.md`](../../proposals.md)** holds drafts awaiting the owner: candidate goals,
   decisions, and approvals, outside `goals/` and `decisions.md`, which hold only what a person
   has decided.
 - **Vendored HTML is scanned before commit.** Strip active content and credential-shaped

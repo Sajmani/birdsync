@@ -1,10 +1,12 @@
+package imports
+
 # Imported sources
 
 Every source birdsync imports, every dependency found when River was adopted, and every source
 considered and turned down, with the reason. One entry per source: search `` ^## ` `` for the
 list. Each version is recorded here and nowhere else. Per-file hashes live in each source's
 `PROVENANCE.md`, and the `Integrity` field points there rather than copying them. Tiers are
-in [`precedence.md`](precedence.md).
+in [`precedence.md`](../precedence/precedence.md).
 
 The first five entries were carried over from specman's source manifest (`spec/sources.md` at
 [`dc25e3b`](https://github.com/Sajmani/birdsync/blob/dc25e3b6756bd59c2de931e6d080d47318617da4/spec/sources.md)),
@@ -19,13 +21,13 @@ by the discovery step of adopting River, on 2026-11-03. The owner adopted `uuid`
 | Name | iNaturalist API recommended practices |
 | Origin | <https://www.inaturalist.org/pages/api+recommended+practices> |
 | Version | Retrieved 2026-08-09 by the maintainer from a browser |
-| Integrity | SHA-256 per file in [`PROVENANCE.md`](imported/inaturalist.org/inatapi/PROVENANCE.md) |
+| Integrity | SHA-256 per file in [`PROVENANCE.md`](../imported/inaturalist.org/inatapi/PROVENANCE.md) |
 | Tier | Governing |
 | Import style | vendored |
 | Scope | Every request to the iNaturalist API, `api.inaturalist.org` |
-| Adopted parts | All eight transcribed items in [`inatapi.md`](imported/inaturalist.org/inatapi/inatapi.md) |
+| Adopted parts | All eight transcribed items in [`inatapi.md`](../imported/inaturalist.org/inatapi/inatapi.md) |
 | Owner | iNaturalist |
-| Status | adopted ([decisions.authenticationIsNecessary](decisions.md#authenticationisnecessary), [decisions.dailyRequestBudget](decisions.md#dailyrequestbudget)) |
+| Status | adopted ([decisions.authenticationIsNecessary](../decisions/decisions.md#authenticationisnecessary), [decisions.dailyRequestBudget](../decisions/decisions.md#dailyrequestbudget)) |
 
 Bulk access routes, such as observation exports and the GBIF dataset, serve consumers of
 iNaturalist data rather than a user syncing their own, and are not adopted.
@@ -37,11 +39,11 @@ iNaturalist data rather than a user syncing their own, and are not adopted.
 | Name | iNaturalist terms of use, community guidelines, and machine-generated-content definition |
 | Origin | <https://www.inaturalist.org/pages/terms>, <https://www.inaturalist.org/pages/community+guidelines>, <https://www.inaturalist.org/pages/machine_generated_content> |
 | Version | Retrieved 2026-08-09 by the maintainer from a browser |
-| Integrity | SHA-256 per file in [`PROVENANCE.md`](imported/inaturalist.org/inatterms/PROVENANCE.md) |
+| Integrity | SHA-256 per file in [`PROVENANCE.md`](../imported/inaturalist.org/inatterms/PROVENANCE.md) |
 | Tier | Mandatory |
 | Import style | vendored |
 | Scope | Everything birdsync writes to a user's account on `inaturalist.org` and `www.inaturalist.org`, and the manner of writing it |
-| Adopted parts | All six transcribed items in [`inatterms.md`](imported/inaturalist.org/inatterms/inatterms.md) |
+| Adopted parts | All six transcribed items in [`inatterms.md`](../imported/inaturalist.org/inatterms/inatterms.md) |
 | Owner | iNaturalist |
 | Status | adopted |
 
@@ -53,13 +55,13 @@ AI training) bind the user but are not adopted.
 | Field | Value |
 | --- | --- |
 | Name | Macaulay Library and eBird media terms |
-| Origin | Three eBird Help Center pages, listed in [`PROVENANCE.md`](imported/ebird.org/mlterms/PROVENANCE.md) |
+| Origin | Three eBird Help Center pages, listed in [`PROVENANCE.md`](../imported/ebird.org/mlterms/PROVENANCE.md) |
 | Version | Retrieved 2026-08-09 by `curl`, as served |
-| Integrity | SHA-256 per file in [`PROVENANCE.md`](imported/ebird.org/mlterms/PROVENANCE.md) |
+| Integrity | SHA-256 per file in [`PROVENANCE.md`](../imported/ebird.org/mlterms/PROVENANCE.md) |
 | Tier | Mandatory |
 | Import style | vendored |
 | Scope | Downloading assets from the Macaulay Library CDN, `cdn.download.ams.birds.cornell.edu`, and re-uploading them |
-| Adopted parts | All five transcribed items in [`mlterms.md`](imported/ebird.org/mlterms/mlterms.md) |
+| Adopted parts | All five transcribed items in [`mlterms.md`](../imported/ebird.org/mlterms/mlterms.md) |
 | Owner | Cornell Lab of Ornithology |
 | Status | partial: whether birdsync meets `attributionExpected` is unchecked, because the attribution guidelines page is not vendored |
 
@@ -77,7 +79,7 @@ lacks IDs for, and makes no commercial use.
 | Tier | Advisory |
 | Import style | absorbed |
 | Scope | All Go source in this repository |
-| Adopted parts | Formatting, error wrapping, naming, comment style, written into `tech` as [tech.gofmtClean](local/tech/style.md#gofmtclean) through [tech.commentsExplainWhy](local/tech/style.md#commentsexplainwhy) |
+| Adopted parts | Formatting, error wrapping, naming, comment style, written into `tech` as [tech.gofmtClean](../local/tech/style.md#gofmtclean) through [tech.commentsExplainWhy](../local/tech/style.md#commentsexplainwhy) |
 | Owner | The Go team; locally, the repository owner |
 | Status | adopted |
 
@@ -106,10 +108,10 @@ lacks IDs for, and makes no commercial use.
 | Integrity | `go.sum`: `h1:NIvaJDMOsjHA8n1jAhLSgzrAzy1Hgr+hNrb57e+94F0=` |
 | Tier | Advisory |
 | Import style | fetched at build |
-| Scope | Generating observation UUIDs (`github.com/google/uuid` is the module's only external dependency; see [tech.oneExternalDependency](local/tech/deps.md#oneexternaldependency)) |
+| Scope | Generating observation UUIDs (`github.com/google/uuid` is the module's only external dependency; see [tech.oneExternalDependency](../local/tech/deps.md#oneexternaldependency)) |
 | Adopted parts | Its license |
 | Owner | Google, per its copyright line |
-| Status | adopted ([decisions.uuidAdopted](decisions.md#uuidadopted)) |
+| Status | adopted ([decisions.uuidAdopted](../decisions/decisions.md#uuidadopted)) |
 
 Discovery, 2026-11-03: read the `LICENSE` file shipped in the module at v1.6.0, from the Go
 module cache (SHA-256 `0a8d61ed3cbfd5312326e8126c31ce9c627a283adc99131b56896d29ada04b2d`). It
@@ -128,7 +130,7 @@ build with `go install`, so the notice obligation does not arise today.
 | Integrity | none recorded |
 | Tier | Advisory |
 | Import style | consulted |
-| Scope | Continuous integration ([tech.ciStandingChecks](local/tech/ci.md#cistandingchecks)) |
+| Scope | Continuous integration ([tech.ciStandingChecks](../local/tech/ci.md#cistandingchecks)) |
 | Adopted parts | none yet |
 | Owner | GitHub |
 | Status | partial: found during discovery and awaiting the owner's decision. Terms not retrieved |
@@ -148,7 +150,7 @@ The licenses of the two actions were not retrieved either. Recorded as a gap.
 | Brand or design guidelines | rejected | None exist; this is a personal open-source project |
 | Privacy regulation (GDPR, CCPA) | rejected | birdsync collects, stores, and transmits nothing to its author. It moves a user's own data between two services they have accounts with, on their own machine |
 | Semantic versioning | rejected | There are no release tags; users install `@latest`. Revisit if tagged releases begin |
-| eBird API terms | rejected | birdsync does not use the eBird API. The CSV export exists because personal checklists are not exposed ([product.csvExportInput](local/product/scope.md#csvexportinput)) |
+| eBird API terms | rejected | birdsync does not use the eBird API. The CSV export exists because personal checklists are not exposed ([product.csvExportInput](../local/product/scope.md#csvexportinput)) |
 | `ebird.org` | rejected | Never called. birdsync writes the checklist URL `https://ebird.org/checklist/<id>` into a description as text. The input file is downloaded by the user, not by birdsync |
 | `macaulaylibrary.org` | rejected | Never called. birdsync writes `https://macaulaylibrary.org/asset/<id>` into a description as text. Attribution for Macaulay assets is governed by `mlterms` |
 

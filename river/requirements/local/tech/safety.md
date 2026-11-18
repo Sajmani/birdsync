@@ -12,6 +12,7 @@ one package, `tech`.
 **Mutations are gated on --dryrun at the call site**
 
 Formerly: T-005
+
 Goals: [goals.accountsStaySafe](../../../goals/goals.md#accountsstaysafe)
 
 Every operation that creates, updates, deletes, or uploads is gated on
@@ -25,6 +26,7 @@ belongs where the decision is made, not in a client that other callers reuse.*
 **A skipped mutation is logged with DRYRUN:**
 
 Formerly: T-006
+
 Goals: [goals.accountsStaySafe](../../../goals/goals.md#accountsstaysafe)
 
 A skipped mutation is logged with a `DRYRUN:` prefix (implements [product.dryRunLogPrefix](../product/dryrun.md#dryrunlogprefix)).
@@ -34,13 +36,14 @@ A skipped mutation is logged with a `DRYRUN:` prefix (implements [product.dryRun
 **Dry-run counters never report work that did not happen**
 
 Formerly: T-007
+
 Goals: [goals.accountsStaySafe](../../../goals/goals.md#accountsstaysafe)
 
 A dry run's counters must not report work that did not happen. Where a dry
 run cannot know something, it counts it as unknown rather than guessing.
 
 *Status: **not yet satisfied** — the created and updated counters are labeled as though
-the work happened. [decisions.dryRunCountersRelabeled](../../decisions.md#dryruncountersrelabeled) resolved this
+the work happened. [decisions.dryRunCountersRelabeled](../../decisions/decisions.md#dryruncountersrelabeled) resolved this
 in favour of relabeling; implements [product.dryRunCounterLabels](../product/reporting.md#dryruncounterlabels).*
 
 ## clientMutatesUnconditionally
@@ -48,6 +51,7 @@ in favour of relabeling; implements [product.dryRunCounterLabels](../product/rep
 **inat.Client mutates unconditionally**
 
 Formerly: T-008
+
 Goals: [goals.accountsStaySafe](../../../goals/goals.md#accountsstaysafe)
 
 `inat.Client`'s methods mutate unconditionally and know nothing about
@@ -58,6 +62,7 @@ Goals: [goals.accountsStaySafe](../../../goals/goals.md#accountsstaysafe)
 **UpdateObservation always sets ignore_photos**
 
 Formerly: T-009
+
 Goals: [goals.accountsStaySafe](../../../goals/goals.md#accountsstaysafe)
 
 `UpdateObservation` always sets `ignore_photos`.
@@ -69,7 +74,9 @@ Goals: [goals.accountsStaySafe](../../../goals/goals.md#accountsstaysafe)
 **Nothing runs the mutating tools**
 
 Formerly: T-011
+
 Status: withdrawn — the mutating tools were deleted rather than governed by a rule
+
 Goals:
 
 Nothing in the build, test, or development workflow runs a program in
@@ -82,6 +89,7 @@ nobody could check. Superseded by [toolsReadOnly](#toolsreadonly) and [neverRunT
 **No program in tools/ mutates**
 
 Formerly: T-032
+
 Goals: [goals.accountsStaySafe](../../../goals/goals.md#accountsstaysafe)
 
 No program in `tools/` performs a mutating operation. Nothing there may
@@ -97,6 +105,7 @@ read and remember. Deleted tools remain in the history if one is needed again.*
 **Nothing in the workflow runs a program in tools/**
 
 Formerly: T-033
+
 Goals: [goals.accountsStaySafe](../../../goals/goals.md#accountsstaysafe)
 
 Nothing in the build, test, or development workflow runs a program in
@@ -108,6 +117,7 @@ automated process should do on the user's behalf.
 **Credentials are never logged, echoed, or written**
 
 Formerly: T-012
+
 Goals: [goals.accountsStaySafe](../../../goals/goals.md#accountsstaysafe)
 
 Credentials are never logged, echoed, or written to a file.

@@ -24,7 +24,7 @@ Composed from: [inatapi.requestRate](../../../imported/inaturalist.org/inatapi/i
 [inatterms.rateAndVolume](../../../imported/inaturalist.org/inatterms/inatterms.md#rateandvolume),
 [inatterms.dontBehaveLikeMachine](../../../imported/inaturalist.org/inatterms/inatterms.md#dontbehavelikemachine),
 [tech.dailyRequestBudget](../../../local/tech/etiquette.md#dailyrequestbudget),
-[decisions.dailyRequestBudget](../../../decisions.md#dailyrequestbudget)
+[decisions.dailyRequestBudget](../../../decisions/decisions.md#dailyrequestbudget)
 Goals: [goals.communityNotBurdened](../../../../goals/goals.md#communitynotburdened), [goals.accountsStaySafe](../../../../goals/goals.md#accountsstaysafe)
 
 birdsync sends requests to `api.inaturalist.org` at no more than about one per second, and no
@@ -40,13 +40,14 @@ single choke point every iNaturalist request passes through (`docs/arch.md`), an
 estimates prior 24-hour write requests from the `created_at` timestamps and media of the
 downloaded observations so back-to-back runs stay within the same 9,000-request budget, stopping
 cleanly at an observation boundary with instructions to re-run in 24 hours
-([decisions.dailyRequestBudget](../../../decisions.md#dailyrequestbudget)).
+([decisions.dailyRequestBudget](../../../decisions/decisions.md#dailyrequestbudget)).
 
 ## observationDownloadPageSize
 
 **The existing-observation download asks for 200 observations per page**
 
 Composed from: [inatapi.largestPageSize](../../../imported/inaturalist.org/inatapi/inatapi.md#largestpagesize)
+
 Goals: [goals.communityNotBurdened](../../../../goals/goals.md#communitynotburdened)
 
 Every page request in the download of the user's existing iNaturalist observations
@@ -55,14 +56,14 @@ sets `per_page=200`, the largest page the API serves for observations.
 
 The value is the source's own ("you can get up to 200 observations in a single request"). This
 replaces the withdrawn local [tech.maxPageSize](../../../local/tech/etiquette.md#maxpagesize)
-([decisions.restatementsComposed](../../../decisions.md#restatementscomposed)).
+([decisions.restatementsComposed](../../../decisions/decisions.md#restatementscomposed)).
 
 ## observationDownloadByIDAbove
 
 **The existing-observation download pages by id_above, in ascending id order**
 
 Composed from: [inatapi.idAbovePastTenThousand](../../../imported/inaturalist.org/inatapi/inatapi.md#idabovepasttenthousand),
-[decisions.pageByIDAbove](../../../decisions.md#pagebyidabove)
+[decisions.pageByIDAbove](../../../decisions/decisions.md#pagebyidabove)
 Goals: [goals.birdersKeepOneRecord](../../../../goals/goals.md#birderskeeponerecord), [goals.accountsStaySafe](../../../../goals/goals.md#accountsstaysafe)
 
 The download of the user's existing observations
@@ -73,8 +74,8 @@ page shorter than the page size, and fails with an error if a page does not adva
 
 This is how birdsync meets [product.largeAccounts](../../../local/product/download.md#largeaccounts)
 within the API's 10,000-result ceiling on page numbers, as decided in
-[decisions.pageByIDAbove](../../../decisions.md#pagebyidabove). It replaces the withdrawn local
-[tech.idAbovePaging](../../../local/tech/etiquette.md#idabovepaging) ([decisions.restatementsComposed](../../../decisions.md#restatementscomposed)).
+[decisions.pageByIDAbove](../../../decisions/decisions.md#pagebyidabove). It replaces the withdrawn local
+[tech.idAbovePaging](../../../local/tech/etiquette.md#idabovepaging) ([decisions.restatementsComposed](../../../decisions/decisions.md#restatementscomposed)).
 
 ## inatUserAgent
 
@@ -87,7 +88,7 @@ Goals: [goals.communityNotBurdened](../../../../goals/goals.md#communitynotburde
 Every request birdsync sends to `api.inaturalist.org` carries a `User-Agent` header that names
 birdsync and its version, rather than the Go HTTP client's default.
 
-The source asks clients to "consider" a custom User-Agent; [`imports.md`](../../../imports.md)
+The source asks clients to "consider" a custom User-Agent; [`imports.md`](../../../imports/imports.md)
 adopts all eight `inatapi` items, so composition states it as a requirement over every request.
 The version is the local addition of [tech.userAgent](../../../local/tech/etiquette.md#useragent). The source allows the app name, an iNaturalist
 username, "or anything we might use to differentiate your requests"; the app name is the one
@@ -100,6 +101,7 @@ that holds for every user.
 **API requests carry the birdsync User-Agent**
 
 Formerly: AC-009
+
 Covers: [inatUserAgent](#inatuseragent), [tech.userAgent](../../../local/tech/etiquette.md#useragent)
 
 A request from `inat.Client` carries the birdsync `User-Agent`.
@@ -109,6 +111,7 @@ A request from `inat.Client` carries the birdsync `User-Agent`.
 **The download requests the maximum page size**
 
 Formerly: AC-010
+
 Covers: [observationDownloadPageSize](#observationdownloadpagesize), [product.downloadExistingObservations](../../../local/product/download.md#downloadexistingobservations), [tech.baseURLSeams](../../../local/tech/testing.md#baseurlseams)
 
 `DownloadObservations` against an `httptest` server requests `per_page=200` and returns every observation served.
@@ -118,6 +121,7 @@ Covers: [observationDownloadPageSize](#observationdownloadpagesize), [product.do
 **The download honors the date window**
 
 Formerly: AC-011
+
 Covers: [product.dateWindowNarrowsDownload](../../../local/product/download.md#datewindownarrowsdownload)
 
 With `--after` or `--before` set the download query carries the window, and without them it carries none.
@@ -127,6 +131,7 @@ With `--after` or `--before` set the download query carries the window, and with
 **API errors carry the response body**
 
 Formerly: AC-032
+
 Covers: [tech.errorsIncludeBody](../../../local/tech/etiquette.md#errorsincludebody)
 
 A non-200 response's error includes the body, truncated and on one line, and drops an HTML body.
@@ -136,6 +141,7 @@ A non-200 response's error includes the body, truncated and on one line, and dro
 **The download pages by id_above past 10,000 results**
 
 Formerly: AC-034
+
 Covers: [product.largeAccounts](../../../local/product/download.md#largeaccounts), [observationDownloadByIDAbove](#observationdownloadbyidabove)
 
 Against a fake honoring `per_page`, the download pages by `id_above` and errors when the cursor fails to advance.
@@ -145,6 +151,7 @@ Against a fake honoring `per_page`, the download pages by `id_above` and errors 
 **Requests are paced**
 
 Formerly: AC-035
+
 Covers: [requestRate](#requestrate)
 
 Consecutive requests from one client are spaced by at least the minimum interval, and the default interval matches one per second.
@@ -166,7 +173,7 @@ observation, and reports the stop in the end-of-run summary.
 
 Limit: parallel processes and `--after`/`--before` runs that omit recently created observations
 with older observation dates are accepted residuals
-([decisions.dailyRequestBudget](../../../decisions.md#dailyrequestbudget)).
+([decisions.dailyRequestBudget](../../../decisions/decisions.md#dailyrequestbudget)).
 
 ## downloadOrderedByID
 

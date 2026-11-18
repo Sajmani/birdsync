@@ -34,7 +34,7 @@ Purpose, non-goals, command-line invocation, and `tools/` boundaries for [`birds
 **Every observation birdsync posts is a record from the user's own export, and it posts nothing else of its own**
 
 Composed from: [inatterms.noMachineGeneratedContent](../../../imported/inaturalist.org/inatterms/inatterms.md#nomachinegeneratedcontent),
-[decisions.notMachineGeneratedContent](../../../decisions.md#notmachinegeneratedcontent)
+[decisions.notMachineGeneratedContent](../../../decisions/decisions.md#notmachinegeneratedcontent)
 Goals: [goals.accountsStaySafe](../../../../goals/goals.md#accountsstaysafe), [goals.communityNotBurdened](../../../../goals/goals.md#communitynotburdened)
 
 Every observation birdsync creates
@@ -43,7 +43,7 @@ Every observation birdsync creates
 eBird export the user supplied ([product.csvExportInput](../../../local/product/scope.md#csvexportinput)),
 and birdsync posts no identification, comment, or message of its own.
 
-[decisions.notMachineGeneratedContent](../../../decisions.md#notmachinegeneratedcontent) holds
+[decisions.notMachineGeneratedContent](../../../decisions/decisions.md#notmachinegeneratedcontent) holds
 that birdsync is not machine-generated content because a human decided each observation and the
 machine only facilitates posting it, from the user's own curated data. That holds only while
 each observation is one the user recorded, and while birdsync generates no other kind of
@@ -57,6 +57,7 @@ both true.
 **tools/ is read-only**
 
 Formerly: AC-028
+
 Covers: [tech.toolsReadOnly](../../../local/tech/safety.md#toolsreadonly), [product.toolsNotProduct](../../../local/product/scope.md#toolsnotproduct)
 
 No program under `tools/` calls a mutating `inat.Client` method.

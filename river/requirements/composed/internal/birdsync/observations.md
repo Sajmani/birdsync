@@ -25,7 +25,7 @@ community obligations, and contributor rights.
 
 Composed from: [inatterms.accountHolderResponsible](../../../imported/inaturalist.org/inatterms/inatterms.md#accountholderresponsible),
 [inatterms.dontBehaveLikeMachine](../../../imported/inaturalist.org/inatterms/inatterms.md#dontbehavelikemachine),
-[decisions.notMachineGeneratedContent](../../../decisions.md#notmachinegeneratedcontent),
+[decisions.notMachineGeneratedContent](../../../decisions/decisions.md#notmachinegeneratedcontent),
 [product.documentCommunityObligations](../../../local/product/community.md#documentcommunityobligations)
 Goals: [goals.accountsStaySafe](../../../../goals/goals.md#accountsstaysafe), [goals.communityNotBurdened](../../../../goals/goals.md#communitynotburdened)
 
@@ -51,6 +51,7 @@ nothing moves birdsync to the prohibited side of that rule
 **A created observation carries the sync key and observation fields**
 
 Formerly: AC-007 (part)
+
 Covers: [product.syncKey](../../../local/product/identity.md#synckey), [product.observationFieldMapping](../../../local/product/observations.md#observationfieldmapping), [tech.clientInterfaces](../../../local/tech/testing.md#clientinterfaces)
 
 A sync through a recording fake creates an observation whose sync-key fields and copied eBird observation fields have the required IDs and values.
@@ -60,6 +61,7 @@ A sync through a recording fake creates an observation whose sync-key fields and
 **A created observation is wild, placed, and timed as required**
 
 Formerly: AC-007 (part)
+
 Covers: [product.createdObservationWild](../../../local/product/observations.md#createdobservationwild), [product.checklistCoordinates](../../../local/product/observations.md#checklistcoordinates), [product.speciesGuessScientificName](../../../local/product/observations.md#speciesguessscientificname), [product.observedDateTime](../../../local/product/observations.md#observeddatetime)
 
 The created observation is marked wild, carries the checklist's coordinates marked inexact with the configured accuracy, the scientific name as species guess, and the eBird date and time.
@@ -71,6 +73,7 @@ Limit: asserts what is sent, not how iNaturalist interprets it.
 **The README states the community obligations**
 
 Formerly: AC-037
+
 Covers: [accountHolderToldOfObligations](#accountholdertoldofobligations), [product.documentSyncedObservationsIdentifiable](../../../local/product/community.md#documentsyncedobservationsidentifiable)
 
 A person reviewing the README finds what iNaturalist expects of a bulk-syncing account (that the user answers for what is posted, reviews what was created, and responds to comments and messages), and how synced observations are identifiable.

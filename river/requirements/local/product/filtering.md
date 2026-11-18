@@ -12,6 +12,7 @@ directory, all one package, `product`.
 **Records are tested in a fixed skip order**
 
 Formerly: P-026
+
 Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 Each eBird record is tested in this order: `--after`, `--before`,
@@ -26,6 +27,7 @@ record lands in.*
 **--after skips records observed before it**
 
 Formerly: P-027
+
 Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 `--after` skips records observed strictly before the given time.
@@ -35,6 +37,7 @@ Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord
 **--before skips records observed after it**
 
 Formerly: P-028
+
 Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 `--before` skips records observed strictly after the given time.
@@ -44,6 +47,7 @@ Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord
 **Date flags accept two formats**
 
 Formerly: P-029
+
 Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 Both accept `2006-01-02 15:04:05` or `2006-01-02`.
@@ -53,8 +57,11 @@ Both accept `2006-01-02 15:04:05` or `2006-01-02`.
 **--verifiable skips medialess records, on by default**
 
 Formerly: P-030
+
 Subject: `cli.verifiable.default`
+
 Value: `true`
+
 Goals: [goals.communityNotBurdened](../../../goals/goals.md#communitynotburdened), [goals.communityGainsResearchGrade](../../../goals/goals.md#communitygainsresearchgrade)
 
 `--verifiable` skips records with no Macaulay Library catalog numbers, and
@@ -66,7 +73,7 @@ avoids filling a user's account with "Casual" records.*
 *It is also the main thing birdsync does to limit the burden it puts on other people. A
 medialess observation gives an identifier nothing to identify, so it is pure cost to the
 community — the concern a forum moderator raised about volume
-([decisions.notMachineGeneratedContent](../../decisions.md#notmachinegeneratedcontent)). Don't flip this
+([decisions.notMachineGeneratedContent](../../decisions/decisions.md#notmachinegeneratedcontent)). Don't flip this
 default for convenience.*
 
 ## fuzzyMatching
@@ -74,6 +81,7 @@ default for convenience.*
 **--fuzzy skips records matching an unkeyed observation**
 
 Formerly: P-031
+
 Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 `--fuzzy` skips a record when an existing observation not carrying a sync key
@@ -92,6 +100,7 @@ naming the same species.*
 **Fuzzy matching never uses an empty name**
 
 Formerly: P-032
+
 Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 Fuzzy matching never uses an empty name.
@@ -104,6 +113,7 @@ legitimate observations.*
 **Fuzzy matching compares parsed dates**
 
 Formerly: P-033
+
 Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 Fuzzy matching compares parsed observation dates, not raw CSV date strings, across both eBird CSV
@@ -117,6 +127,7 @@ second format.*
 **--fuzzy is off by default and its risk documented**
 
 Formerly: P-034
+
 Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 `--fuzzy` is off by default, and its documentation states that it may

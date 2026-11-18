@@ -21,6 +21,7 @@ for [`birdsync`](README.md).
 **Unparseable records are skipped and counted**
 
 Formerly: AC-025
+
 Covers: [product.badRecordsSkipped](../../../local/product/failures.md#badrecordsskipped)
 
 Records with an unparseable date, time, latitude, or longitude are skipped, logged with their line, and counted, and the run continues.
@@ -30,6 +31,7 @@ Records with an unparseable date, time, latitude, or longitude are skipped, logg
 **Permanent and transient upload failures are told apart**
 
 Formerly: AC-031
+
 Covers: [product.permanentUploadFailureRecorded](../../../local/product/failures.md#permanentuploadfailurerecorded), [product.permanentFailuresReported](../../../local/product/failures.md#permanentfailuresreported)
 
 A permanently refused upload is recorded and not retried, a transient one is retried, and the status-code classification holds in both directions.
@@ -39,6 +41,7 @@ A permanently refused upload is recorded and not retried, a transient one is ret
 **Permanently failed assets are reported each run**
 
 Formerly: AC-033
+
 Covers: [product.permanentFailuresReported](../../../local/product/failures.md#permanentfailuresreported)
 
 An asset recorded as permanently failed is reported and not counted as attached or mismatched.
@@ -48,6 +51,7 @@ An asset recorded as permanently failed is reported and not counted as attached 
 **Unusable input is named**
 
 Formerly: AC-036
+
 Covers: [product.unusableInputExplained](../../../local/product/failures.md#unusableinputexplained)
 
 A directory, a zip archive, and a CSV without a `Submission ID` column are each rejected with a message naming the problem.

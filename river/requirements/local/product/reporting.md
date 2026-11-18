@@ -11,6 +11,7 @@ product requirements are in the other files in this directory, all one package, 
 **Every run ends with a summary**
 
 Formerly: P-054
+
 Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 Every run ends with a summary: records processed, records skipped by each
@@ -21,6 +22,7 @@ rule, observations created and updated, and media uploaded.
 **A skip counter prints only when its flag is in effect**
 
 Formerly: P-055
+
 Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 A skip counter is printed only when the flag that produces it is in effect.
@@ -30,6 +32,7 @@ A skip counter is printed only when the flag that produces it is in effect.
 **The media failure count prints only when non-zero**
 
 Formerly: P-056
+
 Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 A media failure count is printed only when there were failures.
@@ -39,10 +42,11 @@ A media failure count is printed only when there were failures.
 **Dry-run observation counters are labeled hypothetical**
 
 Formerly: P-060
+
 Goals: [goals.accountsStaySafe](../../../goals/goals.md#accountsstaysafe)
 
 Under `--dryrun`, the observation counters are labeled as hypothetical:
 `Would create N` and `Would update N`.
 
-*Rationale: [decisions.dryRunCountersRelabeled](../../decisions.md#dryruncountersrelabeled). The count is
+*Rationale: [decisions.dryRunCountersRelabeled](../../decisions/decisions.md#dryruncountersrelabeled). The count is
 worth reporting; claiming the work happened is not.*

@@ -38,6 +38,7 @@ Sync key, idempotence, CSV and date formats, skip order, and `--fuzzy` matching 
 **Each skip rule fires in order**
 
 Formerly: AC-012
+
 Covers: [product.idempotentRerun](../../../local/product/identity.md#idempotentrerun), [product.skipOrder](../../../local/product/filtering.md#skiporder), [product.afterFlag](../../../local/product/filtering.md#afterflag), [product.beforeFlag](../../../local/product/filtering.md#beforeflag), [product.verifiableDefaultOn](../../../local/product/filtering.md#verifiabledefaulton), [product.fuzzyMatching](../../../local/product/filtering.md#fuzzymatching)
 
 One set of records exercises every skip rule exactly once, in the order `--after`, `--before`, already synced, `--fuzzy`, `--verifiable`, and the rest are created.
@@ -47,6 +48,7 @@ One set of records exercises every skip rule exactly once, in the order `--after
 **Fuzzy matching works with both `2006-01-02` and `1/2/2006` eBird date formats**
 
 Formerly: AC-014
+
 Covers: [product.fuzzyParsedDates](../../../local/product/filtering.md#fuzzyparseddates), [tech.datesViaObserved](../../../local/tech/formats.md#datesviaobserved), [product.fuzzyMatching](../../../local/product/filtering.md#fuzzymatching)
 
 Fuzzy matching skips a record whether eBird wrote its date as `2006-01-02` or as `1/2/2006`.
@@ -56,6 +58,7 @@ Fuzzy matching skips a record whether eBird wrote its date as `2006-01-02` or as
 **Fuzzy matching ignores empty names**
 
 Formerly: AC-015
+
 Covers: [product.fuzzyNeverEmptyName](../../../local/product/filtering.md#fuzzyneveremptyname), [tech.emptyNameNotIndexed](../../../local/tech/formats.md#emptynamenotindexed)
 
 An existing observation with an empty name never fuzzy-matches a record.
@@ -76,6 +79,7 @@ hybrids do not match across species by stem.
 **eBird dates parse in both `2006-01-02` and `1/2/2006` formats**
 
 Formerly: AC-019
+
 Covers: [tech.datesViaObserved](../../../local/tech/formats.md#datesviaobserved)
 
 `Record.Observed()` parses both eBird CSV date formats — `2006-01-02` (with optional `03:04 PM`
@@ -86,6 +90,7 @@ time) and `1/2/2006` (with optional `3:04 PM` time) — with and without a time.
 **The CSV is read by header name**
 
 Formerly: AC-020
+
 Covers: [tech.csvByHeaderName](../../../local/tech/formats.md#csvbyheadername), [product.csvExportInput](../../../local/product/scope.md#csvexportinput)
 
 `ebird.Records` reads fields by header name from a file whose columns vary.
@@ -97,6 +102,7 @@ Limit: partial for the CSV input requirement.
 **The sync key is valid only when complete**
 
 Formerly: AC-021
+
 Covers: [product.syncKey](../../../local/product/identity.md#synckey), [product.incompleteKeyNotRecognized](../../../local/product/identity.md#incompletekeynotrecognized), [product.taxonNotInSyncKey](../../../local/product/identity.md#taxonnotinsynckey)
 
 `ObservationID.Valid` is true only when both sync-key fields are present.
@@ -108,6 +114,7 @@ Limit: partial for the taxon not being in the key.
 **A previously synced untaxoned observation is recognized**
 
 Formerly: AC-024
+
 Covers: [product.noTaxonFilter](../../../local/product/download.md#notaxonfilter), [product.idempotentRerun](../../../local/product/identity.md#idempotentrerun)
 
 The download carries no taxon filter, and an observation with no taxon that carries a sync key is recognized as synced and not re-created.

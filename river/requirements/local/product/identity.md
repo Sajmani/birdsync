@@ -12,8 +12,11 @@ this directory, all one package, `product`.
 **Own observations are identified by a two-field sync key**
 
 Formerly: P-019
+
 Subject: `sync.key.fields`
+
 Value: `[6033, 20215]`
+
 Goals: [goals.accountsStaySafe](../../../goals/goals.md#accountsstaysafe)
 
 birdsync identifies its own observations by a sync key: the pair of
@@ -25,6 +28,7 @@ iNaturalist observation fields *eBird Checklist* (6033) and *eBird Scientific Na
 **Re-running creates no duplicates**
 
 Formerly: P-020
+
 Goals: [goals.accountsStaySafe](../../../goals/goals.md#accountsstaysafe)
 
 Re-running birdsync over the same CSV creates no duplicate observations.
@@ -34,6 +38,7 @@ Re-running birdsync over the same CSV creates no duplicate observations.
 **The taxon is not part of the sync key**
 
 Formerly: P-021
+
 Goals: [goals.accountsStaySafe](../../../goals/goals.md#accountsstaysafe)
 
 The iNaturalist taxon is not part of the sync key.
@@ -47,6 +52,7 @@ exact iNaturalist equivalent.*
 **An incomplete sync key is not recognized**
 
 Formerly: P-022
+
 Goals: [goals.accountsStaySafe](../../../goals/goals.md#accountsstaysafe)
 
 An observation missing either sync-key field is not recognized as

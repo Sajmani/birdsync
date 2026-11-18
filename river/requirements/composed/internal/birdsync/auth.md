@@ -20,6 +20,7 @@ Credentials, JWT authorization, account ownership, and authentication scope for 
 **birdsync authenticates with the user's JWT in the Authorization header**
 
 Composed from: [inatapi.jwtAuthorization](../../../imported/inaturalist.org/inatapi/inatapi.md#jwtauthorization)
+
 Goals: [goals.birdersKeepOneRecord](../../../../goals/goals.md#birderskeeponerecord), [goals.accountsStaySafe](../../../../goals/goals.md#accountsstaysafe)
 
 Every authenticated request birdsync sends to `api.inaturalist.org` carries, in its HTTP
@@ -40,7 +41,7 @@ none says how it is sent, which is what the Governing source prescribes.
 
 Composed from: [inatapi.noGroupAccounts](../../../imported/inaturalist.org/inatapi/inatapi.md#nogroupaccounts),
 [inatterms.accountHolderResponsible](../../../imported/inaturalist.org/inatterms/inatterms.md#accountholderresponsible),
-[decisions.inputIdentityIsTheAccountHolders](../../../decisions.md#inputidentityistheaccountholders)
+[decisions.inputIdentityIsTheAccountHolders](../../../decisions/decisions.md#inputidentityistheaccountholders)
 Goals: [goals.accountsStaySafe](../../../../goals/goals.md#accountsstaysafe)
 
 Every write birdsync makes to iNaturalist
@@ -53,7 +54,7 @@ birdsync contains, ships, and falls back to no account or token of its own.
 That keeps birdsync from being a group account: each user posts as themselves. Whether the
 person running birdsync is the person whose eBird export it reads is the account holder's
 responsibility, not birdsync's
-([decisions.inputIdentityIsTheAccountHolders](../../../decisions.md#inputidentityistheaccountholders)).
+([decisions.inputIdentityIsTheAccountHolders](../../../decisions/decisions.md#inputidentityistheaccountholders)).
 The source also says to "use one of the various OAuth authentication flows"; whether a token
 the user pastes from the api_token page meets that is not settled by precedence
 (an open question in `river/proposals.md`).
@@ -64,14 +65,14 @@ the user pastes from the api_token page meets that is not settled by precedence
 
 Composed from: [inatapi.authenticateOnlyWhenNeeded](../../../imported/inaturalist.org/inatapi/inatapi.md#authenticateonlywhenneeded),
 [inatterms.duplicatesUndesirable](../../../imported/inaturalist.org/inatterms/inatterms.md#duplicatesundesirable),
-[decisions.authenticationIsNecessary](../../../decisions.md#authenticationisnecessary)
+[decisions.authenticationIsNecessary](../../../decisions/decisions.md#authenticationisnecessary)
 Goals: [goals.communityNotBurdened](../../../../goals/goals.md#communitynotburdened), [goals.accountsStaySafe](../../../../goals/goals.md#accountsstaysafe)
 
 birdsync sends its token to `api.inaturalist.org` only on a write, or on a read whose
 unauthenticated answer would omit observations birdsync must see to avoid creating duplicates;
 every other request to iNaturalist is sent without it.
 
-The owner ruled in [decisions.authenticationIsNecessary](../../../decisions.md#authenticationisnecessary)
+The owner ruled in [decisions.authenticationIsNecessary](../../../decisions/decisions.md#authenticationisnecessary)
 that the download of existing observations
 ([product.downloadExistingObservations](../../../local/product/download.md#downloadexistingobservations))
 is such a read: without the token it omits private and geoprivacy-obscured observations, each of

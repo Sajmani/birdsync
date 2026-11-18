@@ -50,7 +50,7 @@ repository root.
 
 If your change alters behavior, it also needs a matching edit to the requirements in
 [river/requirements/local/](river/requirements/local/), recomposed into
-`river/requirements/composed/` and approved by the owner, and to [README.md](README.md) when it changes what gets
+`river/requirements/composed/` (then `river compose birdsync`) and reviewed by the owner, and to [README.md](README.md) when it changes what gets
 written to iNaturalist or which observations are skipped. The README documents flag defaults
 and skip order, and has drifted from the code before.
 
