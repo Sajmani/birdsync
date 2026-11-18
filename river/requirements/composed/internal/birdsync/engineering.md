@@ -44,6 +44,7 @@ integration for [`birdsync`](README.md).
 **Everything builds**
 
 Formerly: AC-001
+
 Covers: [tech.singleModule](../../../local/tech/deps.md#singlemodule), [tech.platformIndependent](../../../local/tech/deps.md#platformindependent), [product.toolsNotProduct](../../../local/product/scope.md#toolsnotproduct)
 
 `go build ./...` compiles every package, including `tools/`.
@@ -55,6 +56,7 @@ Limit: partial for platform independence: one OS.
 **go vet is clean**
 
 Formerly: AC-002
+
 Covers: [tech.vetClean](../../../local/tech/style.md#vetclean)
 
 `go vet ./...` reports nothing.
@@ -64,6 +66,7 @@ Covers: [tech.vetClean](../../../local/tech/style.md#vetclean)
 **Code is gofmt'd**
 
 Formerly: AC-003
+
 Covers: [tech.gofmtClean](../../../local/tech/style.md#gofmtclean)
 
 `gofmt -l .` prints nothing.
@@ -73,6 +76,7 @@ Covers: [tech.gofmtClean](../../../local/tech/style.md#gofmtclean)
 **The suite passes under the race detector**
 
 Formerly: AC-004
+
 Covers: [tech.ciStandingChecks](../../../local/tech/ci.md#cistandingchecks)
 
 `go test -race ./...` passes with no network and no live accounts.
@@ -84,6 +88,7 @@ Limit: runs every criterion in this package.
 **No test names a live service host**
 
 Formerly: AC-005
+
 Covers: [tech.noLiveServicesInTests](../../../local/tech/testing.md#noliveservicesintests)
 
 No `_test.go` file contains the iNaturalist API host or the Macaulay Library CDN host.
@@ -95,6 +100,7 @@ Limit: a substring scan; a host assembled from parts escapes it.
 **CI runs the standing checks on push and pull request**
 
 Formerly: AC-022
+
 Covers: [tech.ciStandingChecks](../../../local/tech/ci.md#cistandingchecks), [tech.ciLatestStable](../../../local/tech/ci.md#cilateststable)
 
 `.github/workflows/ci.yml` runs build, vet, gofmt, and the race-enabled suite on every push to main and every pull request, plus a non-blocking latest-stable job.
@@ -104,6 +110,7 @@ Covers: [tech.ciStandingChecks](../../../local/tech/ci.md#cistandingchecks), [te
 **Library packages never exit**
 
 Formerly: AC-027
+
 Covers: [tech.noLogFatalInLibraries](../../../local/tech/style.md#nologfatalinlibraries)
 
 No non-main package in the module calls `log.Fatal` or `os.Exit`.
@@ -113,6 +120,7 @@ No non-main package in the module calls `log.Fatal` or `os.Exit`.
 **Prose is American English and quotations are untouched**
 
 Formerly: AC-041
+
 Covers: [tech.americanSpelling](../../../local/tech/style.md#americanspelling), [tech.quotationsNeverRespelled](../../../local/tech/style.md#quotationsneverrespelled)
 
 No Markdown or Go file outside vendored documents uses a listed British spelling, and blockquotes and vendored documents are never flagged.

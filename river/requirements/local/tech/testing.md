@@ -12,6 +12,7 @@ this directory, all one package, `tech`.
 **birdsync() takes its clients as interfaces**
 
 Formerly: T-013
+
 Goals: [goals.maintainerChangesSafely](../../../goals/goals.md#maintainerchangessafely)
 
 `birdsync()` takes its two clients as the `ebirdClient` and `inatClient`
@@ -22,6 +23,7 @@ interfaces, so the sync loop can be driven without a network.
 **Both services have base-URL test seams**
 
 Formerly: T-014
+
 Goals: [goals.maintainerChangesSafely](../../../goals/goals.md#maintainerchangessafely)
 
 `inat.NewClient` takes a base URL, and `ebird.DownloadMLAsset` delegates to
@@ -33,6 +35,7 @@ either service. Neither seam may be removed.
 **Tests call resetFlags first**
 
 Formerly: T-015
+
 Goals: [goals.maintainerChangesSafely](../../../goals/goals.md#maintainerchangessafely)
 
 Flags are package-level variables, so tests share global state. A test calls
@@ -46,6 +49,7 @@ so date flags are zeroed by assignment, not through `Set`.*
 **Tests never contact a live service**
 
 Formerly: T-010
+
 Goals: [goals.maintainerChangesSafely](../../../goals/goals.md#maintainerchangessafely)
 
 Tests never contact `api.inaturalist.org`, the Macaulay Library CDN, or any

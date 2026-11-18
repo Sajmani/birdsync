@@ -12,6 +12,7 @@ one item. Other tech requirements are in the other files in this directory, all 
 **The CSV is read by header name**
 
 Formerly: T-018
+
 Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 The eBird CSV is read by header name, never by column position, with
@@ -24,6 +25,7 @@ The eBird CSV is read by header name, never by column position, with
 **eBird dates are parsed and compared via Record.Observed()**
 
 Formerly: T-019
+
 Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 `Record.Observed()` parses both eBird CSV date formats — `2006-01-02` (with optional `03:04 PM`
@@ -37,6 +39,7 @@ date goes through `Record.Observed()`, never `Record.Date` directly.
 **An empty taxon name never enters the fuzzy index**
 
 Formerly: T-020
+
 Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 An empty taxon name never enters the fuzzy-match index (implements [product.fuzzyNeverEmptyName](../product/filtering.md#fuzzyneveremptyname)).
@@ -46,6 +49,7 @@ An empty taxon name never enters the fuzzy-match index (implements [product.fuzz
 **Asset type is known only after download**
 
 Formerly: T-021
+
 Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 Code that needs to know whether a Macaulay Library asset is a photo or a

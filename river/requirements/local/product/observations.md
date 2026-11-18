@@ -12,6 +12,7 @@ one item. Other product requirements are in the other files in this directory, a
 **Created observations are wild**
 
 Formerly: P-035
+
 Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord), [goals.communityGainsResearchGrade](../../../goals/goals.md#communitygainsresearchgrade)
 
 A created observation is marked wild, not captive.
@@ -23,8 +24,11 @@ A created observation is marked wild, not captive.
 **Coordinates are the checklist's, inexact, with set accuracy**
 
 Formerly: P-036
+
 Subject: `observation.positional_accuracy.default_m`
+
 Value: `1000`
+
 Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord), [goals.communityGainsResearchGrade](../../../goals/goals.md#communitygainsresearchgrade)
 
 Latitude and longitude are the checklist's, the location is marked
@@ -37,6 +41,7 @@ not-exact, and positional accuracy is `--positional_accuracy_meters`, default 10
 **The species guess is the eBird scientific name**
 
 Formerly: P-037
+
 Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord), [goals.communityGainsResearchGrade](../../../goals/goals.md#communitygainsresearchgrade)
 
 The species guess is the eBird scientific name.
@@ -46,6 +51,7 @@ The species guess is the eBird scientific name.
 **Observation date and time come from the eBird columns**
 
 Formerly: P-038
+
 Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord), [goals.communityGainsResearchGrade](../../../goals/goals.md#communitygainsresearchgrade)
 
 The observation date and time come from the eBird `Date` and `Time` columns.
@@ -55,6 +61,7 @@ The observation date and time come from the eBird `Date` and `Time` columns.
 **eBird columns are copied into observation fields**
 
 Formerly: P-039
+
 Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 These eBird columns are copied into iNaturalist observation fields: Count
@@ -66,6 +73,7 @@ Observers (2527), Submission ID (6033), Scientific Name (20215).
 **What the observation description contains**
 
 Formerly: P-040
+
 Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 The description contains: a line attributing the observation to birdsync, the
@@ -82,6 +90,7 @@ observation, not the source, and the retry mechanism is otherwise undiscoverable
 **Created observations are public**
 
 Formerly: P-041
+
 Goals: [goals.accountsStaySafe](../../../goals/goals.md#accountsstaysafe), [goals.communityGainsResearchGrade](../../../goals/goals.md#communitygainsresearchgrade)
 
 Observations birdsync creates are public, like any iNaturalist observation.

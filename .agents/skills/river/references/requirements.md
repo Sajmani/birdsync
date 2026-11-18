@@ -27,7 +27,7 @@ with what depended on it. Neither is the same as a source nobody considered.
 
 **Look for sources before integrating anything new.** Before a change adds a hosted service, an
 API, a dataset, a library, a model, or an agent plugin, find what governs its use: terms of
-service, license, usage limits, attribution, and data-use terms. Record each in `imports.md`,
+service, license, usage limits, attribution, and data-use terms. Record each in `river/requirements/imports/`,
 carry its obligations into a source, and let a person decide whether to accept them before the
 integration lands. A source nobody considered is the one an auditor finds first.
 
@@ -37,13 +37,13 @@ deserves to be a package, and if it does not, it is a file.
 
 ## Precedence
 
-`precedence.md` puts each source in a tier, highest first. Composition uses the tiers to settle
+The precedence package, `river/requirements/precedence/`, puts each source in a tier, highest first. Composition uses the tiers to settle
 a conflict on its own; anything they can't settle goes to a person. There are four:
 
 | Tier | When it conflicts with another tier | Who can grant an exception | Typical sources |
 | --- | --- | --- | --- |
 | **Mandatory** | Always wins | Nobody locally | Law, regulation, accessibility standards, company security policy |
-| **Governing** | Beats your own requirements | The source's owner, when you ask; record it in `decisions.md` | Brand guidelines, company engineering standards, app store rules |
+| **Governing** | Beats your own requirements | The source's owner, when you ask; record it as a decision | Brand guidelines, company engineering standards, app store rules |
 | **Local** | Your own requirements | You | Everything you decide for yourself |
 | **Advisory** | Loses to your own; applies where they say nothing | You, with a reason on record | Best practices, style guides, internal cookbooks |
 
@@ -52,19 +52,19 @@ Governing for a shipping product and Advisory for a prototype. Within a tier you
 sources further, as in *Local: tech* above *Local: product*.
 
 **One item may take a different tier from its package**, as when a Governing source only
-recommends something. Record it in `precedence.md`'s item table, one row per item, with a link to
+recommends something. Record it in the precedence package's item table, one row per item, with a link to
 the decision that is the authority for it:
 
 ```markdown
 | Item | Tier | Decision |
 | --- | --- | --- |
-| [inatapi.identifyUserAgent](imported/inaturalist.org/inatapi/inatapi.md#identifyuseragent) | Advisory | [decisions.userAgentRecommended](decisions.md#useragentrecommended) |
+| [inatapi.identifyUserAgent](../imported/inaturalist.org/inatapi/inatapi.md#identifyuseragent) | Advisory | [decisions.userAgentRecommended](../decisions/sources.md#useragentrecommended) |
 ```
 
 An item's tier is its row's if it has one, and its package's otherwise. The tier is written only
 here; the decision says who decided and why, and doesn't repeat it. Nothing else records an
-override: a local requirement that beats an Advisory item is ordinary precedence. From River 2.0,
-`river check` fails a row naming no source item, a tier that isn't one of the four (or a ranked
+override: a local requirement that beats an Advisory item is ordinary precedence. `river check`
+fails a row naming no source item, a tier that isn't one of the four (or a ranked
 tier the tier table names), a row without a live decision, two rows for one item, and a decision
 whose fields restate the tier.
 
@@ -74,7 +74,7 @@ whose fields restate the tier.
 more **composed requirements packages** — explicit, versioned artifacts rather than an implied
 state. Its three inputs, sources, precedence, and decisions, count equally; a fact in none of them
 is asked for and recorded before composing on it. Each package names the sources it came from;
-`imports.md` holds their versions, and the CLI records their sums in the River module's `sums.md`. The
+`river/requirements/imports/` holds their versions, and the CLI records their sums in the River module's `sums.md`. The
 procedure is in [`composition.md`](composition.md).
 
 A composed package is named for its **audience or scope**, the way a Go package is, never for a
@@ -100,7 +100,7 @@ item and giving its title:
 
 ## Excluded
 
-- [tech.localNowPublicLater](../../../local/tech/posture.md#localnowpubliclater) *(excluded)* — Local now, public later ([decisions.publicDeploymentDeferred](../../../decisions.md#publicdeploymentdeferred))
+- [tech.localNowPublicLater](../../../local/tech/posture.md#localnowpubliclater) *(excluded)* — Local now, public later ([decisions.publicDeploymentDeferred](../../../decisions/posture.md#publicdeploymentdeferred))
 ```
 
 What composition wrote — a project rule from an obligation, a rule over a domain, an
@@ -153,13 +153,12 @@ contract, and the project's own requirement is the contract's assumption.
 
 **Releases never roll back schema changes**
 
-Status: withdrawn — replaced by a composed rule; see [decisions.rollbackComposed](../../decisions.md#rollbackcomposed)
+Status: withdrawn — replaced by a composed rule; see [decisions.rollbackComposed](../../decisions/releases.md#rollbackcomposed)
 
 Releases never roll back a schema change; a bad change is fixed forward.
 ```
 
-A withdrawn item **keeps its text**, so a reader can see what was withdrawn, and **cites no
-goals**, since it serves none any more. It stays in its source and is marked `*(excluded)*` in a
+A withdrawn item **keeps its text**, so a reader can see what was withdrawn. It stays in its source and is marked `*(excluded)*` in a
 composed package (`- [pkg.item](…) *(excluded)* — …`), with the deciding decision, so accounting
 still finds it and `river check` rejects including or composing from it (`withdrawn-not-excluded`).
 Nothing may cite it in `Covers:`; repoint a criterion that did
@@ -168,7 +167,7 @@ deleted item takes its history with it, and a link to it breaks without saying w
 
 ## Conflicts
 
-**Never resolve a conflict silently.** Two requirements that disagree go to `decisions.md`:
+**Never resolve a conflict silently.** Two requirements that disagree go to a decision:
 what conflicted, which sources, what was decided, by whom, and on what authority. Decision content
 is append-only: a decision that turns out badly is superseded by a new one, never edited, because
 the record of having been wrong is worth keeping. Only its `Status:` line changes by hand, while
@@ -184,7 +183,6 @@ How to tell a conflict from an overlap, and which overlaps precedence settles, i
 **Errors surface to the caller**
 
 Subject: `api.errors`
-Goals: `goals.trustworthyApi`
 
 Every error reaches the caller. None is logged and dropped, and none is replaced by a default
 value.
@@ -203,10 +201,9 @@ names are unique within a River module, which is what lets a bare prefix resolve
 block.
 
 **Every file that defines identifiers opens with `package <name>`** (`tech.declaredPackages`),
-and that name is the prefix. A file in a package directory takes the directory's name; a file
-standing alone takes its own, up to any hyphen: `decisions.md` is `package decisions`, and
-`todo.md` and `todo-closed.md` are both `package todo`, so an item keeps its name when it closes.
-Examples in this skill are the one exception.
+and that name is the prefix. A file in a package directory takes the directory's name, built-in packages included:
+every file in `requirements/decisions/` is `package decisions`. Examples in this skill are the one
+exception.
 
 **The heading is the identifier and nothing else; the title is the bold line beneath it.** A
 heading's anchor is derived from its text, so this makes every item's anchor its identifier

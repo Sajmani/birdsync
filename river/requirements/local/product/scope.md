@@ -23,6 +23,7 @@ Split into one file per area on 2026-11-04.
 **Copies eBird observations, with their media, into iNaturalist**
 
 Formerly: P-001
+
 Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 birdsync copies bird observations from a user's eBird data export into that
@@ -34,6 +35,7 @@ Macaulay Library.
 **The sync is one-way, eBird to iNaturalist**
 
 Formerly: P-002
+
 Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 The sync is one-way: eBird → iNaturalist.
@@ -43,6 +45,7 @@ The sync is one-way: eBird → iNaturalist.
 **The input is the user's eBird CSV export**
 
 Formerly: P-003
+
 Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 The input is a `MyEBirdData.csv` file the user downloads from eBird, not a
@@ -55,6 +58,7 @@ live eBird API.
 **No sync from iNaturalist back to eBird**
 
 Formerly: P-004
+
 Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 birdsync does not sync iNaturalist observations back to eBird.
@@ -64,6 +68,7 @@ birdsync does not sync iNaturalist observations back to eBird.
 **Never modifies an observation birdsync did not create**
 
 Formerly: P-005
+
 Goals: [goals.accountsStaySafe](../../../goals/goals.md#accountsstaysafe)
 
 birdsync never modifies or deletes an iNaturalist observation it did not
@@ -74,6 +79,7 @@ create, except to attach media to an observation carrying its own sync key.
 **No taxonomy reconciliation between the services**
 
 Formerly: P-006
+
 Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 birdsync does not reconcile taxonomy between the two services. An eBird
@@ -85,6 +91,7 @@ taxon, which the user fixes by hand.
 **Programs in tools/ are not part of the product**
 
 Formerly: P-007
+
 Goals: [goals.accountsStaySafe](../../../goals/goals.md#accountsstaysafe)
 
 The programs in `tools/` are not part of the product. They are maintenance

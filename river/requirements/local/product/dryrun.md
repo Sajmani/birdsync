@@ -11,6 +11,7 @@ product requirements are in the other files in this directory, all one package, 
 **--dryrun issues no writes**
 
 Formerly: P-051
+
 Goals: [goals.accountsStaySafe](../../../goals/goals.md#accountsstaysafe)
 
 `--dryrun` issues no write request of any kind. Reads are permitted.
@@ -20,8 +21,11 @@ Goals: [goals.accountsStaySafe](../../../goals/goals.md#accountsstaysafe)
 **Skipped actions are logged with DRYRUN:**
 
 Formerly: P-052
+
 Subject: `log.dryrun.prefix`
+
 Value: `"DRYRUN: "`
+
 Goals: [goals.accountsStaySafe](../../../goals/goals.md#accountsstaysafe)
 
 Every action a dry run skips is logged with a `DRYRUN:` prefix.
@@ -33,6 +37,7 @@ Every action a dry run skips is logged with a `DRYRUN:` prefix.
 **A dry run reports one unclassified media count**
 
 Formerly: P-053
+
 Goals: [goals.accountsStaySafe](../../../goals/goals.md#accountsstaysafe)
 
 A dry run reports media as a single "would upload N assets" count rather than

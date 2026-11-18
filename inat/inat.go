@@ -70,7 +70,7 @@ func (c *Client) DownloadObservations(inatUserID string, d1, d2 time.Time, field
 		// can't resolve the eBird name birdsync gave it. Those became invisible
 		// to duplicate detection and were re-created on every run. The saving
 		// was two HTTP requests on a 1478-observation account; see decisions.noTaxonFilterOnDownload, now
-		// noTaxonFilterOnDownload in river/requirements/decisions.md.
+		// noTaxonFilterOnDownload in river/requirements/decisions/.
 		if !d1.IsZero() {
 			q.Set("d1", d1.Format(dateFormat))
 		}

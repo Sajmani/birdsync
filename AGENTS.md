@@ -56,18 +56,20 @@ Breaking these costs a user real data.
 - **Never log or echo credentials** (`tech.credentialsNeverExposed`).
 - **Don't add dependencies or touch the `go`/`toolchain` directives** without asking
   (`tech.oneExternalDependency`, `tech.goDirectivePolicy`).
-- **You draft; the owner decides.** Never accept a goal, run `river approve` unless the owner
-  has explicitly approved that state, settle a conflict precedence cannot settle, or accept a
-  gap. Draft open items in `river/proposals.md`.
+- **You draft; the owner decides.** Never accept a goal, settle a conflict precedence cannot
+  settle, or accept a gap. The owner approves by reviewing the pull request (the review rule is in
+  `river/bindings/`). Draft open items in `proposals.md`.
 
 ## Working on a change
 
 - A **routine change** that every requirement already allows needs no River edits. If a
   guardrail test fails, the code is wrong.
 - A **behavior change** edits a source in `river/requirements/local/` first, then recomposes,
-  and updates README.md when it alters what gets written or skipped.
+  runs `river compose birdsync`, opens a pull request whose description includes the
+  Requirements impact section (`river diff --base main --format pr`), and updates README.md when
+  it alters what gets written or skipped.
 - **Never resolve a conflict in code.** Take it to the owner and record it in
-  `river/requirements/decisions.md`.
+  `river/requirements/decisions/`.
 
 ## Gotchas
 

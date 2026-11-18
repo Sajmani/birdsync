@@ -22,6 +22,7 @@ accepted on 2026-11-04 and are cited in each `Goals:` field. Split into one file
 **A single Go module with no build system**
 
 Formerly: T-001
+
 Goals: [goals.maintainerChangesSafely](../../../goals/goals.md#maintainerchangessafely)
 
 birdsync is a single Go module, `github.com/Sajmani/birdsync`, with no build
@@ -32,8 +33,11 @@ system, no code generation, and no linter configuration beyond `gofmt` and `go v
 **Exactly one external dependency**
 
 Formerly: T-002
+
 Subject: `build.external_dependencies.count`
+
 Value: `1`
+
 Goals: [goals.maintainerChangesSafely](../../../goals/goals.md#maintainerchangessafely)
 
 The module has exactly one external dependency,
@@ -47,8 +51,11 @@ supply-chain surface near zero.*
 **go and toolchain directives change only deliberately**
 
 Formerly: T-003
+
 Subject: `build.go_directive`
+
 Value: `1.23.0`
+
 Goals: [goals.maintainerChangesSafely](../../../goals/goals.md#maintainerchangessafely)
 
 The `go` and `toolchain` directives are raised only as a deliberate,
@@ -62,6 +69,7 @@ but anyone pinned to `GOTOOLCHAIN=local` on an older Go is blocked outright.*
 **Builds and runs on every Go platform**
 
 Formerly: T-004
+
 Goals: [goals.maintainerChangesSafely](../../../goals/goals.md#maintainerchangessafely)
 
 The tool must build and run on any platform the Go toolchain supports, using

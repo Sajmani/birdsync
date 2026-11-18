@@ -69,6 +69,8 @@ jobs:
     if: ${{ vars.RIVER_REPO != '' }}
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0 # river diff --base reads the base branch's history
 
       - uses: actions/setup-go@v7
         with:
@@ -84,11 +86,14 @@ jobs:
           (cd "$RUNNER_TEMP/river-src" && go build -o "$RUNNER_TEMP/river" ./cmd/river)
 
       - name: river check
-        env:
-          EVENT_NAME: ${{ github.event_name }}
         run: |
-          if [ "$EVENT_NAME" = "pull_request" ]; then
-            "$RUNNER_TEMP/river" check --allow-unapproved river
-          else
-            "$RUNNER_TEMP/river" check river
-          fi
+          "$RUNNER_TEMP/river" check river
+
+      # The pull request's Requirements impact, for reviewers (River 3.0).
+      - name: river diff
+        if: ${{ github.event_name == 'pull_request' }}
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          git fetch --quiet origin "$BASE_REF"
+          "$RUNNER_TEMP/river" diff --base "origin/$BASE_REF" --format pr river >> "$GITHUB_STEP_SUMMARY"

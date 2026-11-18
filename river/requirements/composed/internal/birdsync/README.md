@@ -4,8 +4,9 @@ package birdsync
 
 **Composed, not authored.** Change it by changing a source and recomposing, never by editing
 files in this directory by hand. Composed from every source in `river/requirements/local/` and
-`river/requirements/imported/`, under [`precedence.md`](../../../precedence.md) and
-[`decisions.md`](../../../decisions.md), where its approval hash is recorded.
+`river/requirements/imported/`, under [`precedence/`](../../../precedence/precedence.md) and
+[`decisions/`](../../../decisions/decisions.md). `composed.sum`, written by `river compose`, records
+what it was composed from.
 
 Each area file holds that area's included source requirements, any rules composition derived for
 that area, and the acceptance criteria covering them. Which goals in
@@ -13,7 +14,7 @@ that area, and the acceptance criteria covering them. Which goals in
 `Goals:` field of each local source requirement under `river/requirements/local/` (linked from
 each included bullet rather than repeated here) and of each rule under *Composed requirements*.
 Which guardrail implements each criterion, and whether it has been watched failing, is recorded
-in [`conformance.md`](../../../../conformance.md).
+in [`conformance/`](../../../../conformance/conformance.md).
 
 | File | Area |
 | --- | --- |
@@ -39,16 +40,16 @@ in [`conformance.md`](../../../../conformance.md).
 
 ## Precedence applied
 
-Applied in the rank order of [`precedence.md`](../../../precedence.md): Mandatory (`inatterms`,
+Applied in the rank order of [`precedence.md`](../../../precedence/precedence.md): Mandatory (`inatterms`,
 `mlterms`), Governing (`inatapi`), Local: tech (`tech`), Local: product (`product`), and Advisory
 (`go-practice`, absorbed into `tech`, plus `uuid` and `github-actions` in
-[`imports.md`](../../../imports.md)).
+[`imports.md`](../../../imports/imports.md)).
 
 ## Excluded items
 
-- [product.avesOnlyDownload](../../../local/product/download.md#avesonlydownload) *(excluded)* — The download is restricted to Aves. Excluded by [decisions.noTaxonFilterOnDownload](../../../decisions.md#notaxonfilterondownload)
-- [product.malformedRecordAborts](../../../local/product/failures.md#malformedrecordaborts) *(excluded)* — A malformed record aborts the run. Excluded by [decisions.badRecordsSkippedNotFatal](../../../decisions.md#badrecordsskippednotfatal)
-- [tech.neverRunMutatingTools](../../../local/tech/safety.md#neverrunmutatingtools) *(excluded)* — Nothing runs the mutating tools. Excluded by [decisions.mutatingToolsDeleted](../../../decisions.md#mutatingtoolsdeleted)
-- [tech.maxPageSize](../../../local/tech/etiquette.md#maxpagesize) *(excluded)* — Downloads request the maximum page size. Excluded by [decisions.restatementsComposed](../../../decisions.md#restatementscomposed)
-- [tech.requestPacing](../../../local/tech/etiquette.md#requestpacing) *(excluded)* — iNaturalist requests are paced. Excluded by [decisions.restatementsComposed](../../../decisions.md#restatementscomposed)
-- [tech.idAbovePaging](../../../local/tech/etiquette.md#idabovepaging) *(excluded)* — The download pages by id_above. Excluded by [decisions.restatementsComposed](../../../decisions.md#restatementscomposed)
+- [product.avesOnlyDownload](../../../local/product/download.md#avesonlydownload) *(excluded)* — The download is restricted to Aves. Excluded by [decisions.noTaxonFilterOnDownload](../../../decisions/decisions.md#notaxonfilterondownload)
+- [product.malformedRecordAborts](../../../local/product/failures.md#malformedrecordaborts) *(excluded)* — A malformed record aborts the run. Excluded by [decisions.badRecordsSkippedNotFatal](../../../decisions/decisions.md#badrecordsskippednotfatal)
+- [tech.neverRunMutatingTools](../../../local/tech/safety.md#neverrunmutatingtools) *(excluded)* — Nothing runs the mutating tools. Excluded by [decisions.mutatingToolsDeleted](../../../decisions/decisions.md#mutatingtoolsdeleted)
+- [tech.maxPageSize](../../../local/tech/etiquette.md#maxpagesize) *(excluded)* — Downloads request the maximum page size. Excluded by [decisions.restatementsComposed](../../../decisions/decisions.md#restatementscomposed)
+- [tech.requestPacing](../../../local/tech/etiquette.md#requestpacing) *(excluded)* — iNaturalist requests are paced. Excluded by [decisions.restatementsComposed](../../../decisions/decisions.md#restatementscomposed)
+- [tech.idAbovePaging](../../../local/tech/etiquette.md#idabovepaging) *(excluded)* — The download pages by id_above. Excluded by [decisions.restatementsComposed](../../../decisions/decisions.md#restatementscomposed)

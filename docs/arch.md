@@ -21,7 +21,7 @@ One run does the following:
 2. **Download existing observations.** Fetch the user's iNaturalist observations into memory,
    200 per page, restricted only to the `--after`/`--before` date window when set
    (`inat.Client.DownloadObservations`). Deliberately not filtered by taxon:
-   see [`noTaxonFilterOnDownload`](../river/requirements/decisions.md#notaxonfilterondownload) (formerly CR-003).
+   see [`noTaxonFilterOnDownload`](../river/requirements/decisions/decisions.md#notaxonfilterondownload) (formerly CR-003).
 3. **Build two indexes** over those observations, at the top of `birdsync()`:
    - `previouslySynced`, keyed by `ebird.ObservationID` — the pair of eBird observation-field
      values that identifies a birdsync-created observation.
@@ -29,7 +29,7 @@ One run does the following:
      `ObservationID` is *not* valid. Each is indexed under its common name, its full scientific
      name, and its two-word species name (`Genus species`, e.g. `Garrulus glandarius` from
      `Garrulus glandarius leucotis`), so subspecies refinements and eBird subspecies groups still
-     match (`speciesBinomial`, [`fuzzySpeciesBinomial`](../river/requirements/decisions.md#fuzzyspeciesbinomial)).
+     match (`speciesBinomial`, [`fuzzySpeciesBinomial`](../river/requirements/decisions/decisions.md#fuzzyspeciesbinomial)).
      Names that don't identify a single species — genera or families (`Corvidae`), unidentified
      `sp.` entries (`Empidonax sp.`), species slashes (`Larus glaucoides/thayeri`), and hybrids
      (`x` or `×`) — are matched only as written. Used only when `--fuzzy` is set.
@@ -140,7 +140,7 @@ made in the past 24 hours (one create per recent observation, one upload per att
 permanently failed asset, and one description update when assets were handled). Before starting an
 observation or media update whose writes would push the 24-hour total past 9,000, `birdsync()`
 stops cleanly so no observation is left created without its media, and reports the stop in the
-summary ([`dailyRequestBudget`](../river/requirements/decisions.md#dailyrequestbudget)).
+summary ([`dailyRequestBudget`](../river/requirements/decisions/decisions.md#dailyrequestbudget)).
 
 The per-second limit was already being met before the limiter existed, by an argument nobody had
 written down: observations are fetched in large pages, and between writes birdsync downloads a
@@ -191,7 +191,7 @@ from counters, which is how the bug in CR-001 (now `dryRunCountersRelabeled`) su
 through the mock in `birdsync_test.go`. It's the largest untested surface here, and the only
 place binary data is written to a user's account.
 
-[`river/conformance.md`](../river/conformance.md) maps each acceptance criterion to the tests
+[`river/conformance/`](../river/conformance/conformance.md) maps each acceptance criterion to the tests
 that implement it, and counts the requirements with no criterion.
 
 Two things make this work: the client interfaces in `glue.go`, and base-URL parameters that let

@@ -21,13 +21,13 @@ anything new.
    wording matters, with its URL and retrieval date, and anything that forbids or limits the
    intended use.
 5. **Wait for the decision** before writing integration code. Then record it:
-   - an entry in `river/requirements/imports.md` with origin, version or retrieval date, import
+   - an entry in `river/requirements/imports/` with origin, version or retrieval date, import
      style (`queried`, `quoted`, `consulted`, …), and status (`adopted`, `partial`, or `rejected`,
      with the reason);
    - the obligations you will meet as requirements in a local source (for example a rate limit or
      attribution rule), citing the imported source;
-   - any obligation knowingly not met as an accepted gap in `decisions.md`, decided by the person.
+   - any obligation knowingly not met as an accepted gap in `river/requirements/decisions/`, decided by the person.
 6. Run `river check`.
 
-A dependency already in `imports.md` needs no second look unless its version or your use of it
+A dependency already in `imports/` needs no second look unless its version or your use of it
 changes.

@@ -18,9 +18,9 @@ River module; a criterion cannot, because composition produces it from a require
 packages hold only **in-force** criteria: when every requirement a criterion covers is withdrawn or
 excluded, recomposition drops the criterion from `composed/` (`withdrawn-criterion` if marked
 `Status: withdrawn` inside `composed/`, `covers-withdrawn` or `covers-excluded` if left covering a
-withdrawn or excluded item), and any guardrail or `conformance.md` entry still citing it fails
+withdrawn or excluded item), and any guardrail or `conformance` entry still citing it fails
 (`guardrail-withdrawn`) so obsolete tests and dead code do not linger. Use `river graph
---if-withdrawn <id>` before withdrawing a goal or requirement to see every criterion and guardrail
+--if-withdrawn <id>` before withdrawing a requirement to see every criterion and guardrail
 that becomes unreachable.
 
 **A criterion must have been watched failing before it is trusted.** A check that cannot fail is
@@ -29,7 +29,7 @@ Likewise, a criterion's expected value comes from the requirement, never from a 
 current code: a check built from existing output can only confirm that behavior has not
 changed, including when it was wrong.
 
-**Record each observation in `river/conformance.md`, in the criterion's section, in a fixed
+**Record each observation in `river/conformance/`, in the criterion's section, in a fixed
 field**, one line each:
 
 ```
@@ -38,9 +38,9 @@ Watched failing: 2026-10-16, by adding color:#777777 to an inline style; every s
 
 A criterion with no such line has not been watched failing. Prose may tell the story, but a
 person or a tool deciding whether the criterion is trusted reads this field. **The observation
-never goes in the criterion itself:** the criterion lives in a composed package, which is approved
-by hash, so recording an observation there would force a recomposition and a new approval each
-time a guardrail is watched failing ([*Recording conformance*](#recording-conformance)).
+never goes in the criterion itself:** the criterion lives in a composed package, which is stamped,
+so recording an observation there would force a recomposition each time a guardrail is watched
+failing ([*Recording conformance*](#recording-conformance)).
 
 **A criterion is met or not as a whole.** Where parts of a claim can be met at different times (two
 behaviors, two pages, an original check and a later extension), make each part its own criterion,
@@ -102,17 +102,22 @@ unexplained tests makes the codebase less safe in exchange for a tidier table.
 
 ## Recording conformance
 
-**`river/conformance.md` is the mutable record of which guardrails implement which criteria, and
-what has been seen.** It is descriptive: where it and the repository disagree, it is wrong. It
+**The `conformance` package, `river/conformance/`, is the mutable record of which guardrails
+implement which criteria, and what has been seen.** Split it into files by area, each short enough
+to read whole. It is descriptive: where it and the repository disagree, it is wrong. It
 holds one section per criterion, headed by the criterion's qualified name, with fixed fields:
 
 ```markdown
 ## app.ServedContrast
 
-Criterion: [app.ServedContrast](requirements/composed/internal/app/app.md#servedcontrast)
+Criterion: [app.ServedContrast](../requirements/composed/internal/app/app.md#servedcontrast)
+
 Guardrails: `page_test.go` TestServedPageContrast
+
 Gates: CI on every change; release
+
 Watched failing: 2026-10-22, by setting the panel text to #777777; the test failed on the panel
+
 Watched failing: 2026-10-24, by adding an SVG label painted with fill; the test failed
 ```
 

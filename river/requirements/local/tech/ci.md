@@ -11,6 +11,7 @@ are in the other files in this directory, all one package, `tech`.
 **CI runs the standing checks**
 
 Formerly: T-030
+
 Goals: [goals.maintainerChangesSafely](../../../goals/goals.md#maintainerchangessafely)
 
 CI runs build, vet, gofmt, and the test suite under the race detector, on
@@ -25,6 +26,7 @@ target, and a deprecation warning today is a broken build later. `actions/checko
 **CI also runs latest stable Go, non-blocking**
 
 Formerly: T-031
+
 Goals: [goals.maintainerChangesSafely](../../../goals/goals.md#maintainerchangessafely)
 
 CI additionally runs against the latest stable Go as an early warning, and

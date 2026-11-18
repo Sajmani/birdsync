@@ -12,6 +12,7 @@ all one package, `product`.
 **Credentials come from INAT_USER_ID and INAT_API_TOKEN**
 
 Formerly: P-014
+
 Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 The iNaturalist user ID is read from `INAT_USER_ID`, and the API token from
@@ -22,6 +23,7 @@ The iNaturalist user ID is read from `INAT_USER_ID`, and the API token from
 **Missing credentials are prompted for**
 
 Formerly: P-015
+
 Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 When either is unset, birdsync prompts for it interactively and explains
@@ -32,6 +34,7 @@ where to find it.
 **Token framing differs between prompt and environment**
 
 Formerly: P-016
+
 Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 At the prompt the token is accepted in its `{"api_token":"TOKEN"}` framing;
@@ -45,6 +48,7 @@ to export in a shell.*
 **A 401 says the token needs refreshing**
 
 Formerly: P-017
+
 Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 A 401 from the API reports that the token needs refreshing, and where to get
@@ -58,6 +62,7 @@ hits.*
 **Credentials are never written to the log**
 
 Formerly: P-018
+
 Goals: [goals.accountsStaySafe](../../../goals/goals.md#accountsstaysafe)
 
 Credentials are never written to the log.

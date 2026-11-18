@@ -11,6 +11,7 @@ Other tech requirements are in the other files in this directory, all one packag
 **gofmt -l . prints nothing**
 
 Formerly: T-024
+
 Goals: [goals.maintainerChangesSafely](../../../goals/goals.md#maintainerchangessafely)
 
 `gofmt -l .` prints nothing.
@@ -20,6 +21,7 @@ Goals: [goals.maintainerChangesSafely](../../../goals/goals.md#maintainerchanges
 **go vet is clean**
 
 Formerly: T-025
+
 Goals: [goals.maintainerChangesSafely](../../../goals/goals.md#maintainerchangessafely)
 
 `go vet ./...` is clean.
@@ -29,6 +31,7 @@ Goals: [goals.maintainerChangesSafely](../../../goals/goals.md#maintainerchanges
 **Errors are wrapped with the calling function's name**
 
 Formerly: T-026
+
 Goals: [goals.maintainerChangesSafely](../../../goals/goals.md#maintainerchangessafely)
 
 Errors are wrapped with the calling function's name:
@@ -40,6 +43,7 @@ exception, wrapping with a phrase describing the step.
 **log.Fatal only in main and tools/**
 
 Formerly: T-027
+
 Goals: [goals.maintainerChangesSafely](../../../goals/goals.md#maintainerchangessafely)
 
 `log.Fatal` is acceptable in `main` and in `tools/`; the `ebird` and `inat`
@@ -54,6 +58,7 @@ checked too, being the same thing under another name.*
 **Progress via log.Printf, detail via debugf**
 
 Formerly: T-028
+
 Goals: [goals.maintainerChangesSafely](../../../goals/goals.md#maintainerchangessafely)
 
 User-visible progress goes through `log.Printf`; verbose detail goes through
@@ -64,8 +69,11 @@ User-visible progress goes through `log.Printf`; verbose detail goes through
 **Prose uses American spelling**
 
 Formerly: T-037
+
 Subject: `docs.spelling`
+
 Value: `en-US`
+
 Goals: [goals.maintainerChangesSafely](../../../goals/goals.md#maintainerchangessafely)
 
 Prose in this repository — documentation, comments, commit messages — uses
@@ -79,6 +87,7 @@ on its own; it is written down for the exception below.*
 **Spelling changes never touch quotations or vendored documents**
 
 Formerly: T-038
+
 Goals: [goals.maintainerChangesSafely](../../../goals/goals.md#maintainerchangessafely)
 
 A spelling change never touches a quotation or a vendored document.
@@ -95,6 +104,7 @@ specman these were `spec/` and `spec/sources/**`).*
 **Comments explain why**
 
 Formerly: T-029
+
 Goals: [goals.maintainerChangesSafely](../../../goals/goals.md#maintainerchangessafely)
 
 Comments explain *why*. The explanations of eBird and iNaturalist quirks are

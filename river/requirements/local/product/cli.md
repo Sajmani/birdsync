@@ -12,6 +12,7 @@ this directory, all one package, `product`.
 **Exactly one positional argument**
 
 Formerly: P-008
+
 Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 birdsync takes exactly one positional argument: the path to the eBird CSV
@@ -22,6 +23,7 @@ export. Any other number of arguments prints usage and exits non-zero.
 **Flags precede the positional argument**
 
 Formerly: P-009
+
 Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 Flags must appear before the positional argument.
@@ -33,6 +35,7 @@ Flags must appear before the positional argument.
 **Boolean flags are disabled with --flag=false**
 
 Formerly: P-010
+
 Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 A boolean flag is disabled with `--flag=false`; `--flag false` is a usage
@@ -45,6 +48,7 @@ error.
 **An unopenable CSV exits before contacting iNaturalist**
 
 Formerly: P-011
+
 Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 If the CSV file cannot be opened, birdsync exits with an error before
@@ -55,6 +59,7 @@ contacting iNaturalist or prompting for credentials.
 **--after later than --before is an error**
 
 Formerly: P-012
+
 Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 If `--after` is later than `--before`, birdsync exits with an error rather
@@ -65,6 +70,7 @@ than running a sync that cannot match anything.
 **--debug logs why each record was skipped**
 
 Formerly: P-013
+
 Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 `--debug` logs the reason each eBird record was skipped, and other detail
