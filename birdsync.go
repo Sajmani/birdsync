@@ -107,12 +107,20 @@ func main() {
 		f.Close()
 	}
 
+	apiToken, err := inat.GetAPIToken()
+	if err != nil {
+		log.Fatalf("Can't get iNaturalist API token: %v", err)
+	}
+	userID, err := inat.GetUserID(apiToken)
+	if err != nil {
+		log.Fatalf("Can't get iNaturalist user ID: %v", err)
+	}
 	inatAPIClient := inatClientImpl{
-		client: inat.NewClient(inat.BaseURL, inat.GetAPIToken(), UserAgent),
+		client: inat.NewClient(inat.BaseURL, apiToken, UserAgent),
 	}
 	ebirdAPIClient := ebirdClientImpl{}
 
-	stats := birdsync(eBirdCSVFilename, ebirdAPIClient, inat.GetUserID(), inatAPIClient)
+	stats := birdsync(eBirdCSVFilename, ebirdAPIClient, userID, inatAPIClient)
 
 	for _, line := range stats.summary() {
 		log.Print(line)

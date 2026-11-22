@@ -21,8 +21,14 @@ func prettyPrintln(v any) {
 const UserAgent = "birdsync-dump/0.1"
 
 func main() {
-	inatUserID := inat.GetUserID()
-	apiToken := inat.GetAPIToken()
+	apiToken, err := inat.GetAPIToken()
+	if err != nil {
+		log.Fatal(err)
+	}
+	inatUserID, err := inat.GetUserID(apiToken)
+	if err != nil {
+		log.Fatal(err)
+	}
 	client := inat.NewClient(inat.BaseURL, apiToken, UserAgent)
 
 	results, err := client.DownloadObservations(inatUserID, time.Time{}, time.Time{},

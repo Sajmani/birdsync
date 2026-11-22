@@ -6,9 +6,9 @@ Credentials, JWT authorization, account ownership, and authentication scope for 
 
 ## Included requirements
 
-- [product.credentialsFromEnvironment](../../../local/product/auth.md#credentialsfromenvironment) — Credentials come from INAT_USER_ID and INAT_API_TOKEN
+- [product.credentialsFromEnvironment](../../../local/product/auth.md#credentialsfromenvironment) — API token comes from INAT_API_TOKEN; INAT_USER_ID is optional
 - [product.promptForMissingCredentials](../../../local/product/auth.md#promptformissingcredentials) — Missing credentials are prompted for
-- [product.tokenFraming](../../../local/product/auth.md#tokenframing) — Token framing differs between prompt and environment
+- [product.tokenFraming](../../../local/product/auth.md#tokenframing) — Both bare tokens and JSON-framed tokens are accepted
 - [product.unauthorizedSaysRefreshToken](../../../local/product/auth.md#unauthorizedsaysrefreshtoken) — A 401 says the token needs refreshing
 - [product.credentialsNeverLogged](../../../local/product/auth.md#credentialsneverlogged) — Credentials are never written to the log
 - [tech.credentialsNeverExposed](../../../local/tech/safety.md#credentialsneverexposed) — Credentials are never logged, echoed, or written
@@ -24,15 +24,16 @@ Composed from: [inatapi.jwtAuthorization](../../../imported/inaturalist.org/inat
 Goals: [goals.birdersKeepOneRecord](../../../../goals/goals.md#birderskeeponerecord), [goals.accountsStaySafe](../../../../goals/goals.md#accountsstaysafe)
 
 Every authenticated request birdsync sends to `api.inaturalist.org` carries, in its HTTP
-`Authorization` header, the JWT the user obtained from `https://www.inaturalist.org/users/api_token`,
-whether it came from `INAT_API_TOKEN` as the bare token or from the prompt in its
-`{"api_token":"TOKEN"}` framing
+`Authorization` header, the bare JWT the user obtained from `https://www.inaturalist.org/users/api_token`,
+whether it came from `INAT_API_TOKEN` or from the interactive prompt and whether it was
+supplied as a bare token or in its `{"api_token":"TOKEN"}` JSON framing
 ([product.credentialsFromEnvironment](../../../local/product/auth.md#credentialsfromenvironment),
 [product.promptForMissingCredentials](../../../local/product/auth.md#promptformissingcredentials),
 [product.tokenFraming](../../../local/product/auth.md#tokenframing)).
 
-The local sources say where the token comes from and how a 401 from its 24-hour expiry is
-reported ([product.unauthorizedSaysRefreshToken](../../../local/product/auth.md#unauthorizedsaysrefreshtoken));
+The local sources say where the token comes from, how its framing is unwrapped, and how a 401
+from its 24-hour expiry is reported
+([product.unauthorizedSaysRefreshToken](../../../local/product/auth.md#unauthorizedsaysrefreshtoken));
 none says how it is sent, which is what the Governing source prescribes.
 
 ## ownAccountOnly
@@ -84,22 +85,45 @@ Media downloads go to the Macaulay Library and are outside it.
 
 ## jwtFromEnvironmentInHeader
 
-**A token from INAT_API_TOKEN is sent in the Authorization header**
+**A token from INAT_API_TOKEN is sent unwrapped in the Authorization header**
 
-Covers: [jwtInAuthorizationHeader](#jwtinauthorizationheader)
+Covers: [jwtInAuthorizationHeader](#jwtinauthorizationheader), [product.tokenFraming](../../../local/product/auth.md#tokenframing)
 
-With `INAT_API_TOKEN` set to a token, every authenticated request the test server receives
-carries that token in its `Authorization` header.
+With `INAT_API_TOKEN` set to either a bare token or `{"api_token":"TOKEN"}`, every
+authenticated request the test server receives carries `TOKEN`, without JSON framing, in its
+`Authorization` header.
 
 ## jwtFromPromptUnwrapped
 
 **A token entered at the prompt is sent unwrapped in the Authorization header**
 
-Covers: [jwtInAuthorizationHeader](#jwtinauthorizationheader)
+Covers: [jwtInAuthorizationHeader](#jwtinauthorizationheader), [product.tokenFraming](../../../local/product/auth.md#tokenframing), [product.promptForMissingCredentials](../../../local/product/auth.md#promptformissingcredentials)
 
-With `INAT_API_TOKEN` unset and `{"api_token":"TOKEN"}` entered at the prompt, every
-authenticated request the test server receives carries `TOKEN`, without the JSON framing, in its
-`Authorization` header.
+With `INAT_API_TOKEN` unset and either `{"api_token":"TOKEN"}` or a bare `TOKEN` entered at
+the prompt, every authenticated request the test server receives carries `TOKEN`, without
+JSON framing, in its `Authorization` header.
+
+## userIDFromJWT
+
+**User ID is read from JWT claims when INAT_USER_ID is unset**
+
+Covers: [product.credentialsFromEnvironment](../../../local/product/auth.md#credentialsfromenvironment), [product.promptForMissingCredentials](../../../local/product/auth.md#promptformissingcredentials)
+
+With `INAT_USER_ID` unset and a JWT carrying a `user_id` claim, birdsync extracts that user
+ID locally without reading stdin or contacting iNaturalist. With `INAT_USER_ID` set,
+`INAT_USER_ID` takes precedence. Only when `INAT_USER_ID` is unset and the token carries no
+`user_id` claim does birdsync prompt on stdin, returning an error on EOF.
+
+## credentialsNotLeaked
+
+**Credentials do not appear in logs or errors**
+
+Covers: [product.credentialsNeverLogged](../../../local/product/auth.md#credentialsneverlogged), [tech.credentialsNeverExposed](../../../local/tech/safety.md#credentialsneverexposed)
+
+Across valid and malformed token inputs, interactive prompt retries, and authenticated HTTP
+requests (including 401 and error responses), the supplied API token never appears in
+captured log output or returned errors. This checks the paths birdsync exercises; it cannot
+prove absence across unreachable code paths.
 
 ## noBuiltInCredentials
 

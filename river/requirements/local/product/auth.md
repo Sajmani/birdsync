@@ -9,14 +9,19 @@ all one package, `product`.
 
 ## credentialsFromEnvironment
 
-**Credentials come from INAT_USER_ID and INAT_API_TOKEN**
+**API token comes from INAT_API_TOKEN; INAT_USER_ID is optional**
 
 Formerly: P-014
 
 Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
-The iNaturalist user ID is read from `INAT_USER_ID`, and the API token from
-`INAT_API_TOKEN`.
+The iNaturalist API token is read from `INAT_API_TOKEN`. If `INAT_USER_ID` is set, birdsync
+uses it as the iNaturalist user ID; otherwise it reads the `user_id` claim directly from the
+JWT API token without making an extra API request.
+
+*Rationale: iNaturalist JWTs carry the account's numeric `user_id`, which the v2
+`/observations` endpoint accepts in `user_id`. Extracting it locally removes the second
+credential prompt while staying backward-compatible with explicit `INAT_USER_ID`.*
 
 ## promptForMissingCredentials
 
@@ -26,22 +31,26 @@ Formerly: P-015
 
 Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
-When either is unset, birdsync prompts for it interactively and explains
-where to find it.
+When `INAT_API_TOKEN` is unset, birdsync prompts for the API token interactively and explains
+where to find it. It prompts for the iNaturalist user ID only when `INAT_USER_ID` is unset
+and the token carries no `user_id` claim. On EOF or a read error at a prompt, credential
+resolution returns an error rather than looping.
 
 ## tokenFraming
 
-**Token framing differs between prompt and environment**
+**Both bare tokens and JSON-framed tokens are accepted**
 
 Formerly: P-016
 
 Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
-At the prompt the token is accepted in its `{"api_token":"TOKEN"}` framing;
-from the environment it is the bare token.
+Both `INAT_API_TOKEN` and the interactive prompt accept either a bare token or the
+`{"api_token":"TOKEN"}` JSON object served by `https://www.inaturalist.org/users/api_token`,
+unwrapping the JSON framing before sending the token in the `Authorization` header.
 
-*Rationale: matches what the iNaturalist page gives the user, versus what is convenient
-to export in a shell.*
+*Rationale: users copy `{"api_token":"TOKEN"}` directly from the browser page or export the
+bare token in shell scripts; accepting either form in both places removes a common
+configuration mistake.*
 
 ## unauthorizedSaysRefreshToken
 

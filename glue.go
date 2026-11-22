@@ -51,8 +51,6 @@ func (ebirdClientImpl) DownloadMLAsset(id string) (string, bool, error) {
 
 // inatClient encapsulates the inat package functions for testing.
 type inatClient interface {
-	GetUserID() string
-	GetAPIToken() string
 	DownloadObservations(string, time.Time, time.Time, ...string) ([]inat.Result, error)
 	CreateObservation(inat.Observation) error
 	UpdateObservation(inat.Observation) error
@@ -61,14 +59,6 @@ type inatClient interface {
 
 type inatClientImpl struct {
 	client *inat.Client
-}
-
-func (c inatClientImpl) GetUserID() string {
-	return inat.GetUserID()
-}
-
-func (c inatClientImpl) GetAPIToken() string {
-	return inat.GetAPIToken()
 }
 
 func (c inatClientImpl) DownloadObservations(userID string, after, before time.Time, fields ...string) ([]inat.Result, error) {

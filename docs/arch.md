@@ -16,8 +16,10 @@ personal checklists, so the input is the `MyEBirdData.csv` file the user downloa
 
 One run does the following:
 
-1. **Authenticate.** Read the iNaturalist user ID and API token from `INAT_USER_ID` and
-   `INAT_API_TOKEN`, prompting interactively if they're unset (`inat/vars.go`).
+1. **Authenticate.** Read the iNaturalist API token from `INAT_API_TOKEN` (accepting either a
+   bare JWT or `{"api_token":"..."}` JSON), prompting interactively if unset (`inat/vars.go`).
+   The iNaturalist user ID comes from `INAT_USER_ID` if set, otherwise from the `user_id` claim
+   decoded locally from the JWT (prompting only if the token carries no `user_id` claim).
 2. **Download existing observations.** Fetch the user's iNaturalist observations into memory,
    200 per page, restricted only to the `--after`/`--before` date window when set
    (`inat.Client.DownloadObservations`). Deliberately not filtered by taxon:
@@ -121,7 +123,7 @@ A hand-written client for the [iNaturalist API v2](https://api.inaturalist.org/v
 - `inat.go` — `DownloadObservations`, which handles pagination and the `fields` parameter that
   selects which parts of each observation the API returns.
 - `types.go` — the API's JSON shapes, and the observation-field ID constants.
-- `vars.go` — `GetUserID` and `GetAPIToken`, including the interactive prompts.
+- `vars.go` — `ParseAPIToken`, `UserIDFromToken`, `GetAPIToken`, and `GetUserID`, including the interactive prompts.
 
 Note the asymmetry between `Observation` (what birdsync sends) and `Result` (what the API
 returns); they are not the same shape.
@@ -182,6 +184,7 @@ which is the trade this repository prefers wherever it is available.
 | `ebird/ebird_test.go` | CSV parsing (temp file), `Record.Observed` date formats, `ObservationID.Valid`, and `downloadMLAsset` against an `httptest` server |
 | `inat/inat_test.go` | `DownloadObservations`: pagination, query parameters, and the error path |
 | `inat/client_test.go` | `CreateObservation`, `UpdateObservation` (including `ignore_photos`), `DeleteObservation` |
+| `inat/vars_test.go` | Token framing (env and prompt), JWT `user_id` extraction, EOF handling, and credential non-leakage |
 
 The fakes in `birdsync_test.go` record every mutating call they receive. That is what makes
 `--dryrun` checkable directly — asserting that nothing was written, rather than inferring it
