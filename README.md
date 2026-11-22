@@ -32,14 +32,14 @@ $HOME/go/bin/birdsync --dryrun MyEBirdData.csv
 ```
 Look for log lines starting with "DRYRUN" to see what observations birdsync will create and which media files it will copy. The dry run prints out the full observation data structure and so can be quite verbose.
 
-Birdsync will prompt you to enter your iNaturalist user name and [API token](https://www.inaturalist.org/users/api_token), which allow the tool to read and write your personal iNaturalist observations.
-Copy the full string from the web page, including both curly braces: `{"api_token":"TOKEN"}`
+Birdsync will prompt you to enter your iNaturalist [API token](https://www.inaturalist.org/users/api_token), which allows the tool to read and write your personal iNaturalist observations.
+You can paste either the full string from the web page (`{"api_token":"TOKEN"}`) or just the bare token. Birdsync reads your iNaturalist user ID directly from the token, so you don't need to enter your username separately.
 
-To skip these interactive steps, you can provide your iNaturalist user name and API token as environment variables, but remember that you need to refresh your [API token](https://www.inaturalist.org/users/api_token) every 24 hours:
+To skip this interactive step, you can provide your API token as an environment variable (again, either the bare token or the full `{"api_token":"TOKEN"}` JSON), remembering to refresh your [API token](https://www.inaturalist.org/users/api_token) every 24 hours:
 ```
-export INAT_USER_ID=(your iNaturalist user name)
-export INAT_API_TOKEN=(just the TOKEN part of {"api_token":"TOKEN"})
+export INAT_API_TOKEN='{"api_token":"TOKEN"}'
 ```
+Setting `INAT_USER_ID` is optional; if set, birdsync uses it instead of the numeric user ID embedded in the token.
 Birdsync provides command-line flags to customize its behavior:
 *  `-after 2006-01-02`
         Sync only observations observed after the provided date and time (formatted as "2006-01-02 15:04:05"). The time can be omitted (2006-01-02).
@@ -216,7 +216,7 @@ prefer not to work on synced records can filter on those fields.
 The `tools` directory contains `dump`, a small read-only program that downloads your
 observations and prints them as JSON. It is a separate `main` package, so
 `go install github.com/Sajmani/birdsync@latest` does not install it; run it from a clone
-with `go run ./tools/dump`. It reads `INAT_USER_ID` and `INAT_API_TOKEN` (or prompts) the
+with `go run ./tools/dump`. It reads `INAT_API_TOKEN` (and optional `INAT_USER_ID`, or prompts) the
 same way birdsync does.
 
 Nothing in `tools` can modify your account. Earlier versions shipped tools that deleted

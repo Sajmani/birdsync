@@ -530,37 +530,61 @@ Not watched failing.
 
 Criterion: [birdsync.jwtFromEnvironmentInHeader](../requirements/composed/internal/birdsync/auth.md#jwtfromenvironmentinheader)
 
-Guardrails: none mapped yet. Written by composition on 2026-11-05; an existing test may already
-check it, and mapping one is the next step
-Gates: no
-Not watched failing.
+Guardrails: `TestJWTFromEnvironmentInHeader` (`inat/vars_test.go`), `TestParseAPIToken` (`inat/vars_test.go`)
+
+Gates: yes, in CI
+
+Watched failing: 2026-11-20, by returning raw JSON instead of the unwrapped `api_token` from `ParseAPIToken`; `TestJWTFromEnvironmentInHeader/JSON-framed_token` failed on both requests
 
 ## jwtFromPromptUnwrapped
 
 Criterion: [birdsync.jwtFromPromptUnwrapped](../requirements/composed/internal/birdsync/auth.md#jwtfrompromptunwrapped)
 
-Guardrails: none mapped yet. Written by composition on 2026-11-05; an existing test may already
-check it, and mapping one is the next step
-Gates: no
-Not watched failing.
+Guardrails: `TestJWTFromPromptUnwrapped` (`inat/vars_test.go`)
+
+Gates: yes, in CI
+
+Watched failing: 2026-11-20, by returning raw JSON instead of the unwrapped `api_token` from `ParseAPIToken`; `TestJWTFromPromptUnwrapped/JSON-framed_with_spaces` and `retries_after_invalid_line` failed
+
+## userIDFromJWT
+
+Criterion: [birdsync.userIDFromJWT](../requirements/composed/internal/birdsync/auth.md#useridfromjwt)
+
+Guardrails: `TestGetUserID` (`inat/vars_test.go`), `TestUserIDFromToken` (`inat/vars_test.go`)
+
+Gates: yes, in CI
+
+Watched failing: 2026-11-20, by returning `"", false` from `UserIDFromToken`; `TestGetUserID/unset_INAT_USER_ID_extracts_user_id_from_JWT_without_reading_stdin` failed
+
+## credentialsNotLeaked
+
+Criterion: [birdsync.credentialsNotLeaked](../requirements/composed/internal/birdsync/auth.md#credentialsnotleaked)
+
+Guardrails: `TestCredentialsNeverLogged` (`inat/vars_test.go`)
+
+Gates: yes, in CI
+
+Watched failing: 2026-11-20, by echoing the raw input in `ParseAPIToken`'s JSON error; `TestCredentialsNeverLogged` failed on both returned error and captured log output
 
 ## noBuiltInCredentials
 
 Criterion: [birdsync.noBuiltInCredentials](../requirements/composed/internal/birdsync/auth.md#nobuiltincredentials)
 
-Guardrails: none mapped yet. Written by composition on 2026-11-05; an existing test may already
-check it, and mapping one is the next step
-Gates: no
-Not watched failing.
+Guardrails: `TestNoBuiltInCredentials` (`inat/vars_test.go`)
+
+Gates: yes, in CI
+
+Watched failing: 2026-11-20, by returning a fallback token string on EOF in `getAPIToken`; `TestNoBuiltInCredentials` failed
 
 ## writesCarrySuppliedToken
 
 Criterion: [birdsync.writesCarrySuppliedToken](../requirements/composed/internal/birdsync/auth.md#writescarrysuppliedtoken)
 
-Guardrails: none mapped yet. Written by composition on 2026-11-05; an existing test may already
-check it, and mapping one is the next step
-Gates: no
-Not watched failing.
+Guardrails: `TestJWTFromEnvironmentInHeader` (`inat/vars_test.go`), `TestJWTFromPromptUnwrapped` (`inat/vars_test.go`), `TestClient_CreateObservation` (`inat/client_test.go`)
+
+Gates: yes, in CI
+
+Watched failing: 2026-11-20, by returning raw JSON instead of the unwrapped `api_token` from `ParseAPIToken`; write requests in `TestJWTFromEnvironmentInHeader` and `TestJWTFromPromptUnwrapped` failed on the `Authorization` header
 
 ## tokenOnlyWhereNeeded
 

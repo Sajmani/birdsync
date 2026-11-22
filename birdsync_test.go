@@ -85,14 +85,6 @@ type mockINatClient struct {
 	downloadFields []string
 }
 
-func (m *mockINatClient) GetUserID() string {
-	return m.userID
-}
-
-func (m *mockINatClient) GetAPIToken() string {
-	return m.apitoken
-}
-
 func (m *mockINatClient) DownloadObservations(userID string, after, before time.Time, fields ...string) ([]inat.Result, error) {
 	m.downloadFields = slices.Clone(fields)
 	return m.observations, m.downloadErr
