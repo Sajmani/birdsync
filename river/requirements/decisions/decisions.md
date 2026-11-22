@@ -505,7 +505,7 @@ Date: 2026-11-08
 
 Decided by: Sajmani
 
-Status: accepted
+Status: accepted; amended by localStateCache
 
 Affects: [inatapi.requestRate](../imported/inaturalist.org/inatapi/inatapi.md#requestrate), [inatterms.rateAndVolume](../imported/inaturalist.org/inatterms/inatterms.md#rateandvolume), [inatterms.dontBehaveLikeMachine](../imported/inaturalist.org/inatterms/inatterms.md#dontbehavelikemachine), [tech.dailyRequestBudget](../local/tech/etiquette.md#dailyrequestbudget)
 
@@ -559,3 +559,51 @@ subspecific group record (`Garrulus glandarius leucotis/oatesi`, "Eurasian Jay (
 Matching on the binomial stem resolves subspecies and subspecific-group refinements without extra
 API requests or a cross-service taxonomy table ([product.noTaxonomyReconciliation](../local/product/scope.md#notaxonomyreconciliation)),
 with the same documented trade-off as seeing the same species twice in one day.
+
+---
+
+## localStateCache
+
+**birdsync caches per-account sync state locally by default to enable incremental updated_since downloads and exact 24-hour request budgeting**
+
+Date: 2026-11-21
+
+Decided by: Sajmani
+
+Status: accepted
+
+Amends: dailyRequestBudget
+
+Affects: [product.downloadExistingObservations](../local/product/download.md#downloadexistingobservations), [product.incrementalStateCache](../local/product/download.md#incrementalstatecache), [tech.dailyRequestBudget](../local/tech/etiquette.md#dailyrequestbudget), [product.dryRunNoWrites](../local/product/dryrun.md#dryrunnowrites)
+
+### Decided
+
+birdsync maintains a local JSON state cache enabled by default at
+`$XDG_STATE_HOME/birdsync/state.json` (falling back to `os.UserCacheDir()/birdsync/state.json`,
+overridable via `--state`, and disabled when `--state=""`). The file is keyed by iNaturalist user
+ID and stores cached observation summaries (both birdsync-keyed and unkeyed for `--fuzzy`), a
+full-history `last_synced_at` watermark, and exact UTC timestamps of iNaturalist API requests from
+the last 24 hours.
+
+- On an unwindowed run (neither `--after` nor `--before`) with a valid watermark and without
+  `--full`, birdsync downloads only observations modified since `last_synced_at` (with a 1-minute
+  overlap buffer) via `updated_since`, merges them into the cached observations, and advances the
+  watermark.
+- `--full` ignores the watermark, downloads the full account history, and replaces the cached
+  observations so manually deleted iNaturalist observations are reconciled.
+- Date-windowed runs (`--after` or `--before`) perform a windowed download as before and never
+  advance `last_synced_at`.
+- The 24-hour API budget takes the maximum of the cached 24-hour request timestamps and the
+  stateless `created_at` estimate, so updates to older observations and earlier download pages are
+  counted accurately.
+- `--dryrun` may read the cache but never creates or modifies the state file on disk.
+- No credentials or tokens are ever written to the state file.
+
+### Why
+
+Full-history downloads on every run cost ~1 request/second per 200 observations and cannot see
+updates made to older observations when estimating the 24-hour request budget. Using
+`XDG_STATE_HOME` with an `os.UserCacheDir()` fallback keeps the implementation stdlib-only and
+platform-independent ([tech.oneExternalDependency](../local/tech/deps.md#oneexternaldependency),
+[tech.platformIndependent](../local/tech/deps.md#platformindependent)). The known limitation —
+iNaturalist's `updated_since` does not report deleted observations — is handled by `--full`.

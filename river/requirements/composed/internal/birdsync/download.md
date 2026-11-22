@@ -11,6 +11,7 @@ pacing and daily budgeting for [`birdsync`](README.md).
 - [product.dateWindowNarrowsDownload](../../../local/product/download.md#datewindownarrowsdownload) — A date window narrows the download
 - [product.largeAccounts](../../../local/product/download.md#largeaccounts) — Works for accounts over 10,000 observations
 - [product.noTaxonFilter](../../../local/product/download.md#notaxonfilter) — The download is not filtered by taxon
+- [product.incrementalStateCache](../../../local/product/download.md#incrementalstatecache) — Routine syncs use a local state cache and updated_since; --full forces a complete download
 - [tech.errorsIncludeBody](../../../local/tech/etiquette.md#errorsincludebody) — API errors include the response body
 - [inatapi.singleIPAndMediaCaps](../../../imported/inaturalist.org/inatapi/inatapi.md#singleipandmediacaps) — One IP; media download volume caps
 
@@ -24,7 +25,8 @@ Composed from: [inatapi.requestRate](../../../imported/inaturalist.org/inatapi/i
 [inatterms.rateAndVolume](../../../imported/inaturalist.org/inatterms/inatterms.md#rateandvolume),
 [inatterms.dontBehaveLikeMachine](../../../imported/inaturalist.org/inatterms/inatterms.md#dontbehavelikemachine),
 [tech.dailyRequestBudget](../../../local/tech/etiquette.md#dailyrequestbudget),
-[decisions.dailyRequestBudget](../../../decisions/decisions.md#dailyrequestbudget)
+[decisions.dailyRequestBudget](../../../decisions/decisions.md#dailyrequestbudget),
+[decisions.localStateCache](../../../decisions/decisions.md#localstatecache)
 Goals: [goals.communityNotBurdened](../../../../goals/goals.md#communitynotburdened), [goals.accountsStaySafe](../../../../goals/goals.md#accountsstaysafe)
 
 birdsync sends requests to `api.inaturalist.org` at no more than about one per second, and no
@@ -192,3 +194,36 @@ Covers: [observationDownloadByIDAbove](#observationdownloadbyidabove)
 
 When the test server answers a download request with fewer observations than the page size,
 birdsync sends no further download request.
+
+## incrementalDownloadUsesUpdatedSince
+
+**Incremental runs pass updated_since, merge updates, and honor --full and date windows**
+
+Covers: [product.incrementalStateCache](../../../local/product/download.md#incrementalstatecache), [product.dateWindowNarrowsDownload](../../../local/product/download.md#datewindownarrowsdownload)
+
+After a full run writes the local state cache, a second unwindowed run passes `updated_since`
+(1 minute before the cached watermark), merges newly returned observations with cached ones for
+both duplicate detection and `--fuzzy` matching, and advances the watermark. `--full` omits
+`updated_since` and replaces the cached observations (reconciling deletions). Date-windowed runs
+(`--after`/`--before`) omit `updated_since` and do not advance the watermark. A corrupt state
+file falls back cleanly to a full download.
+
+## stateCacheBudgetTracksUpdates
+
+**Cached 24-hour request timestamps count updates to older observations toward the daily budget**
+
+Covers: [requestRate](#requestrate), [tech.dailyRequestBudget](../../../local/tech/etiquette.md#dailyrequestbudget)
+
+When an earlier run within the past 24 hours updated older observations (whose `created_at` is
+more than 24 hours old), the recorded request timestamps in the local state cache are counted
+toward the 9,000-request 24-hour budget on the next run, while timestamps older than 24 hours
+are pruned.
+
+## dryRunLeavesStateUntouched
+
+**--dryrun never creates or modifies the local state cache**
+
+Covers: [product.incrementalStateCache](../../../local/product/download.md#incrementalstatecache), [product.dryRunNoWrites](../../../local/product/dryrun.md#dryrunnowrites)
+
+Under `--dryrun`, birdsync may read an existing state file to perform an incremental download,
+but never creates a missing state file and never modifies an existing state file on disk.

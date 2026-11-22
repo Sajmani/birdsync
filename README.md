@@ -58,6 +58,10 @@ Birdsync provides command-line flags to customize its behavior:
         Since the latitude and longitude of birdsync observations is set to the checklist location,
         this may be distant from the actual location where individual birds were observed.
         Birdsync uses default positional accuracy of 1000 meters; use this flag to adjust it.
+* `-full`
+        Ignore the local sync state cache watermark and download all iNaturalist observations (useful to reconcile observations deleted on iNaturalist).
+* `-state`
+        Path to the local sync state cache file (defaults to `$XDG_STATE_HOME/birdsync/state.json` when `XDG_STATE_HOME` is set, otherwise `os.UserCacheDir()/birdsync/state.json`; pass `-state=""` to disable caching).
 * `-debug`
         Log verbosely. Useful for seeing exactly why each eBird observation was skipped.
 
@@ -111,7 +115,7 @@ When iNaturalist refuses a file outright — too large, or an unsupported format
 # How birdsync works
 
 Given (`iNaturalist user name`, `eBird CSV file`):
-- Download that user's existing iNaturalist observations into memory.
+- Download that user's existing iNaturalist observations into memory (using the local state cache and `updated_since` on repeat unwindowed runs unless `--full` or `--state=""` is set).
   If `--after` or `--before` are set, only observations in that date range are downloaded.
   The download is not restricted by taxon: an observation whose eBird name iNaturalist
   couldn't resolve has no taxon, and filtering those out made birdsync unable to see

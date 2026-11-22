@@ -4,6 +4,7 @@ import (
 	"errors"
 	"iter"
 	"os"
+	"path/filepath"
 	"slices"
 	"strings"
 	"testing"
@@ -79,10 +80,12 @@ type mockINatClient struct {
 	// sent and — for --dryrun — that it sent nothing at all. Without this the
 	// dry-run guarantee (tech.dryRunGateAtCallSite, product.dryRunNoWrites) can only be checked indirectly through
 	// the counters, which is exactly the mistake decisions.dryRunCountersRelabeled records.
-	created        []inat.Observation
-	updated        []inat.Observation
-	uploaded       []uploadedMedia
-	downloadFields []string
+	created           []inat.Observation
+	updated           []inat.Observation
+	uploaded          []uploadedMedia
+	downloadFields    []string
+	fullDownloadCalls int
+	updatedSinceCalls []time.Time
 }
 
 func (m *mockINatClient) GetUserID() string {
@@ -94,6 +97,13 @@ func (m *mockINatClient) GetAPIToken() string {
 }
 
 func (m *mockINatClient) DownloadObservations(userID string, after, before time.Time, fields ...string) ([]inat.Result, error) {
+	m.fullDownloadCalls++
+	m.downloadFields = slices.Clone(fields)
+	return m.observations, m.downloadErr
+}
+
+func (m *mockINatClient) DownloadObservationsUpdatedSince(userID string, since time.Time, fields ...string) ([]inat.Result, error) {
+	m.updatedSinceCalls = append(m.updatedSinceCalls, since)
 	m.downloadFields = slices.Clone(fields)
 	return m.observations, m.downloadErr
 }
@@ -127,6 +137,8 @@ func resetFlags() {
 	after = dateTimeFlag{}
 	before = dateTimeFlag{}
 	positionalAccuracy = ebird.PositionalAccuracy
+	fullSync = false
+	statePath = ""
 	dailyRequestBudget = inat.DefaultMaxRequests
 	nowFunc = time.Now
 }
@@ -1365,5 +1377,257 @@ func TestFuzzyMatchSubspecies(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func TestIncrementalStateCache(t *testing.T) {
+	t0 := time.Date(2026, 11, 20, 12, 0, 0, 0, time.UTC)
+	t1 := t0.Add(2 * time.Hour)
+	t2 := t1.Add(2 * time.Hour)
+
+	syncedUUID := uuid.New()
+	fuzzyUUID := uuid.New()
+	initialObs := []inat.Result{
+		{
+			ID:          1,
+			UUID:        syncedUUID,
+			ObservedOn:  "2025-05-01",
+			Description: assetLine("111", true),
+			Photos:      []inat.Photo{{ID: 10}},
+			Ofvs: []inat.Ofv{
+				{FieldID: inat.EBirdField, Value: "S100"},
+				{FieldID: inat.EBirdScientificNameField, Value: "Turdus migratorius"},
+			},
+		},
+		{
+			ID:         2,
+			UUID:       fuzzyUUID,
+			ObservedOn: "2025-05-02",
+			Taxon: inat.Taxon{
+				Name:                "Cardinalis cardinalis",
+				PreferredCommonName: "Northern Cardinal",
+			},
+		},
+	}
+	records := []ebird.Record{
+		{
+			Line:             2,
+			SubmissionID:     "S100",
+			CommonName:       "American Robin",
+			ScientificName:   "Turdus migratorius",
+			Date:             "2025-05-01",
+			Time:             "08:00 AM",
+			MLCatalogNumbers: "111",
+		},
+		{
+			Line:             3,
+			SubmissionID:     "S101",
+			CommonName:       "Northern Cardinal",
+			ScientificName:   "Cardinalis cardinalis",
+			Date:             "2025-05-02",
+			Time:             "09:00 AM",
+			MLCatalogNumbers: "222",
+		},
+	}
+
+	t.Run("initial full download populates cache and next run uses updated_since", func(t *testing.T) {
+		resetFlags()
+		fuzzy = true
+		statePath = filepath.Join(t.TempDir(), "birdsync", "state.json")
+		nowFunc = func() time.Time { return t0 }
+
+		mockEbird := &mockEBirdClient{records: records}
+		mockInat1 := &mockINatClient{observations: initialObs}
+		s1 := birdsync("MyEBirdData.csv", mockEbird, "userA", mockInat1)
+		if mockInat1.fullDownloadCalls != 1 || len(mockInat1.updatedSinceCalls) != 0 {
+			t.Fatalf("run 1: full=%d updatedSince=%v, want 1 and empty", mockInat1.fullDownloadCalls, mockInat1.updatedSinceCalls)
+		}
+		if s1.previouslySkips != 1 || s1.fuzzySkips != 1 || s1.createdObservations != 0 {
+			t.Fatalf("run 1: prev=%d fuzzy=%d created=%d, want 1, 1, 0", s1.previouslySkips, s1.fuzzySkips, s1.createdObservations)
+		}
+
+		// Run 2 at t1: server returns 0 modified observations; cached observations
+		// still satisfy both previouslySynced and --fuzzy.
+		nowFunc = func() time.Time { return t1 }
+		mockInat2 := &mockINatClient{observations: nil}
+		s2 := birdsync("MyEBirdData.csv", mockEbird, "userA", mockInat2)
+		if mockInat2.fullDownloadCalls != 0 || len(mockInat2.updatedSinceCalls) != 1 {
+			t.Fatalf("run 2: full=%d updatedSince=%v, want 0 and 1 call", mockInat2.fullDownloadCalls, mockInat2.updatedSinceCalls)
+		}
+		wantSince := t0.Add(-syncOverlap)
+		if !mockInat2.updatedSinceCalls[0].Equal(wantSince) {
+			t.Errorf("run 2 updated_since = %v, want %v", mockInat2.updatedSinceCalls[0], wantSince)
+		}
+		if s2.previouslySkips != 1 || s2.fuzzySkips != 1 || s2.createdObservations != 0 {
+			t.Errorf("run 2: prev=%d fuzzy=%d created=%d, want 1, 1, 0", s2.previouslySkips, s2.fuzzySkips, s2.createdObservations)
+		}
+
+		// Run 3 at t2 with --full: forces full download and reconciles deleted observations.
+		nowFunc = func() time.Time { return t2 }
+		fullSync = true
+		mockInat3 := &mockINatClient{observations: nil} // both observations deleted on iNaturalist
+		s3 := birdsync("MyEBirdData.csv", mockEbird, "userA", mockInat3)
+		if mockInat3.fullDownloadCalls != 1 || len(mockInat3.updatedSinceCalls) != 0 {
+			t.Fatalf("run 3 (--full): full=%d updatedSince=%v, want 1 and empty", mockInat3.fullDownloadCalls, mockInat3.updatedSinceCalls)
+		}
+		if s3.createdObservations != 2 {
+			t.Errorf("run 3 (--full after deletion): created=%d, want 2", s3.createdObservations)
+		}
+	})
+
+	t.Run("windowed run does not advance full-history watermark", func(t *testing.T) {
+		resetFlags()
+		statePath = filepath.Join(t.TempDir(), "state.json")
+		nowFunc = func() time.Time { return t0 }
+		if err := after.Set("2025-05-01"); err != nil {
+			t.Fatal(err)
+		}
+
+		mockEbird := &mockEBirdClient{records: records[:1]}
+		mockInat1 := &mockINatClient{observations: initialObs[:1]}
+		birdsync("MyEBirdData.csv", mockEbird, "userA", mockInat1)
+
+		st := loadState(statePath)
+		if !st.account("userA").LastSyncedAt.IsZero() {
+			t.Errorf("windowed run set LastSyncedAt = %v, want zero", st.account("userA").LastSyncedAt)
+		}
+	})
+
+	t.Run("corrupt state file falls back cleanly to full download", func(t *testing.T) {
+		resetFlags()
+		statePath = filepath.Join(t.TempDir(), "state.json")
+		if err := os.WriteFile(statePath, []byte("{not valid json"), 0o600); err != nil {
+			t.Fatal(err)
+		}
+		nowFunc = func() time.Time { return t0 }
+
+		mockEbird := &mockEBirdClient{records: records[:1]}
+		mockInat := &mockINatClient{observations: initialObs[:1]}
+		s := birdsync("MyEBirdData.csv", mockEbird, "userA", mockInat)
+		if mockInat.fullDownloadCalls != 1 || s.previouslySkips != 1 {
+			t.Errorf("corrupt cache fallback: full=%d prev=%d, want 1, 1", mockInat.fullDownloadCalls, s.previouslySkips)
+		}
+	})
+}
+
+func TestStateCacheBudgetTracksUpdatesToOlderObservations(t *testing.T) {
+	resetFlags()
+	statePath = filepath.Join(t.TempDir(), "state.json")
+	dailyRequestBudget = 5 // 1 download + 2 writes in run 1 = 3; run 2 needs 1 download + 2 writes = 6 > 5
+	t0 := time.Date(2026, 11, 20, 12, 0, 0, 0, time.UTC)
+	nowFunc = func() time.Time { return t0 }
+
+	oldUUID1 := uuid.New()
+	oldUUID2 := uuid.New()
+	// Both observations were created in 2022, so estimateRecentWriteRequests
+	// from created_at sees 0 recent requests. Only the state cache knows run 1
+	// just updated oldUUID1 with a new media asset!
+	obs1 := inat.Result{
+		ID:          1,
+		UUID:        oldUUID1,
+		CreatedAt:   "2022-01-10T10:00:00Z",
+		ObservedOn:  "2022-01-10",
+		Description: assetLine("100", true),
+		Photos:      []inat.Photo{{ID: 1}},
+		Ofvs: []inat.Ofv{
+			{FieldID: inat.EBirdField, Value: "S1"},
+			{FieldID: inat.EBirdScientificNameField, Value: "Corvus brachyrhynchos"},
+		},
+	}
+	obs2 := inat.Result{
+		ID:          2,
+		UUID:        oldUUID2,
+		CreatedAt:   "2022-01-11T10:00:00Z",
+		ObservedOn:  "2022-01-11",
+		Description: assetLine("200", true),
+		Photos:      []inat.Photo{{ID: 2}},
+		Ofvs: []inat.Ofv{
+			{FieldID: inat.EBirdField, Value: "S2"},
+			{FieldID: inat.EBirdScientificNameField, Value: "Cyanocitta cristata"},
+		},
+	}
+
+	// Run 1: adds asset 101 to obs1 (1 download page + 1 upload + 1 update = 3 requests).
+	mockEbird1 := &mockEBirdClient{records: []ebird.Record{{
+		Line:             2,
+		SubmissionID:     "S1",
+		ScientificName:   "Corvus brachyrhynchos",
+		Date:             "2022-01-10",
+		Time:             "08:00 AM",
+		MLCatalogNumbers: "100 101",
+	}}}
+	mockInat1 := &mockINatClient{observations: []inat.Result{obs1, obs2}}
+	s1 := birdsync("MyEBirdData.csv", mockEbird1, "userA", mockInat1)
+	if s1.updatedObservations != 1 || s1.stoppedAtDailyBudget {
+		t.Fatalf("run 1: updated=%d stopped=%v, want 1, false", s1.updatedObservations, s1.stoppedAtDailyBudget)
+	}
+
+	// Run 2 (1 hour later): tries to add asset 201 to obs2 (needs 1 download + 2 writes -> 3 + 3 = 6 > 5).
+	nowFunc = func() time.Time { return t0.Add(time.Hour) }
+	mockEbird2 := &mockEBirdClient{records: []ebird.Record{{
+		Line:             2,
+		SubmissionID:     "S2",
+		ScientificName:   "Cyanocitta cristata",
+		Date:             "2022-01-11",
+		Time:             "08:00 AM",
+		MLCatalogNumbers: "200 201",
+	}}}
+	mockInat2 := &mockINatClient{observations: nil}
+	s2 := birdsync("MyEBirdData.csv", mockEbird2, "userA", mockInat2)
+	if !s2.stoppedAtDailyBudget || s2.updatedObservations != 0 {
+		t.Errorf("run 2: stoppedAtDailyBudget=%v updated=%d, want true, 0", s2.stoppedAtDailyBudget, s2.updatedObservations)
+	}
+
+	// Run 3 (25 hours after run 1): run 1's requests have aged out past 24h, so obs2 update now succeeds.
+	nowFunc = func() time.Time { return t0.Add(25 * time.Hour) }
+	mockInat3 := &mockINatClient{observations: nil}
+	s3 := birdsync("MyEBirdData.csv", mockEbird2, "userA", mockInat3)
+	if s3.stoppedAtDailyBudget || s3.updatedObservations != 1 {
+		t.Errorf("run 3 (after 25h): stopped=%v updated=%d, want false, 1", s3.stoppedAtDailyBudget, s3.updatedObservations)
+	}
+}
+
+func TestDryRunLeavesStateUntouched(t *testing.T) {
+	resetFlags()
+	dryRun = true
+	dir := t.TempDir()
+	statePath = filepath.Join(dir, "state.json")
+
+	mockEbird := &mockEBirdClient{records: []ebird.Record{{
+		Line:             2,
+		SubmissionID:     "S900",
+		ScientificName:   "Turdus migratorius",
+		CommonName:       "American Robin",
+		Date:             "2025-05-01",
+		Time:             "08:00 AM",
+		MLCatalogNumbers: "123",
+	}}}
+	mockInat := &mockINatClient{}
+
+	// 1. Missing state file must not be created under --dryrun.
+	birdsync("MyEBirdData.csv", mockEbird, "userA", mockInat)
+	if _, err := os.Stat(statePath); !os.IsNotExist(err) {
+		t.Fatalf("--dryrun created state file %s (err=%v)", statePath, err)
+	}
+
+	// 2. Existing state file must remain byte-for-byte unchanged under --dryrun.
+	initial := newEmptyState()
+	acct := initial.account("userA")
+	acct.LastSyncedAt = time.Date(2026, 11, 1, 0, 0, 0, 0, time.UTC)
+	if err := saveState(statePath, initial); err != nil {
+		t.Fatal(err)
+	}
+	beforeBytes, err := os.ReadFile(statePath)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	birdsync("MyEBirdData.csv", mockEbird, "userA", mockInat)
+	afterBytes, err := os.ReadFile(statePath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(beforeBytes) != string(afterBytes) {
+		t.Errorf("--dryrun modified existing state file:\nbefore:\n%s\nafter:\n%s", beforeBytes, afterBytes)
 	}
 }

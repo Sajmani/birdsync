@@ -54,6 +54,7 @@ type inatClient interface {
 	GetUserID() string
 	GetAPIToken() string
 	DownloadObservations(string, time.Time, time.Time, ...string) ([]inat.Result, error)
+	DownloadObservationsUpdatedSince(string, time.Time, ...string) ([]inat.Result, error)
 	CreateObservation(inat.Observation) error
 	UpdateObservation(inat.Observation) error
 	UploadMedia(string, bool, string, string) error
@@ -73,6 +74,10 @@ func (c inatClientImpl) GetAPIToken() string {
 
 func (c inatClientImpl) DownloadObservations(userID string, after, before time.Time, fields ...string) ([]inat.Result, error) {
 	return c.client.DownloadObservations(userID, after, before, fields...)
+}
+
+func (c inatClientImpl) DownloadObservationsUpdatedSince(userID string, since time.Time, fields ...string) ([]inat.Result, error) {
+	return c.client.DownloadObservationsUpdatedSince(userID, since, fields...)
 }
 
 func (c inatClientImpl) CreateObservation(obs inat.Observation) error {

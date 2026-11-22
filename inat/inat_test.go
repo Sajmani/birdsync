@@ -271,3 +271,28 @@ func TestDownloadObservationsCursorMustAdvance(t *testing.T) {
 		t.Errorf("Made %d requests before giving up, want 2", requests)
 	}
 }
+
+func TestDownloadObservationsUpdatedSince(t *testing.T) {
+	var gotUpdatedSince string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotUpdatedSince = r.URL.Query().Get("updated_since")
+		json.NewEncoder(w).Encode(Observations{
+			TotalResults: 1,
+			Results:      []Result{{ID: 42, Description: "modified"}},
+		})
+	}))
+	defer server.Close()
+
+	since := time.Date(2026, 11, 21, 18, 30, 0, 0, time.FixedZone("EST", -5*3600))
+	client := newTestClient(server.URL, "", "")
+	results, err := client.DownloadObservationsUpdatedSince("testuser", since, "description")
+	if err != nil {
+		t.Fatalf("DownloadObservationsUpdatedSince() error = %v", err)
+	}
+	if len(results) != 1 || results[0].ID != 42 {
+		t.Fatalf("got results %+v, want single result ID 42", results)
+	}
+	if want := "2026-11-21T23:30:00Z"; gotUpdatedSince != want {
+		t.Errorf("updated_since = %q, want %q", gotUpdatedSince, want)
+	}
+}
