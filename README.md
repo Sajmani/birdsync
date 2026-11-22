@@ -116,7 +116,7 @@ Given (`iNaturalist user name`, `eBird CSV file`):
   The download is not restricted by taxon: an observation whose eBird name iNaturalist
   couldn't resolve has no taxon, and filtering those out made birdsync unable to see
   observations it had created, so it created them again.
-- Index these iNaturalist observations by ([eBird submission ID](https://www.inaturalist.org/observation_fields/6033), [eBird scientific name](https://www.inaturalist.org/observation_fields/20215))
+- Index these iNaturalist observations by ([eBird submission ID](https://www.inaturalist.org/observation_fields/6033), [eBird scientific name](https://www.inaturalist.org/observation_fields/20215)), and also by (`eBird submission ID`, Macaulay Library asset ID) from their descriptions so annual eBird taxonomy renames don't create duplicates for observations that carry media
 - Index any non-birdsync observations by date for fuzzy matching, under their
   common name, their scientific name, and (when it names a single species or subspecies) their
   binomial `Genus species` stem

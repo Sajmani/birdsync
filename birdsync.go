@@ -297,6 +297,14 @@ func birdsync(eBirdCSVFilename string, ebirdClient ebirdClient, inatUserID strin
 	}
 
 	previouslySynced := map[ebird.ObservationID]inat.Result{}
+	// Secondary index keyed by (SubmissionID, MLAssetID) so annual eBird/Clements
+	// taxonomy splits, lumps, or renames don't duplicate historical observations
+	// whose iNaturalist description already carries the checklist's Macaulay assets.
+	type assetSyncKey struct {
+		submissionID string
+		assetID      string
+	}
+	previouslySyncedByAsset := map[assetSyncKey][]inat.Result{}
 	type fuzzyKey struct {
 		observedDate string // 2006-01-02
 		name         string
@@ -309,6 +317,11 @@ func birdsync(eBirdCSVFilename string, ebirdClient ebirdClient, inatUserID strin
 		}
 		if key.Valid() {
 			previouslySynced[key] = r
+			uploaded, failed := iNatMLAssets(r)
+			for _, id := range slices.Concat(uploaded.ids, failed.ids) {
+				ak := assetSyncKey{submissionID: key.SubmissionID, assetID: id}
+				previouslySyncedByAsset[ak] = append(previouslySyncedByAsset[ak], r)
+			}
 		} else {
 			// This iNaturalist observation was not created by birdsync.
 			// Record its date and common name for fuzzy matching.
@@ -332,6 +345,38 @@ func birdsync(eBirdCSVFilename string, ebirdClient ebirdClient, inatUserID strin
 		}
 	}
 	debugf("Previously synced %d observations\n", len(previouslySynced))
+
+	lookupPreviouslySynced := func(rec ebird.Record) (matched inat.Result, matchedByAsset bool, matchedAssetID string, ambiguous []inat.Result, ok bool) {
+		key := rec.ObservationID()
+		if r, found := previouslySynced[key]; found {
+			return r, false, "", nil, true
+		}
+		if rec.SubmissionID == "" {
+			return inat.Result{}, false, "", nil, false
+		}
+		seen := map[uuid.UUID]bool{}
+		var matches []inat.Result
+		var firstAsset string
+		for _, id := range eBirdMLAssets(rec.MLCatalogNumbers).ids {
+			ak := assetSyncKey{submissionID: rec.SubmissionID, assetID: id}
+			for _, cand := range previouslySyncedByAsset[ak] {
+				if !seen[cand.UUID] {
+					seen[cand.UUID] = true
+					matches = append(matches, cand)
+					if firstAsset == "" {
+						firstAsset = id
+					}
+				}
+			}
+		}
+		if len(matches) == 1 {
+			return matches[0], true, firstAsset, nil, true
+		}
+		if len(matches) > 1 {
+			return inat.Result{}, true, firstAsset, matches, false
+		}
+		return inat.Result{}, false, "", nil, false
+	}
 
 	usedRequests := downloadPageRequests(len(results)) + estimateRecentWriteRequests(results, nowFunc())
 
@@ -461,9 +506,25 @@ func birdsync(eBirdCSVFilename string, ebirdClient ebirdClient, inatUserID strin
 
 		// Skip records that have previously been uploaded by birdsync.
 		key := rec.ObservationID()
-		if r, ok := previouslySynced[key]; ok {
-			debugf("line %d: Already synced %s to iNaturalist as %s\n",
-				rec.Line, key, r.URLWithSpecies())
+		if r, matchedByAsset, matchedAssetID, ambiguous, ok := lookupPreviouslySynced(rec); ok || len(ambiguous) > 0 {
+			if len(ambiguous) > 0 {
+				var urls []string
+				for _, a := range ambiguous {
+					urls = append(urls, a.URLWithSpecies())
+				}
+				log.Printf("line %d: SKIPPING %s: ML assets match %d previously synced observations on checklist %s (%s)",
+					rec.Line, key, len(ambiguous), rec.SubmissionID, strings.Join(urls, ", "))
+				s.previouslySkips++
+				continue
+			}
+			if matchedByAsset {
+				log.Printf("line %d: Already synced %s to iNaturalist as %s (matched by ML asset %s; eBird scientific name changed from %q to %q)",
+					rec.Line, key, r.URLWithSpecies(), matchedAssetID,
+					r.ObservationFieldValue(inat.EBirdScientificNameField), rec.ScientificName)
+			} else {
+				debugf("line %d: Already synced %s to iNaturalist as %s\n",
+					rec.Line, key, r.URLWithSpecies())
+			}
 			addedMediaIDs, summary := mediaChange(rec, r)
 			if summary != "" {
 				log.Printf("Media assets differ between eBird %s and iNaturalist %s: %s",

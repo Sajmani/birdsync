@@ -338,6 +338,16 @@ Gates: yes, in CI
 Specman status: verified (landed as a pending criterion)
 Not yet watched failing under River. Specman's `verified` status meant the check had been watched failing, but nothing records how or when, so this criterion has no `Watched failing:` line until someone breaks the behavior, sees the guardrail fail, and records it here.
 
+## dedupeByAssetAcrossTaxonomyUpdate
+
+Criterion: [birdsync.dedupeByAssetAcrossTaxonomyUpdate](../requirements/composed/internal/birdsync/filtering.md#dedupebyassetacrosstaxonomyupdate)
+
+Guardrails: `TestDedupeByMLAssetAcrossTaxonomyUpdate` (`birdsync_test.go`)
+
+Gates: yes, in CI
+
+Watched failing: 2026-11-21, run before implementing `previouslySyncedByAsset`; all five asset-deduplication and dry-run subtests of `TestDedupeByMLAssetAcrossTaxonomyUpdate` failed
+
 ## invalidRecordsSkipped
 
 Criterion: [birdsync.invalidRecordsSkipped](../requirements/composed/internal/birdsync/failures.md#invalidrecordsskipped)

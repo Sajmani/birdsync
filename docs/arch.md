@@ -25,9 +25,16 @@ One run does the following:
    200 per page, restricted only to the `--after`/`--before` date window when set
    (`inat.Client.DownloadObservations`). Deliberately not filtered by taxon:
    see [`noTaxonFilterOnDownload`](../river/requirements/decisions/decisions.md#notaxonfilterondownload) (formerly CR-003).
-3. **Build two indexes** over those observations, at the top of `birdsync()`:
+3. **Build three indexes** over those observations, at the top of `birdsync()`:
    - `previouslySynced`, keyed by `ebird.ObservationID` — the pair of eBird observation-field
      values that identifies a birdsync-created observation.
+   - `previouslySyncedByAsset`, keyed by `(SubmissionID, MLAssetID)` for every observation in
+     `previouslySynced`, built from both uploaded and permanently failed asset URLs parsed by
+     `iNatMLAssets`. When an annual eBird/Clements taxonomy update renames a species on a
+     historical checklist and the primary `previouslySynced` lookup misses, `lookupPreviouslySynced`
+     falls back to this index: a unique match is treated as already synced (including additive
+     media resync) and logged, while an ambiguous match spanning multiple observations is logged
+     and skipped without creating or modifying anything.
    - `fuzzyMatch`, keyed by observation date plus name, for every observation whose
      `ObservationID` is *not* valid. Each is indexed under its common name, its full scientific
      name, and its two-word species name (`Genus species`, e.g. `Garrulus glandarius` from
