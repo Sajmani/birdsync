@@ -82,11 +82,8 @@ func (set *mlAssetSet) Add(id string) {
 
 func eBirdMLAssets(mlAssets string) mlAssetSet {
 	var set mlAssetSet
-	if mlAssets == "" {
-		return set
-	}
-	for _, id := range strings.Split(mlAssets, " ") {
-		set.Add(strings.TrimSpace(id))
+	for _, id := range strings.Fields(mlAssets) {
+		set.Add(id)
 	}
 	return set
 }
@@ -115,6 +112,9 @@ func iNatMLAssets(r inat.Result) (uploaded, failed mlAssetSet) {
 			continue
 		}
 		id := strings.TrimSpace(line[i+len("macaulaylibrary.org/asset/"):])
+		if id == "" {
+			continue
+		}
 		if strings.Contains(line, failedMarker) {
 			failed.Add(id)
 		} else {

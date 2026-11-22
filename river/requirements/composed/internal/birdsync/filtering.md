@@ -12,6 +12,7 @@ Sync key, idempotence, CSV and date formats, skip order, and `--fuzzy` matching 
 - [product.idempotentRerun](../../../local/product/identity.md#idempotentrerun) — Re-running creates no duplicates
 - [product.taxonNotInSyncKey](../../../local/product/identity.md#taxonnotinsynckey) — The taxon is not part of the sync key
 - [product.incompleteKeyNotRecognized](../../../local/product/identity.md#incompletekeynotrecognized) — An incomplete sync key is not recognized
+- [product.assetFallbackMatch](../../../local/product/identity.md#assetfallbackmatch) — Previously synced observations also match by (SubmissionID, MLAssetID)
 
 ### Filtering and skip order
 
@@ -118,3 +119,17 @@ Formerly: AC-024
 Covers: [product.noTaxonFilter](../../../local/product/download.md#notaxonfilter), [product.idempotentRerun](../../../local/product/identity.md#idempotentrerun)
 
 The download carries no taxon filter, and an observation with no taxon that carries a sync key is recognized as synced and not re-created.
+
+## dedupeByAssetAcrossTaxonomyUpdate
+
+**Renamed eBird records match previously synced observations by (SubmissionID, MLAssetID)**
+
+Covers: [product.assetFallbackMatch](../../../local/product/identity.md#assetfallbackmatch), [product.idempotentRerun](../../../local/product/identity.md#idempotentrerun), [product.incompleteKeyNotRecognized](../../../local/product/identity.md#incompletekeynotrecognized)
+
+When an eBird record's scientific name differs from the stored `eBird Scientific Name` field
+on a previously synced iNaturalist observation for the same checklist, birdsync recognizes it
+as previously synced if any of its `ML Catalog Numbers` appear in that observation's
+description (uploaded or permanently failed), attaches any newly added media to it, and
+creates no duplicate. An observation on a different checklist or lacking a complete birdsync
+sync key does not match, and an eBird record whose assets span multiple previously synced
+observations is skipped without creating or updating an observation.

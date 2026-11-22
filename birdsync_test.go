@@ -1367,3 +1367,251 @@ func TestFuzzyMatchSubspecies(t *testing.T) {
 		})
 	}
 }
+
+func TestDedupeByMLAssetAcrossTaxonomyUpdate(t *testing.T) {
+	t.Run("renamed species skipped via uploaded ML asset", func(t *testing.T) {
+		resetFlags()
+		existingUUID := uuid.New()
+		mockEbird := &mockEBirdClient{records: []ebird.Record{{
+			Line:             2,
+			SubmissionID:     "S100",
+			CommonName:       "American Herring Gull",
+			ScientificName:   "Larus smithsonianus",
+			Date:             "2024-05-01",
+			Time:             "08:00 AM",
+			MLCatalogNumbers: "555001",
+		}}}
+		mockInat := &mockINatClient{observations: []inat.Result{{
+			ID:          1,
+			UUID:        existingUUID,
+			ObservedOn:  "2024-05-01",
+			Description: assetLine("555001", true),
+			Photos:      []inat.Photo{{ID: 1}},
+			Ofvs: []inat.Ofv{
+				{FieldID: inat.EBirdField, Value: "S100"},
+				{FieldID: inat.EBirdScientificNameField, Value: "Larus argentatus"},
+			},
+		}}}
+
+		s := birdsync("MyEBirdData.csv", mockEbird, "myUserID", mockInat)
+		if s.previouslySkips != 1 || s.createdObservations != 0 || s.updatedObservations != 0 {
+			t.Errorf("got previouslySkips=%d created=%d updated=%d, want 1, 0, 0",
+				s.previouslySkips, s.createdObservations, s.updatedObservations)
+		}
+		if len(mockInat.created) != 0 || len(mockInat.updated) != 0 || len(mockInat.uploaded) != 0 {
+			t.Errorf("got writes created=%d updated=%d uploaded=%d, want none",
+				len(mockInat.created), len(mockInat.updated), len(mockInat.uploaded))
+		}
+	})
+
+	t.Run("renamed species attaches newly added media to existing observation", func(t *testing.T) {
+		resetFlags()
+		existingUUID := uuid.New()
+		mockEbird := &mockEBirdClient{records: []ebird.Record{{
+			Line:             2,
+			SubmissionID:     "S100",
+			CommonName:       "American Herring Gull",
+			ScientificName:   "Larus smithsonianus",
+			Date:             "2024-05-01",
+			Time:             "08:00 AM",
+			MLCatalogNumbers: "555001 555002",
+		}}}
+		mockInat := &mockINatClient{observations: []inat.Result{{
+			ID:          1,
+			UUID:        existingUUID,
+			ObservedOn:  "2024-05-01",
+			Description: assetLine("555001", true),
+			Photos:      []inat.Photo{{ID: 1}},
+			Ofvs: []inat.Ofv{
+				{FieldID: inat.EBirdField, Value: "S100"},
+				{FieldID: inat.EBirdScientificNameField, Value: "Larus argentatus"},
+			},
+		}}}
+
+		s := birdsync("MyEBirdData.csv", mockEbird, "myUserID", mockInat)
+		if s.createdObservations != 0 || s.updatedObservations != 1 {
+			t.Errorf("got created=%d updated=%d, want 0, 1", s.createdObservations, s.updatedObservations)
+		}
+		if len(mockInat.created) != 0 {
+			t.Fatalf("created %d observations, want 0", len(mockInat.created))
+		}
+		if len(mockInat.uploaded) != 1 || mockInat.uploaded[0].assetID != "555002" || mockInat.uploaded[0].obsUUID != existingUUID.String() {
+			t.Errorf("uploaded = %+v, want single upload of 555002 to %s", mockInat.uploaded, existingUUID)
+		}
+		if len(mockInat.updated) != 1 || mockInat.updated[0].UUID != existingUUID {
+			t.Fatalf("updated = %+v, want single update to %s", mockInat.updated, existingUUID)
+		}
+		if len(mockInat.updated[0].ObservationFieldValuesAttributes) != 0 {
+			t.Errorf("update modified observation fields: %+v", mockInat.updated[0].ObservationFieldValuesAttributes)
+		}
+	})
+
+	t.Run("renamed species skipped via permanently failed ML asset", func(t *testing.T) {
+		resetFlags()
+		mockEbird := &mockEBirdClient{records: []ebird.Record{{
+			Line:             2,
+			SubmissionID:     "S100",
+			CommonName:       "American Herring Gull",
+			ScientificName:   "Larus smithsonianus",
+			Date:             "2024-05-01",
+			Time:             "08:00 AM",
+			MLCatalogNumbers: "555003",
+		}}}
+		mockInat := &mockINatClient{observations: []inat.Result{{
+			ID:          1,
+			UUID:        uuid.New(),
+			ObservedOn:  "2024-05-01",
+			Description: assetLine("555003", false),
+			Ofvs: []inat.Ofv{
+				{FieldID: inat.EBirdField, Value: "S100"},
+				{FieldID: inat.EBirdScientificNameField, Value: "Larus argentatus"},
+			},
+		}}}
+
+		s := birdsync("MyEBirdData.csv", mockEbird, "myUserID", mockInat)
+		if s.previouslySkips != 1 || s.createdObservations != 0 || s.updatedObservations != 0 {
+			t.Errorf("got previouslySkips=%d created=%d updated=%d, want 1, 0, 0",
+				s.previouslySkips, s.createdObservations, s.updatedObservations)
+		}
+	})
+
+	t.Run("same ML asset on different checklist does not match", func(t *testing.T) {
+		resetFlags()
+		mockEbird := &mockEBirdClient{records: []ebird.Record{{
+			Line:             2,
+			SubmissionID:     "S200",
+			CommonName:       "American Herring Gull",
+			ScientificName:   "Larus smithsonianus",
+			Date:             "2024-05-01",
+			Time:             "08:00 AM",
+			MLCatalogNumbers: "555001",
+		}}}
+		mockInat := &mockINatClient{observations: []inat.Result{{
+			ID:          1,
+			UUID:        uuid.New(),
+			ObservedOn:  "2024-05-01",
+			Description: assetLine("555001", true),
+			Photos:      []inat.Photo{{ID: 1}},
+			Ofvs: []inat.Ofv{
+				{FieldID: inat.EBirdField, Value: "S100"},
+				{FieldID: inat.EBirdScientificNameField, Value: "Larus argentatus"},
+			},
+		}}}
+
+		s := birdsync("MyEBirdData.csv", mockEbird, "myUserID", mockInat)
+		if s.previouslySkips != 0 || s.createdObservations != 1 {
+			t.Errorf("got previouslySkips=%d created=%d, want 0, 1", s.previouslySkips, s.createdObservations)
+		}
+	})
+
+	t.Run("observation without complete sync key does not match by ML asset", func(t *testing.T) {
+		resetFlags()
+		mockEbird := &mockEBirdClient{records: []ebird.Record{{
+			Line:             2,
+			SubmissionID:     "S100",
+			CommonName:       "American Herring Gull",
+			ScientificName:   "Larus smithsonianus",
+			Date:             "2024-05-01",
+			Time:             "08:00 AM",
+			MLCatalogNumbers: "555001",
+		}}}
+		mockInat := &mockINatClient{observations: []inat.Result{{
+			ID:          1,
+			UUID:        uuid.New(),
+			ObservedOn:  "2024-05-01",
+			Description: assetLine("555001", true),
+			Photos:      []inat.Photo{{ID: 1}},
+			Ofvs: []inat.Ofv{
+				{FieldID: inat.EBirdField, Value: "S100"},
+				// EBirdScientificNameField intentionally absent: incomplete sync key.
+			},
+		}}}
+
+		s := birdsync("MyEBirdData.csv", mockEbird, "myUserID", mockInat)
+		if s.previouslySkips != 0 || s.createdObservations != 1 {
+			t.Errorf("got previouslySkips=%d created=%d, want 0, 1", s.previouslySkips, s.createdObservations)
+		}
+	})
+
+	t.Run("assets spanning multiple previously synced observations skipped safely", func(t *testing.T) {
+		resetFlags()
+		mockEbird := &mockEBirdClient{records: []ebird.Record{{
+			Line:             2,
+			SubmissionID:     "S100",
+			CommonName:       "Lumped Species",
+			ScientificName:   "Genus lumped",
+			Date:             "2024-05-01",
+			Time:             "08:00 AM",
+			MLCatalogNumbers: "555001 555002 555003",
+		}}}
+		mockInat := &mockINatClient{observations: []inat.Result{
+			{
+				ID:          1,
+				UUID:        uuid.New(),
+				ObservedOn:  "2024-05-01",
+				Description: assetLine("555001", true),
+				Photos:      []inat.Photo{{ID: 1}},
+				Ofvs: []inat.Ofv{
+					{FieldID: inat.EBirdField, Value: "S100"},
+					{FieldID: inat.EBirdScientificNameField, Value: "Genus oldone"},
+				},
+			},
+			{
+				ID:          2,
+				UUID:        uuid.New(),
+				ObservedOn:  "2024-05-01",
+				Description: assetLine("555002", true),
+				Photos:      []inat.Photo{{ID: 2}},
+				Ofvs: []inat.Ofv{
+					{FieldID: inat.EBirdField, Value: "S100"},
+					{FieldID: inat.EBirdScientificNameField, Value: "Genus oldtwo"},
+				},
+			},
+		}}
+
+		s := birdsync("MyEBirdData.csv", mockEbird, "myUserID", mockInat)
+		if s.previouslySkips != 1 || s.createdObservations != 0 || s.updatedObservations != 0 {
+			t.Errorf("got previouslySkips=%d created=%d updated=%d, want 1, 0, 0",
+				s.previouslySkips, s.createdObservations, s.updatedObservations)
+		}
+		if len(mockInat.created) != 0 || len(mockInat.updated) != 0 || len(mockInat.uploaded) != 0 {
+			t.Errorf("got writes created=%d updated=%d uploaded=%d, want none",
+				len(mockInat.created), len(mockInat.updated), len(mockInat.uploaded))
+		}
+	})
+
+	t.Run("dryrun respects gate on asset-matched additive upload", func(t *testing.T) {
+		resetFlags()
+		dryRun = true
+		mockEbird := &mockEBirdClient{records: []ebird.Record{{
+			Line:             2,
+			SubmissionID:     "S100",
+			CommonName:       "American Herring Gull",
+			ScientificName:   "Larus smithsonianus",
+			Date:             "2024-05-01",
+			Time:             "08:00 AM",
+			MLCatalogNumbers: "555001 555002",
+		}}}
+		mockInat := &mockINatClient{observations: []inat.Result{{
+			ID:          1,
+			UUID:        uuid.New(),
+			ObservedOn:  "2024-05-01",
+			Description: assetLine("555001", true),
+			Photos:      []inat.Photo{{ID: 1}},
+			Ofvs: []inat.Ofv{
+				{FieldID: inat.EBirdField, Value: "S100"},
+				{FieldID: inat.EBirdScientificNameField, Value: "Larus argentatus"},
+			},
+		}}}
+
+		s := birdsync("MyEBirdData.csv", mockEbird, "myUserID", mockInat)
+		if s.createdObservations != 0 || s.updatedObservations != 1 || s.pendingMedia != 1 {
+			t.Errorf("got created=%d updated=%d pendingMedia=%d, want 0, 1, 1",
+				s.createdObservations, s.updatedObservations, s.pendingMedia)
+		}
+		if len(mockInat.created) != 0 || len(mockInat.updated) != 0 || len(mockInat.uploaded) != 0 {
+			t.Errorf("dryrun issued writes: created=%d updated=%d uploaded=%d",
+				len(mockInat.created), len(mockInat.updated), len(mockInat.uploaded))
+		}
+	})
+}

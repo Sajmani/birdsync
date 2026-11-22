@@ -61,3 +61,28 @@ birdsync-created.
 *Rationale: observations created by versions that set only the checklist field fall into
 this population. A `repair` tool existed to backfill them and was deleted once the
 maintainer's account was clean; it is recoverable from the history.*
+
+## assetFallbackMatch
+
+**Previously synced observations also match by (SubmissionID, MLAssetID)**
+
+Goals: [goals.accountsStaySafe](../../../goals/goals.md#accountsstaysafe), [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
+
+When an eBird record does not match any existing observation by its two-field
+[syncKey](#synckey) and carries one or more Macaulay Library catalog numbers, birdsync checks
+whether any of those asset IDs already appear in the description (as uploaded or permanently
+failed) of a birdsync-keyed iNaturalist observation with the same `Submission ID`. If exactly
+one such observation matches, birdsync treats the record as previously synced to it (including
+additive media resync) and logs the scientific name change without modifying the stored
+`eBird Scientific Name` field. If the record's assets match more than one previously synced
+observation, birdsync logs the ambiguity and skips the record without creating or modifying an
+observation.
+
+*Rationale: annual eBird/Clements taxonomy updates split, lump, or rename species (for example
+`Larus argentatus` to `Larus smithsonianus`), immediately changing the scientific name exported
+for historical checklists while existing iNaturalist observations retain the old
+`eBird Scientific Name` field. Secondary lookup by `(SubmissionID, MLAssetID)` prevents
+duplicates on full syncs without contacting an external taxonomy service or modifying
+observations that lack a complete birdsync sync key
+([incompleteKeyNotRecognized](#incompletekeynotrecognized),
+[noTaxonomyReconciliation](scope.md#notaxonomyreconciliation)).*
