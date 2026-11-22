@@ -55,8 +55,9 @@ Formerly: P-066
 Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
 Before parsing, birdsync checks the input and names what is wrong, distinguishing
-three cases: the path is a directory, the path is a zip archive, and the file has no
-`Submission ID` column and so is not an eBird export.
+four cases: the path is a directory, the path is an invalid `.zip` archive or one that does
+not contain `MyEBirdData.csv`, the file is empty, and the file has no `Submission ID` column
+and so is not an eBird export.
 
 *Rationale: [issue #1](https://github.com/Sajmani/birdsync/issues/1), where a user passed the
 extracted download folder and got `Error reading CSV records from ...: Incorrect function.` —

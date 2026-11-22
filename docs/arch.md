@@ -10,7 +10,8 @@ user's iNaturalist account, along with the photos and sounds attached to those o
 in the [Macaulay Library](https://www.macaulaylibrary.org/).
 
 The sync is one-way (eBird → iNaturalist) and file-driven: the eBird API doesn't expose
-personal checklists, so the input is the `MyEBirdData.csv` file the user downloads from eBird.
+personal checklists, so the input is the `MyEBirdData.csv` file (or the downloaded `.zip`
+archive containing it) that the user downloads from eBird.
 
 ## Data flow
 
@@ -38,8 +39,9 @@ One run does the following:
    created by an old version of birdsync that set the checklist ID but not the scientific name
    lands in the fuzzy index instead of `previouslySynced`. A `repair` tool used to backfill
    that population; it was deleted once the maintainer's account was clean.
-4. **Read the CSV.** `ebird.Records` returns an `iter.Seq[ebird.Record]` over the export.
-   Despite the iterator, this isn't streaming: the whole file is read with
+4. **Read the CSV.** `ebird.Records` returns an `iter.Seq[ebird.Record]` over the export
+   (opening `MyEBirdData.csv` directly or reading it in memory from a `.zip` archive via
+   `archive/zip`). Despite the iterator, this isn't streaming: the whole file is read with
    `csv.Reader.ReadAll` and the iterator walks the resulting slice.
 5. **Filter and act** on each record, in this order: `--after`, `--before`, already-synced,
    `--fuzzy`, `--verifiable`. Records that survive all five become new iNaturalist observations.

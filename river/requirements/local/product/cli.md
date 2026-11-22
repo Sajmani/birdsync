@@ -15,8 +15,9 @@ Formerly: P-008
 
 Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
-birdsync takes exactly one positional argument: the path to the eBird CSV
-export. Any other number of arguments prints usage and exits non-zero.
+birdsync takes exactly one positional argument: the path to the eBird export
+(`MyEBirdData.csv` or the downloaded `.zip` archive). Any other number of arguments prints
+usage and exits non-zero.
 
 ## flagsBeforeArgument
 

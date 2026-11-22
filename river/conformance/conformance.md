@@ -284,6 +284,16 @@ Gates: yes, in CI
 Specman status: verified
 Not yet watched failing under River. Specman's `verified` status meant the check had been watched failing, but nothing records how or when, so this criterion has no `Watched failing:` line until someone breaks the behavior, sees the guardrail fail, and records it here.
 
+## zipArchiveInput
+
+Criterion: [birdsync.zipArchiveInput](../requirements/composed/internal/birdsync/filtering.md#ziparchiveinput)
+
+Guardrails: `TestRecordsFromZip` (`ebird/ebird_test.go`)
+
+Gates: yes, in CI
+
+Watched failing: 2026-11-21, run before implementing `recordsFromZip`; all four subtests of `TestRecordsFromZip` failed
+
 ## syncKeyValidity
 
 Criterion: [birdsync.syncKeyValidity](../requirements/composed/internal/birdsync/filtering.md#synckeyvalidity)
@@ -462,7 +472,8 @@ Guardrails: `TestRecordsRejectsBadInput` (`ebird/ebird_test.go`)
 Gates: yes, in CI
 
 Specman status: verified
-Not yet watched failing under River. Specman's `verified` status meant the check had been watched failing, but nothing records how or when, so this criterion has no `Watched failing:` line until someone breaks the behavior, sees the guardrail fail, and records it here.
+
+Watched failing: 2026-11-21, run before implementing `recordsFromZip`; `TestRecordsRejectsBadInput/corrupt_zip_archive` and `zip_without_MyEBirdData.csv` failed
 
 ## readmeCommunitySection
 

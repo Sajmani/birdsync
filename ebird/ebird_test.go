@@ -1,6 +1,7 @@
 package ebird
 
 import (
+	"archive/zip"
 	"bytes"
 	"io"
 	"log"
@@ -310,7 +311,99 @@ func TestFileExtension(t *testing.T) {
 	}
 }
 
-// TestRecordsRejectsBadInput covers the three ways the input path goes wrong,
+func writeTestZip(t *testing.T, zipPath string, entries map[string]string) {
+	t.Helper()
+	f, err := os.Create(zipPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer f.Close()
+	zw := zip.NewWriter(f)
+	for name, content := range entries {
+		w, err := zw.Create(name)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if _, err := w.Write([]byte(content)); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := zw.Close(); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestRecordsFromZip(t *testing.T) {
+	const csvData = `Submission ID,Common Name,Scientific Name,Taxonomic Order,Count,State/Province,County,Location ID,Location,Latitude,Longitude,Date,Time,Protocol,Duration (Min),All Obs Reported,Distance Traveled (km),Area Covered (ha),Number of Observers,Breeding Code,Observation Details,Checklist Comments,ML Catalog Numbers
+S123,American Robin,Turdus migratorius,1,1,CA,Santa Clara,L123,Some Park,37.123,-122.123,2023-01-02,03:04 PM,Stationary,60,1,0,0,1,,,
+`
+	t.Run("MyEBirdData.csv at archive root", func(t *testing.T) {
+		zipPath := filepath.Join(t.TempDir(), "ebird_export.zip")
+		writeTestZip(t, zipPath, map[string]string{
+			"MyEBirdData.csv": csvData,
+		})
+
+		records, err := Records(zipPath)
+		if err != nil {
+			t.Fatalf("Records(%s) error = %v", zipPath, err)
+		}
+		var recs []Record
+		for rec := range records {
+			recs = append(recs, rec)
+		}
+		if len(recs) != 1 {
+			t.Fatalf("got %d records, want 1", len(recs))
+		}
+		if recs[0].SubmissionID != "S123" || recs[0].ScientificName != "Turdus migratorius" || recs[0].Line != 2 {
+			t.Errorf("got record %+v, want S123 / Turdus migratorius at line 2", recs[0])
+		}
+	})
+
+	t.Run("MyEBirdData.csv inside folder with __MACOSX metadata ignored", func(t *testing.T) {
+		zipPath := filepath.Join(t.TempDir(), "EBIRD_EXPORT.ZIP")
+		writeTestZip(t, zipPath, map[string]string{
+			"__MACOSX/ebird_123/._MyEBirdData.csv": "macOS AppleDouble garbage",
+			"ebird_123/myebirddata.csv":            csvData,
+		})
+
+		records, err := Records(zipPath)
+		if err != nil {
+			t.Fatalf("Records(%s) error = %v", zipPath, err)
+		}
+		var recs []Record
+		for rec := range records {
+			recs = append(recs, rec)
+		}
+		if len(recs) != 1 || recs[0].SubmissionID != "S123" {
+			t.Fatalf("got %+v, want single record S123", recs)
+		}
+	})
+
+	t.Run("zip with multiple MyEBirdData.csv entries rejected", func(t *testing.T) {
+		zipPath := filepath.Join(t.TempDir(), "ambiguous.zip")
+		writeTestZip(t, zipPath, map[string]string{
+			"a/MyEBirdData.csv": csvData,
+			"b/MyEBirdData.csv": csvData,
+		})
+
+		if _, err := Records(zipPath); err == nil || !strings.Contains(err.Error(), "multiple MyEBirdData.csv") {
+			t.Errorf("Records() error = %v, want error mentioning multiple MyEBirdData.csv files", err)
+		}
+	})
+
+	t.Run("zip containing non-eBird MyEBirdData.csv rejected", func(t *testing.T) {
+		zipPath := filepath.Join(t.TempDir(), "foreign.zip")
+		writeTestZip(t, zipPath, map[string]string{
+			"MyEBirdData.csv": "Name,Date\nAmerican Robin,2023-01-02\n",
+		})
+
+		if _, err := Records(zipPath); err == nil || !strings.Contains(err.Error(), "Submission ID") {
+			t.Errorf("Records() error = %v, want error mentioning Submission ID", err)
+		}
+	})
+}
+
+// TestRecordsRejectsBadInput covers the ways the input path goes wrong,
 // each of which used to produce either an operating-system message that
 // explains nothing or, worse, no error at all.
 //
@@ -320,10 +413,14 @@ func TestFileExtension(t *testing.T) {
 func TestRecordsRejectsBadInput(t *testing.T) {
 	dir := t.TempDir()
 
-	zipPath := filepath.Join(dir, "ebird_1757602033437.zip")
-	if err := os.WriteFile(zipPath, []byte("PK\x03\x04 not really a zip"), 0o600); err != nil {
+	corruptZip := filepath.Join(dir, "ebird_corrupt.zip")
+	if err := os.WriteFile(corruptZip, []byte("PK\x03\x04 not really a zip"), 0o600); err != nil {
 		t.Fatal(err)
 	}
+	missingCSVZip := filepath.Join(dir, "ebird_missing.zip")
+	writeTestZip(t, missingCSVZip, map[string]string{
+		"README.txt": "not an eBird export",
+	})
 	// A CSV that parses fine but isn't an eBird export. Without a header check
 	// this is the dangerous case: every lookup of a missing column returns
 	// index 0, so each record takes its submission ID from the first column.
@@ -343,7 +440,8 @@ func TestRecordsRejectsBadInput(t *testing.T) {
 		// and fails on Windows, whose error says "Incorrect function." — which
 		// is the bug being fixed.
 		{"directory", dir, "MyEBirdData.csv"},
-		{"zip archive", zipPath, "Extract"},
+		{"corrupt zip archive", corruptZip, "opening zip archive"},
+		{"zip without MyEBirdData.csv", missingCSVZip, "does not contain MyEBirdData.csv"},
 		{"not an eBird export", foreign, "Submission ID"},
 	} {
 		t.Run(tt.name, func(t *testing.T) {

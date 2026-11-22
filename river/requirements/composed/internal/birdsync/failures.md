@@ -54,4 +54,4 @@ Formerly: AC-036
 
 Covers: [product.unusableInputExplained](../../../local/product/failures.md#unusableinputexplained)
 
-A directory, a zip archive, and a CSV without a `Submission ID` column are each rejected with a message naming the problem.
+A directory, an invalid zip archive, a zip archive without `MyEBirdData.csv`, and a CSV without a `Submission ID` column are each rejected with a message naming the problem.

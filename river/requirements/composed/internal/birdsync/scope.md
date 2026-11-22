@@ -10,7 +10,7 @@ Purpose, non-goals, command-line invocation, and `tools/` boundaries for [`birds
 
 - [product.copiesObservations](../../../local/product/scope.md#copiesobservations) — Copies eBird observations, with their media, into iNaturalist
 - [product.oneWaySync](../../../local/product/scope.md#onewaysync) — The sync is one-way, eBird to iNaturalist
-- [product.csvExportInput](../../../local/product/scope.md#csvexportinput) — The input is the user's eBird CSV export
+- [product.csvExportInput](../../../local/product/scope.md#csvexportinput) — The input is the user's eBird export (CSV or .zip archive)
 - [product.noReverseSync](../../../local/product/scope.md#noreversesync) — No sync from iNaturalist back to eBird
 - [product.neverModifyOthersObservations](../../../local/product/scope.md#nevermodifyothersobservations) — Never modifies an observation birdsync did not create
 - [product.noTaxonomyReconciliation](../../../local/product/scope.md#notaxonomyreconciliation) — No taxonomy reconciliation between the services

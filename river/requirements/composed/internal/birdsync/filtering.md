@@ -97,6 +97,16 @@ Covers: [tech.csvByHeaderName](../../../local/tech/formats.md#csvbyheadername), 
 
 Limit: partial for the CSV input requirement.
 
+## zipArchiveInput
+
+**Records can be read directly from an eBird .zip archive**
+
+Covers: [product.csvExportInput](../../../local/product/scope.md#csvexportinput), [tech.csvByHeaderName](../../../local/tech/formats.md#csvbyheadername)
+
+`ebird.Records` reads `MyEBirdData.csv` directly from a `.zip` archive — whether at the
+archive root or inside a subdirectory, ignoring macOS `__MACOSX` metadata entries — and
+returns the same records as reading the extracted CSV.
+
 ## syncKeyValidity
 
 **The sync key is valid only when complete**

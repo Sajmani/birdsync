@@ -2,6 +2,7 @@
 package ebird
 
 import (
+	"archive/zip"
 	"encoding/csv"
 	"fmt"
 	"io"
@@ -10,6 +11,7 @@ import (
 	"mime"
 	"net/http"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 	"time"
@@ -80,10 +82,10 @@ func (r Record) ObservationID() ObservationID {
 
 func Records(filename string) (iter.Seq[Record], error) {
 	// Check the path before opening it. eBird's download arrives as a zip that
-	// extracts to a folder, and users pass the folder or the zip by mistake
-	// (issue #1). Letting that reach the CSV reader produces the operating
-	// system's message — "is a directory" on Unix, "Incorrect function." on
-	// Windows — which tells nobody what to do (product.unusableInputExplained).
+	// extracts to a folder, and users pass the folder by mistake (issue #1).
+	// Letting that reach the CSV reader produces the operating system's
+	// message — "is a directory" on Unix, "Incorrect function." on Windows —
+	// which tells nobody what to do.
 	info, err := os.Stat(filename)
 	if err != nil {
 		return nil, fmt.Errorf("Records(%s): %w", filename, err)
@@ -92,7 +94,7 @@ func Records(filename string) (iter.Seq[Record], error) {
 		return nil, fmt.Errorf("Records(%s): that is a folder, not a file; pass the MyEBirdData.csv inside it", filename)
 	}
 	if strings.EqualFold(filepath.Ext(filename), ".zip") {
-		return nil, fmt.Errorf("Records(%s): that is a zip archive. Extract it and pass the MyEBirdData.csv inside", filename)
+		return recordsFromZip(filename)
 	}
 
 	f, err := os.Open(filename)
@@ -100,8 +102,50 @@ func Records(filename string) (iter.Seq[Record], error) {
 		return nil, fmt.Errorf("Records(%s): %w", filename, err)
 	}
 	defer f.Close()
+	return readRecords(filename, f)
+}
 
-	r := csv.NewReader(f)
+// recordsFromZip reads MyEBirdData.csv directly from an eBird .zip export.
+func recordsFromZip(filename string) (iter.Seq[Record], error) {
+	zr, err := zip.OpenReader(filename)
+	if err != nil {
+		return nil, fmt.Errorf("Records(%s): opening zip archive: %w", filename, err)
+	}
+	defer zr.Close()
+
+	var matches []*zip.File
+	for _, f := range zr.File {
+		if f.FileInfo().IsDir() {
+			continue
+		}
+		name := strings.ReplaceAll(f.Name, "\\", "/")
+		if strings.HasPrefix(name, "__MACOSX/") || strings.Contains(name, "/__MACOSX/") {
+			continue
+		}
+		base := path.Base(name)
+		if strings.HasPrefix(base, "._") {
+			continue
+		}
+		if strings.EqualFold(base, "MyEBirdData.csv") {
+			matches = append(matches, f)
+		}
+	}
+	if len(matches) == 0 {
+		return nil, fmt.Errorf("Records(%s): zip archive does not contain MyEBirdData.csv", filename)
+	}
+	if len(matches) > 1 {
+		return nil, fmt.Errorf("Records(%s): zip archive contains multiple MyEBirdData.csv files", filename)
+	}
+	rc, err := matches[0].Open()
+	if err != nil {
+		return nil, fmt.Errorf("Records(%s): opening %s in zip archive: %w", filename, matches[0].Name, err)
+	}
+	defer rc.Close()
+	return readRecords(filename, rc)
+}
+
+func readRecords(filename string, src io.Reader) (iter.Seq[Record], error) {
+	r := csv.NewReader(src)
 	// eBird's CSV export returns a variable number of fields per record,
 	// so disable this check. This means we need to explicitly check len(rec)
 	// before accessing fields that might not be there.
