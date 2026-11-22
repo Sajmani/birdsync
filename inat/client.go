@@ -37,6 +37,7 @@ type Client struct {
 	lastRequest        time.Time
 	maxRequests        int
 	requestCount       int
+	maxSoundBytes      int64
 }
 
 func NewClient(baseURL, apiToken, userAgent string) *Client {
@@ -46,6 +47,7 @@ func NewClient(baseURL, apiToken, userAgent string) *Client {
 		userAgent:          userAgent,
 		minRequestInterval: DefaultMinRequestInterval,
 		maxRequests:        DefaultMaxRequests,
+		maxSoundBytes:      MaxSoundBytes,
 	}
 }
 
@@ -72,6 +74,29 @@ const DefaultMinRequestInterval = time.Second
 // (tech.dailyRequestBudget). Because every HTTP call passes through roundTrip,
 // this bounds downloads and --dryrun runs as well as writes.
 const DefaultMaxRequests = 9000
+
+// MaxSoundBytes is iNaturalist's 50 MB upload size limit for sound files.
+// UploadMedia rejects sounds larger than this locally before buffering the file
+// in memory or sending an HTTP request.
+const MaxSoundBytes int64 = 50 << 20
+
+// MediaTooLargeError is returned when a sound file exceeds MaxSoundBytes and is
+// rejected locally before uploading to iNaturalist.
+type MediaTooLargeError struct {
+	AssetID string
+	Size    int64
+	Limit   int64
+}
+
+func (e *MediaTooLargeError) Error() string {
+	return fmt.Sprintf("ML asset %s sound file is %.1f MB (%d bytes), exceeding iNaturalist's %.0f MB sound upload limit",
+		e.AssetID, float64(e.Size)/(1<<20), e.Size, float64(e.Limit)/(1<<20))
+}
+
+// Permanent reports true: an oversized sound file will not succeed on retry.
+func (e *MediaTooLargeError) Permanent() bool {
+	return true
+}
 
 // ErrRequestBudgetExceeded is returned when sending another request would
 // exceed the client's per-run request cap.
@@ -208,6 +233,21 @@ func (c *Client) DeleteObservation(id uuid.UUID) error {
 }
 
 func (c *Client) UploadMedia(filename string, isPhoto bool, mlAssetID string, obsUUID string) error {
+	f, err := os.Open(filename)
+	if err != nil {
+		return fmt.Errorf("UploadMedia: %w", err)
+	}
+	defer f.Close()
+	if !isPhoto && c.maxSoundBytes > 0 {
+		if info, err := f.Stat(); err == nil && info.Size() > c.maxSoundBytes {
+			return &MediaTooLargeError{
+				AssetID: mlAssetID,
+				Size:    info.Size(),
+				Limit:   c.maxSoundBytes,
+			}
+		}
+	}
+
 	destFilename := "ML" + mlAssetID + path.Ext(filename)
 	var fieldName string
 	var postURL string
@@ -226,11 +266,6 @@ func (c *Client) UploadMedia(filename string, isPhoto bool, mlAssetID string, ob
 	if err != nil {
 		return fmt.Errorf("UploadMedia: %w", err)
 	}
-	f, err := os.Open(filename)
-	if err != nil {
-		return fmt.Errorf("UploadMedia: %w", err)
-	}
-	defer f.Close()
 	_, err = io.Copy(fileWriter, f)
 	if err != nil {
 		return fmt.Errorf("UploadMedia: %w", err)

@@ -19,8 +19,10 @@ type mockEBirdClient struct {
 
 	// tempDir, when set, makes DownloadMLAsset write a real file there and
 	// record its path in downloaded, so a test can check it gets cleaned up.
-	tempDir    string
-	downloaded []string
+	tempDir       string
+	downloaded    []string
+	downloadCalls []string
+	failDownloads map[string]error
 }
 
 func (m *mockEBirdClient) Records(path string) (iter.Seq[ebird.Record], error) {
@@ -37,6 +39,10 @@ func (m *mockEBirdClient) Records(path string) (iter.Seq[ebird.Record], error) {
 // behave like the real one and write an actual file, which is what a test of
 // temp-file cleanup needs.
 func (m *mockEBirdClient) DownloadMLAsset(id string) (string, bool, error) {
+	m.downloadCalls = append(m.downloadCalls, id)
+	if err, ok := m.failDownloads[id]; ok {
+		return "", false, err
+	}
 	if m.tempDir == "" {
 		return "", false, nil // isPhoto is false (media are sounds)
 	}
@@ -1366,4 +1372,89 @@ func TestFuzzyMatchSubspecies(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestOversizedSoundRecordedAsPermanentFailure(t *testing.T) {
+	t.Run("oversized sound caught during download is recorded and not retried", func(t *testing.T) {
+		resetFlags()
+		rec := ebird.Record{
+			Line:             2,
+			SubmissionID:     "S500",
+			ScientificName:   "Hylocichla mustelina",
+			CommonName:       "Wood Thrush",
+			Date:             "2024-06-01",
+			Time:             "06:30 AM",
+			MLCatalogNumbers: "90001",
+		}
+		mockEbird := &mockEBirdClient{
+			records: []ebird.Record{rec},
+			failDownloads: map[string]error{
+				"90001": &ebird.AssetTooLargeError{AssetID: "90001", Size: 60 << 20, Limit: inat.MaxSoundBytes},
+			},
+		}
+		mockInat := &mockINatClient{}
+
+		s1 := birdsync("MyEBirdData.csv", mockEbird, "myUserID", mockInat)
+		if s1.errors != 1 || s1.createdObservations != 1 || s1.updatedObservations != 1 {
+			t.Fatalf("run 1: errors=%d created=%d updated=%d, want 1, 1, 1",
+				s1.errors, s1.createdObservations, s1.updatedObservations)
+		}
+		if len(mockInat.uploaded) != 0 {
+			t.Errorf("run 1 uploaded %d media files, want 0", len(mockInat.uploaded))
+		}
+		if len(mockInat.updated) != 1 || !strings.Contains(mockInat.updated[0].Description, failedMarker) ||
+			!strings.Contains(mockInat.updated[0].Description, "90001") {
+			t.Fatalf("run 1 updated description did not record permanent failure: %+v", mockInat.updated)
+		}
+
+		// Run 2: feed back the updated observation; asset 90001 must not be re-downloaded or re-uploaded.
+		mockEbird.downloadCalls = nil
+		mockInat2 := &mockINatClient{
+			observations: []inat.Result{{
+				ID:          1,
+				UUID:        mockInat.updated[0].UUID,
+				Description: mockInat.updated[0].Description,
+				Ofvs: []inat.Ofv{
+					{FieldID: inat.EBirdField, Value: "S500"},
+					{FieldID: inat.EBirdScientificNameField, Value: "Hylocichla mustelina"},
+				},
+			}},
+		}
+		s2 := birdsync("MyEBirdData.csv", mockEbird, "myUserID", mockInat2)
+		if s2.previouslySkips != 1 || s2.errors != 0 || s2.updatedObservations != 0 {
+			t.Errorf("run 2: previouslySkips=%d errors=%d updated=%d, want 1, 0, 0",
+				s2.previouslySkips, s2.errors, s2.updatedObservations)
+		}
+		if len(mockEbird.downloadCalls) != 0 {
+			t.Errorf("run 2 re-downloaded %v, want none", mockEbird.downloadCalls)
+		}
+	})
+
+	t.Run("oversized sound caught in UploadMedia is recorded as permanent failure", func(t *testing.T) {
+		resetFlags()
+		rec := ebird.Record{
+			Line:             2,
+			SubmissionID:     "S501",
+			ScientificName:   "Hylocichla mustelina",
+			CommonName:       "Wood Thrush",
+			Date:             "2024-06-01",
+			Time:             "06:30 AM",
+			MLCatalogNumbers: "90002",
+		}
+		mockEbird := &mockEBirdClient{records: []ebird.Record{rec}}
+		mockInat := &mockINatClient{
+			failUploads: map[string]error{
+				"90002": &inat.MediaTooLargeError{AssetID: "90002", Size: 55 << 20, Limit: inat.MaxSoundBytes},
+			},
+		}
+
+		s := birdsync("MyEBirdData.csv", mockEbird, "myUserID", mockInat)
+		if s.errors != 1 || s.updatedObservations != 1 {
+			t.Fatalf("errors=%d updated=%d, want 1, 1", s.errors, s.updatedObservations)
+		}
+		if len(mockInat.updated) != 1 || !strings.Contains(mockInat.updated[0].Description, failedMarker) ||
+			!strings.Contains(mockInat.updated[0].Description, "90002") {
+			t.Fatalf("updated description did not record permanent failure: %+v", mockInat.updated)
+		}
+	})
 }

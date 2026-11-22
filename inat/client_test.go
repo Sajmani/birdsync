@@ -1,11 +1,14 @@
 package inat
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -298,5 +301,67 @@ func TestClientEnforcesMaxRequests(t *testing.T) {
 	}
 	if got := client.RequestCount(); got != 3 {
 		t.Errorf("RequestCount() = %d, want 3", got)
+	}
+}
+
+func TestUploadMedia_SoundSizeLimit(t *testing.T) {
+	if MaxSoundBytes != 50<<20 {
+		t.Fatalf("MaxSoundBytes = %d, want %d (50 MB)", MaxSoundBytes, 50<<20)
+	}
+	if NewClient("http://example.invalid", "", "").maxSoundBytes != MaxSoundBytes {
+		t.Fatal("NewClient does not set MaxSoundBytes by default")
+	}
+
+	const limit int64 = 128
+	dir := t.TempDir()
+	overSound := filepath.Join(dir, "big.mp3")
+	atLimitSound := filepath.Join(dir, "ok.mp3")
+	overPhoto := filepath.Join(dir, "big.jpg")
+	for path, size := range map[string]int64{
+		overSound:    limit + 1,
+		atLimitSound: limit,
+		overPhoto:    limit + 64,
+	} {
+		if err := os.WriteFile(path, bytes.Repeat([]byte("x"), int(size)), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	var paths []string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		paths = append(paths, r.URL.Path)
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer server.Close()
+
+	client := newTestClient(server.URL, "test-token", "test-user-agent")
+	client.maxSoundBytes = limit
+
+	// Oversized sound rejected locally with zero HTTP requests.
+	err := client.UploadMedia(overSound, false, "80001", uuid.New().String())
+	var tooLarge *MediaTooLargeError
+	if !errors.As(err, &tooLarge) {
+		t.Fatalf("UploadMedia(overSound) error = %v, want *MediaTooLargeError", err)
+	}
+	if !tooLarge.Permanent() {
+		t.Error("MediaTooLargeError.Permanent() = false, want true")
+	}
+	if !strings.Contains(err.Error(), "80001") || !strings.Contains(err.Error(), "129 bytes") {
+		t.Errorf("error %q should name asset ID and byte size", err)
+	}
+	if len(paths) != 0 || client.RequestCount() != 0 {
+		t.Errorf("oversized sound sent %d HTTP requests (RequestCount=%d), want 0", len(paths), client.RequestCount())
+	}
+
+	// Sound at exact limit uploads normally.
+	if err := client.UploadMedia(atLimitSound, false, "80002", uuid.New().String()); err != nil {
+		t.Fatalf("UploadMedia(atLimitSound) error = %v", err)
+	}
+	// Photo above sound limit uploads normally.
+	if err := client.UploadMedia(overPhoto, true, "80003", uuid.New().String()); err != nil {
+		t.Fatalf("UploadMedia(overPhoto) error = %v", err)
+	}
+	if len(paths) != 2 || paths[0] != "/observation_sounds" || paths[1] != "/observation_photos" {
+		t.Errorf("uploaded paths = %v, want [/observation_sounds /observation_photos]", paths)
 	}
 }

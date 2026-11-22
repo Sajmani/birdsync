@@ -104,9 +104,11 @@ Everything that knows about eBird's data formats.
 - `Record.Observed` parses the date and time. eBird writes dates as either `2006-01-02` or
   `1/2/2006` and the time may be absent, so this function handles four combinations. Anything
   comparing dates should go through it rather than reading `Record.Date` directly.
-- `DownloadMLAsset` fetches an asset from the Macaulay Library CDN. An asset ID doesn't say
+- `DownloadMLAsset` (and `DownloadMLAssetMaxSound`) fetches an asset from the Macaulay Library CDN. An asset ID doesn't say
   whether it's a photo or a sound, so this tries the photo URL (`/asset/<id>/2400`) and falls
-  back to the sound URL (`/asset/<id>/mp3`) on a 404. It returns a temp-file path, an
+  back to the sound URL (`/asset/<id>/mp3`) on a 404. For sounds exceeding `inat.MaxSoundBytes`
+  (50 MB), it rejects the asset via `Content-Length` before downloading (or aborts a chunked read
+  past the limit) with a permanent `*ebird.AssetTooLargeError`. It returns a temp-file path, an
   `isPhoto` flag, and derives the file extension from the response `Content-Type`.
 
 ### `inat`

@@ -46,7 +46,7 @@ func (ebirdClientImpl) Records(path string) (iter.Seq[ebird.Record], error) {
 }
 
 func (ebirdClientImpl) DownloadMLAsset(id string) (string, bool, error) {
-	return ebird.DownloadMLAsset(id)
+	return ebird.DownloadMLAssetMaxSound(id, inat.MaxSoundBytes)
 }
 
 // inatClient encapsulates the inat package functions for testing.
