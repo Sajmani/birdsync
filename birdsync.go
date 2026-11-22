@@ -91,7 +91,7 @@ type stats struct {
 func main() {
 	flag.Parse()
 	if len(flag.Args()) != 1 {
-		log.Println("usage: birdsync MyEBirdData.csv")
+		log.Println("usage: birdsync MyEBirdData.csv (or ebird_*.zip)")
 		flag.Usage()
 		os.Exit(1)
 	}

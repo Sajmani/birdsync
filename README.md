@@ -5,7 +5,7 @@ Birdsync syncs eBird observations, photos, and sounds to iNaturalist.
 
 You must download your data from eBird using
 https://ebird.org/downloadMyData.
-Save the zip file and unzip it to get the `MyEBirdData.csv` file.
+You can pass the downloaded `.zip` file directly to birdsync, or unzip it and pass the `MyEBirdData.csv` file inside.
 
 To run birdsync, you'll need the Go language toolchain.
 Download it from http://go.dev.
@@ -22,13 +22,13 @@ go install github.com/Sajmani/birdsync@latest
 By default, Go installs binaries in the directory `$HOME/go/bin`.
 [Customize this location](https://pkg.go.dev/cmd/go#hdr-Compile_and_install_packages_and_dependencies) by setting the `GOBIN` environment variable.
 
-Run `birdsync` from the command line, specifying the path to your `MyEBirdData.csv` file:
+Run `birdsync` from the command line, specifying the path to your downloaded eBird `.zip` file or `MyEBirdData.csv` file:
 ```
-$HOME/go/bin/birdsync MyEBirdData.csv
+$HOME/go/bin/birdsync ebird_*.zip
 ```
 Consider running a "dry run" to test what birdsync would do without actually touching your iNaturalist observations:
 ```
-$HOME/go/bin/birdsync --dryrun MyEBirdData.csv
+$HOME/go/bin/birdsync --dryrun ebird_*.zip
 ```
 Look for log lines starting with "DRYRUN" to see what observations birdsync will create and which media files it will copy. The dry run prints out the full observation data structure and so can be quite verbose.
 

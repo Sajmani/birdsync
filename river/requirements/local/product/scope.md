@@ -42,16 +42,17 @@ The sync is one-way: eBird → iNaturalist.
 
 ## csvExportInput
 
-**The input is the user's eBird CSV export**
+**The input is the user's eBird export (CSV or .zip archive)**
 
 Formerly: P-003
 
 Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
 
-The input is a `MyEBirdData.csv` file the user downloads from eBird, not a
-live eBird API.
+The input is the user's eBird data export — either `MyEBirdData.csv` directly or the
+downloaded `.zip` archive containing `MyEBirdData.csv` — not a live eBird API.
 
-*Rationale: the eBird API does not expose personal checklists.*
+*Rationale: the eBird API does not expose personal checklists, and eBird delivers the
+personal export as a `.zip` archive containing `MyEBirdData.csv`.*
 
 ## noReverseSync
 
