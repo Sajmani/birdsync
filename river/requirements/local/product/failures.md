@@ -79,13 +79,15 @@ Formerly: P-063
 
 Subject: `media.upload.permanent_failure`
 
-Value: `HTTP 4xx except 401, 408, 429`
+Value: `HTTP 4xx except 401, 408, 429; sound files over 50 MB`
 
 Goals: [goals.accountsStaySafe](../../../goals/goals.md#accountsstaysafe)
 
-An upload that fails permanently — the service rejected the file itself, rather
-than the attempt — is recorded in the description as failed and is not attempted again. A
-failure that may be transient is not recorded, and is retried on the next run.
+An upload that fails permanently — because the service rejected the file itself (HTTP 4xx
+except 401, 408, 429) or because a sound file exceeds iNaturalist's 50 MB sound upload limit
+([soundSizeLimitPrecheck](media.md#soundsizelimitprecheck)) — is recorded in the description
+as failed and is not attempted again. A failure that may be transient is not recorded, and is
+retried on the next run.
 
 *Rationale: [decisions.permanentFailuresRecorded](../../decisions/decisions.md#permanentfailuresrecorded). Without
 the distinction, birdsync either gives up on a network blip or re-downloads a 50 MB sound

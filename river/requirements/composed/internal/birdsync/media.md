@@ -18,6 +18,7 @@ memory bounds for [`birdsync`](README.md).
 - [product.removedAssetsReported](../../../local/product/media.md#removedassetsreported) — Assets removed from eBird are reported, not removed
 - [product.mediaCountMismatchReported](../../../local/product/media.md#mediacountmismatchreported) — A media count mismatch is reported, not corrected
 - [product.mediaFailuresTolerated](../../../local/product/media.md#mediafailurestolerated) — A failed media transfer is logged, counted, and survived
+- [product.soundSizeLimitPrecheck](../../../local/product/media.md#soundsizelimitprecheck) — Sound files over 50 MB are rejected before uploading
 - [tech.updateKeepsPhotos](../../../local/tech/safety.md#updatekeepsphotos) — UpdateObservation always sets ignore_photos
 - [tech.assetTypeNeedsDownload](../../../local/tech/formats.md#assettypeneedsdownload) — Asset type is known only after download
 - [mlterms.contributorKeepsCopyright](../../../imported/ebird.org/mlterms/mlterms.md#contributorkeepscopyright) — A contributor keeps copyright in their own media
@@ -167,6 +168,18 @@ Formerly: AC-038
 Covers: [tech.tempFilesDeleted](../../../local/tech/resources.md#tempfilesdeleted)
 
 A truncated download leaves nothing in the temp directory.
+
+## oversizedSoundRejectedBeforeUpload
+
+**Oversized sound files are rejected before upload and recorded as permanent failures**
+
+Covers: [product.soundSizeLimitPrecheck](../../../local/product/media.md#soundsizelimitprecheck), [product.permanentUploadFailureRecorded](../../../local/product/failures.md#permanentuploadfailurerecorded)
+
+A sound asset exceeding 50 MB (by `Content-Length`, by streamed byte count on download, or
+by file size in `UploadMedia`) is rejected without uploading to iNaturalist, leaves no temp
+file behind, reports the ML asset ID, file size, and limit, and is recorded as a permanent
+failure in the observation description so later runs do not re-download or re-attempt it.
+Photos and sounds at or below the limit are unaffected.
 
 ## mediaRequestsOnlyListedAssets
 

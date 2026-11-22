@@ -121,3 +121,25 @@ the run.
 *The description lists only assets that actually uploaded, so a failure is retried on the
 next run rather than recorded as done. See
 [decisions.descriptionListsOnlyUploaded](../../decisions/decisions.md#descriptionlistsonlyuploaded).*
+
+## soundSizeLimitPrecheck
+
+**Sound files over 50 MB are rejected before uploading**
+
+Subject: `media.sound.max_bytes`
+
+Value: `52428800` (50 MB)
+
+Goals: [goals.accountsStaySafe](../../../goals/goals.md#accountsstaysafe), [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord)
+
+Before downloading or uploading a sound file, birdsync checks its size against
+iNaturalist's 50 MB sound upload limit (via `Content-Length` and bounded reads during
+download, and via file size before buffering in `UploadMedia`). A sound file exceeding the
+limit is not uploaded, is reported with a message naming the Macaulay Library asset ID, file
+size, and 50 MB limit, and is recorded as a permanent failure so it is not re-downloaded or
+re-attempted on later runs
+([permanentUploadFailureRecorded](failures.md#permanentuploadfailurerecorded)).
+
+*Rationale: iNaturalist rejects sound files larger than 50 MB. Checking the size up front
+avoids downloading and uploading tens of megabytes only to receive a generic HTTP error, and
+records the asset cleanly as a permanent failure.*

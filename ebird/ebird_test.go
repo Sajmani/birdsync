@@ -3,12 +3,14 @@ package ebird
 import (
 	"archive/zip"
 	"bytes"
+	"errors"
 	"io"
 	"log"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -494,4 +496,135 @@ func TestDownloadMLAssetCleansUpOnError(t *testing.T) {
 	for _, e := range left {
 		t.Errorf("Left %s behind in the temp directory after a failed download (tech.tempFilesDeleted)", e.Name())
 	}
+}
+
+func TestDownloadMLAsset_SoundSizeLimit(t *testing.T) {
+	const limit int64 = 1024
+
+	t.Run("sound with Content-Length over limit rejected without downloading", func(t *testing.T) {
+		tmp := t.TempDir()
+		t.Setenv("TMPDIR", tmp)
+		const assetID = "70001"
+		const declaredSize int64 = 60 << 20
+
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			switch r.URL.Path {
+			case "/asset/" + assetID + "/2400":
+				http.NotFound(w, r)
+			case "/asset/" + assetID + "/mp3":
+				w.Header().Set("Content-Type", "audio/mpeg3")
+				w.Header().Set("Content-Length", strconv.FormatInt(declaredSize, 10))
+				w.WriteHeader(http.StatusOK)
+			default:
+				http.NotFound(w, r)
+			}
+		}))
+		defer server.Close()
+
+		_, _, err := downloadMLAssetWithLimit(server.URL, assetID, limit)
+		if err == nil {
+			t.Fatal("downloadMLAssetWithLimit() = nil, want *AssetTooLargeError")
+		}
+		var tooLarge *AssetTooLargeError
+		if !errors.As(err, &tooLarge) {
+			t.Fatalf("error = %T (%v), want *AssetTooLargeError", err, err)
+		}
+		if !tooLarge.Permanent() {
+			t.Error("AssetTooLargeError.Permanent() = false, want true")
+		}
+		if tooLarge.AssetID != assetID || tooLarge.Size != declaredSize || tooLarge.Limit != limit {
+			t.Errorf("got %+v, want AssetID=%s Size=%d Limit=%d", tooLarge, assetID, declaredSize, limit)
+		}
+		if !strings.Contains(err.Error(), assetID) || !strings.Contains(err.Error(), strconv.FormatInt(declaredSize, 10)) {
+			t.Errorf("error %q should name asset ID and byte size", err)
+		}
+		left, _ := os.ReadDir(tmp)
+		if len(left) != 0 {
+			t.Errorf("left %d temp file(s) behind after Content-Length rejection", len(left))
+		}
+	})
+
+	t.Run("chunked sound over limit aborts copy and cleans up temp file", func(t *testing.T) {
+		tmp := t.TempDir()
+		t.Setenv("TMPDIR", tmp)
+		const assetID = "70002"
+
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			switch r.URL.Path {
+			case "/asset/" + assetID + "/2400":
+				http.NotFound(w, r)
+			case "/asset/" + assetID + "/mp3":
+				w.Header().Set("Content-Type", "audio/mpeg3")
+				w.WriteHeader(http.StatusOK)
+				// Flushing forces chunked transfer encoding (Content-Length == -1).
+				w.(http.Flusher).Flush()
+				w.Write(bytes.Repeat([]byte("a"), int(limit)+512))
+			default:
+				http.NotFound(w, r)
+			}
+		}))
+		defer server.Close()
+
+		_, _, err := downloadMLAssetWithLimit(server.URL, assetID, limit)
+		var tooLarge *AssetTooLargeError
+		if !errors.As(err, &tooLarge) {
+			t.Fatalf("error = %v, want *AssetTooLargeError", err)
+		}
+		if !strings.Contains(err.Error(), assetID) {
+			t.Errorf("error %q should name asset ID", err)
+		}
+		left, _ := os.ReadDir(tmp)
+		if len(left) != 0 {
+			t.Errorf("left %d temp file(s) behind after chunked size rejection", len(left))
+		}
+	})
+
+	t.Run("sound at exact limit succeeds", func(t *testing.T) {
+		const assetID = "70003"
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			switch r.URL.Path {
+			case "/asset/" + assetID + "/2400":
+				http.NotFound(w, r)
+			case "/asset/" + assetID + "/mp3":
+				w.Header().Set("Content-Type", "audio/mpeg3")
+				w.WriteHeader(http.StatusOK)
+				w.Write(bytes.Repeat([]byte("b"), int(limit)))
+			default:
+				http.NotFound(w, r)
+			}
+		}))
+		defer server.Close()
+
+		filename, isPhoto, err := downloadMLAssetWithLimit(server.URL, assetID, limit)
+		if err != nil {
+			t.Fatalf("downloadMLAssetWithLimit() at exact limit error = %v", err)
+		}
+		defer os.Remove(filename)
+		if isPhoto {
+			t.Error("expected isPhoto=false")
+		}
+	})
+
+	t.Run("photo over sound limit is unaffected", func(t *testing.T) {
+		const assetID = "70004"
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Path == "/asset/"+assetID+"/2400" {
+				w.Header().Set("Content-Type", "image/jpeg")
+				w.WriteHeader(http.StatusOK)
+				w.Write(bytes.Repeat([]byte("p"), int(limit)+512))
+				return
+			}
+			http.NotFound(w, r)
+		}))
+		defer server.Close()
+
+		filename, isPhoto, err := downloadMLAssetWithLimit(server.URL, assetID, limit)
+		if err != nil {
+			t.Fatalf("downloadMLAssetWithLimit() for photo error = %v", err)
+		}
+		defer os.Remove(filename)
+		if !isPhoto {
+			t.Error("expected isPhoto=true")
+		}
+	})
 }

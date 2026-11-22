@@ -240,6 +240,29 @@ func (o ObservationID) String() string {
 // macaulayBaseURL is the base URL for the Macaulay Library CDN.
 const macaulayBaseURL = "https://cdn.download.ams.birds.cornell.edu/api/v2"
 
+// AssetTooLargeError is returned when a sound asset exceeds the caller's maximum
+// byte size, either via Content-Length before downloading or while streaming an
+// unsized response body.
+type AssetTooLargeError struct {
+	AssetID string
+	Size    int64 // exact byte size when known, or 0 when a chunked response exceeded Limit
+	Limit   int64
+}
+
+func (e *AssetTooLargeError) Error() string {
+	limitMB := float64(e.Limit) / (1 << 20)
+	if e.Size > 0 {
+		return fmt.Sprintf("ML asset %s sound file is %.1f MB (%d bytes), exceeding the %.0f MB limit",
+			e.AssetID, float64(e.Size)/(1<<20), e.Size, limitMB)
+	}
+	return fmt.Sprintf("ML asset %s sound file exceeds the %.0f MB limit", e.AssetID, limitMB)
+}
+
+// Permanent reports true: an oversized sound asset will not shrink on retry.
+func (e *AssetTooLargeError) Permanent() bool {
+	return true
+}
+
 // DownloadMLAsset downloads the photo or sound with the provided ML asset ID
 // (numbers only) and returns the local filename and whether it's a photo.
 // This file is temporary and may be deleted at any time.
@@ -251,9 +274,21 @@ func DownloadMLAsset(mlAssetID string) (string, bool, error) {
 	return downloadMLAsset(macaulayBaseURL, mlAssetID)
 }
 
+// DownloadMLAssetMaxSound behaves like DownloadMLAsset, but rejects sound files
+// larger than maxSoundBytes (when maxSoundBytes > 0) with *AssetTooLargeError
+// before downloading when Content-Length is known, or as soon as streamed bytes
+// exceed maxSoundBytes.
+func DownloadMLAssetMaxSound(mlAssetID string, maxSoundBytes int64) (string, bool, error) {
+	return downloadMLAssetWithLimit(macaulayBaseURL, mlAssetID, maxSoundBytes)
+}
+
 // downloadMLAsset is the implementation of DownloadMLAsset, accepting a base
 // URL so it can be tested against a local HTTP server.
 func downloadMLAsset(baseURL, mlAssetID string) (string, bool, error) {
+	return downloadMLAssetWithLimit(baseURL, mlAssetID, 0)
+}
+
+func downloadMLAssetWithLimit(baseURL, mlAssetID string, maxSoundBytes int64) (string, bool, error) {
 	// Try fetching this ML asset as a photo
 	url := fmt.Sprintf("%s/asset/%s/2400", baseURL, mlAssetID)
 	resp, err := http.Get(url)
@@ -274,6 +309,13 @@ func downloadMLAsset(baseURL, mlAssetID string) (string, bool, error) {
 	if resp.StatusCode != http.StatusOK {
 		return "", isPhoto, fmt.Errorf("DownloadMLAsset(%s): %s: %s", mlAssetID, url, resp.Status)
 	}
+	if !isPhoto && maxSoundBytes > 0 && resp.ContentLength > maxSoundBytes {
+		return "", isPhoto, &AssetTooLargeError{
+			AssetID: mlAssetID,
+			Size:    resp.ContentLength,
+			Limit:   maxSoundBytes,
+		}
+	}
 
 	tmpFile, err := os.CreateTemp("", "birdsync")
 	if err != nil {
@@ -292,9 +334,22 @@ func downloadMLAsset(baseURL, mlAssetID string) (string, bool, error) {
 		}
 	}()
 
-	_, err = io.Copy(tmpFile, resp.Body)
-	if err != nil {
-		return "", isPhoto, fmt.Errorf("DownloadMLAsset(%s): failed to copy asset data to file: %w", mlAssetID, err)
+	if !isPhoto && maxSoundBytes > 0 {
+		n, err := io.Copy(tmpFile, io.LimitReader(resp.Body, maxSoundBytes+1))
+		if err != nil {
+			return "", isPhoto, fmt.Errorf("DownloadMLAsset(%s): failed to copy asset data to file: %w", mlAssetID, err)
+		}
+		if n > maxSoundBytes {
+			return "", isPhoto, &AssetTooLargeError{
+				AssetID: mlAssetID,
+				Limit:   maxSoundBytes,
+			}
+		}
+	} else {
+		_, err = io.Copy(tmpFile, resp.Body)
+		if err != nil {
+			return "", isPhoto, fmt.Errorf("DownloadMLAsset(%s): failed to copy asset data to file: %w", mlAssetID, err)
+		}
 	}
 
 	// Detect the file extension from the Content-Type response header.

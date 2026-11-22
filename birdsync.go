@@ -432,6 +432,13 @@ func birdsync(eBirdCSVFilename string, ebirdClient ebirdClient, inatUserID strin
 			// that failed makes the failure permanent as well as untrue
 			// (product.descriptionContents, decisions.descriptionListsOnlyUploaded).
 			var uploaded, permanentlyFailed mlAssetSet
+			type permanentError interface {
+				Permanent() bool
+			}
+			isPermanent := func(err error) bool {
+				var pe permanentError
+				return errors.As(err, &pe) && pe.Permanent()
+			}
 			// Upload the media
 			for _, id := range assetIDs.ids {
 				if dryRun {
@@ -445,10 +452,16 @@ func birdsync(eBirdCSVFilename string, ebirdClient ebirdClient, inatUserID strin
 					if err != nil {
 						log.Printf("Couldn't download ML asset %s from eBird: %v", id, err)
 						s.errors++
+						if isPermanent(err) {
+							permanentlyFailed.Add(id)
+						}
 						continue
 					}
 					err = inatClient.UploadMedia(filename, isPhoto, id, obs.UUID.String())
-					usedRequests++
+					var tooLarge *inat.MediaTooLargeError
+					if !errors.As(err, &tooLarge) {
+						usedRequests++
+					}
 					// The download is a temp file that belongs to us now, so
 					// remove it whether or not the upload worked. Syncing an
 					// account with thousands of assets used to leave one file
@@ -463,8 +476,7 @@ func birdsync(eBirdCSVFilename string, ebirdClient ebirdClient, inatUserID strin
 						// A refusal of the file itself won't come good on a
 						// later run, so record it rather than re-downloading
 						// and re-uploading it forever (product.permanentUploadFailureRecorded).
-						var statusErr *inat.StatusError
-						if errors.As(err, &statusErr) && statusErr.Permanent() {
+						if isPermanent(err) {
 							permanentlyFailed.Add(id)
 						}
 						continue

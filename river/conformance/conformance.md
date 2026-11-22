@@ -507,6 +507,16 @@ Gates: yes, in CI
 Specman status: verified
 Not yet watched failing under River. Specman's `verified` status meant the check had been watched failing, but nothing records how or when, so this criterion has no `Watched failing:` line until someone breaks the behavior, sees the guardrail fail, and records it here.
 
+## oversizedSoundRejectedBeforeUpload
+
+Criterion: [birdsync.oversizedSoundRejectedBeforeUpload](../requirements/composed/internal/birdsync/media.md#oversizedsoundrejectedbeforeupload)
+
+Guardrails: `TestDownloadMLAsset_SoundSizeLimit` (`ebird/ebird_test.go`), `TestUploadMedia_SoundSizeLimit` (`inat/client_test.go`), `TestOversizedSoundRecordedAsPermanentFailure` (`birdsync_test.go`)
+
+Gates: yes, in CI
+
+Watched failing: 2026-11-21, by disabling the `maxSoundBytes` guards in `ebird/ebird.go` and `inat/client.go` and the permanent-error check on download errors in `birdsync.go`; all three tests failed on their target assertions
+
 ## americanSpellings
 
 Criterion: [birdsync.americanSpellings](../requirements/composed/internal/birdsync/engineering.md#americanspellings)
