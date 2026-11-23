@@ -71,3 +71,24 @@ birdsync works for an account with more than 10,000 iNaturalist observations.
 by [decisions.pageByIDAbove](../../decisions/decisions.md#pagebyidabove): the download
 pages by observation id, which has no ceiling, rather than by page number, which the API caps
 at 10,000 results.*
+
+## incrementalStateCache
+
+**Routine syncs use a local state cache and updated_since; --full forces a complete download**
+
+Goals: [goals.birdersKeepOneRecord](../../../goals/goals.md#birderskeeponerecord), [goals.communityNotBurdened](../../../goals/goals.md#communitynotburdened), [goals.accountsStaySafe](../../../goals/goals.md#accountsstaysafe)
+
+By default birdsync keeps a per-account local state cache at
+`$XDG_STATE_HOME/birdsync/state.json` (falling back to `os.UserCacheDir()/birdsync/state.json`,
+overridable via `--state`, and disabled when `--state=""`). After an initial full download,
+subsequent unwindowed runs query iNaturalist with `updated_since` (using a 1-minute overlap
+before the cached watermark) and merge changed observations into the cache. `--full` ignores
+the watermark and replaces the cached observations with a complete download, reconciling
+observations deleted on iNaturalist. Date-windowed runs (`--after` or `--before`) never
+advance the full-history watermark, `--dryrun` never creates or modifies the state file, a
+corrupt or unreadable cache falls back to a full download, and no credentials are stored in
+the state file.
+
+*Rationale: [decisions.localStateCache](../../decisions/decisions.md#localstatecache). Avoids
+re-downloading thousands of unchanged observations on every run while preserving exact
+duplicate detection, `--fuzzy` matching, and `--dryrun` safety.*

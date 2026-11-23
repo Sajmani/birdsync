@@ -22,15 +22,30 @@ const DownloadPageSize = 200
 // The dates d1 and d2 specify the start and end of the observation date range if nonzero.
 // The fields list specifies which fields are populated in the results.
 func (c *Client) DownloadObservations(inatUserID string, d1, d2 time.Time, fields ...string) ([]Result, error) {
+	return c.downloadObservations(inatUserID, d1, d2, time.Time{}, fields...)
+}
+
+// DownloadObservationsUpdatedSince downloads the observations for inatUserID
+// that were created or modified at or after since (the API's updated_since
+// parameter). It does not report observations deleted since then; callers that
+// cache observations need an occasional full download to reconcile deletions.
+func (c *Client) DownloadObservationsUpdatedSince(inatUserID string, since time.Time, fields ...string) ([]Result, error) {
+	return c.downloadObservations(inatUserID, time.Time{}, time.Time{}, since, fields...)
+}
+
+func (c *Client) downloadObservations(inatUserID string, d1, d2, updatedSince time.Time, fields ...string) ([]Result, error) {
 	const dateFormat = "2006-01-02"
-	var d1str, d2str string
+	var d1str, d2str, sinceStr string
 	if !d1.IsZero() {
 		d1str = " after " + d1.Format(dateFormat)
 	}
 	if !d2.IsZero() {
 		d2str = " before " + d2.Format(dateFormat)
 	}
-	log.Printf("Downloading observations for %s%s%s", inatUserID, d1str, d2str)
+	if !updatedSince.IsZero() {
+		sinceStr = " updated since " + updatedSince.UTC().Format(time.RFC3339)
+	}
+	log.Printf("Downloading observations for %s%s%s%s", inatUserID, d1str, d2str, sinceStr)
 
 	// From https://www.inaturalist.org/pages/api+recommended+practices:
 	// If using the API to fetch a lot of results, please use the highest supported per_page value.
@@ -76,6 +91,9 @@ func (c *Client) DownloadObservations(inatUserID string, d1, d2 time.Time, field
 		}
 		if !d2.IsZero() {
 			q.Set("d2", d2.Format(dateFormat))
+		}
+		if !updatedSince.IsZero() {
+			q.Set("updated_since", updatedSince.UTC().Format(time.RFC3339))
 		}
 		// "id" is the paging cursor, and unlike uuid the v2 API returns it only
 		// when asked. The client adds it rather than trusting every caller to

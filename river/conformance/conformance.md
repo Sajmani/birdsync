@@ -557,6 +557,36 @@ check it, and mapping one is the next step
 Gates: no
 Not watched failing.
 
+## incrementalDownloadUsesUpdatedSince
+
+Criterion: [birdsync.incrementalDownloadUsesUpdatedSince](../requirements/composed/internal/birdsync/download.md#incrementaldownloadusesupdatedsince)
+
+Guardrails: `TestIncrementalStateCache` (`birdsync_test.go`), `TestDownloadObservationsUpdatedSince` (`inat/inat_test.go`)
+
+Gates: yes, in CI
+
+Watched failing: 2026-11-22, by disabling the incremental `updated_since` branch in `birdsync.go`; `TestIncrementalStateCache/initial_full_download_populates_cache_and_next_run_uses_updated_since` failed
+
+## stateCacheBudgetTracksUpdates
+
+Criterion: [birdsync.stateCacheBudgetTracksUpdates](../requirements/composed/internal/birdsync/download.md#statecachebudgettracksupdates)
+
+Guardrails: `TestStateCacheBudgetTracksUpdatesToOlderObservations` (`birdsync_test.go`)
+
+Gates: yes, in CI
+
+Watched failing: 2026-11-22, by ignoring `priorRecorded` when computing `priorRequests` in `birdsync.go`; `TestStateCacheBudgetTracksUpdatesToOlderObservations` failed on run 2
+
+## dryRunLeavesStateUntouched
+
+Criterion: [birdsync.dryRunLeavesStateUntouched](../requirements/composed/internal/birdsync/download.md#dryrunleavesstateuntouched)
+
+Guardrails: `TestDryRunLeavesStateUntouched` (`birdsync_test.go`)
+
+Gates: yes, in CI
+
+Watched failing: 2026-11-22, by removing the `!dryRun` guard around `saveState` in `birdsync.go`; `TestDryRunLeavesStateUntouched` failed
+
 ## jwtFromEnvironmentInHeader
 
 Criterion: [birdsync.jwtFromEnvironmentInHeader](../requirements/composed/internal/birdsync/auth.md#jwtfromenvironmentinheader)

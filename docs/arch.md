@@ -23,7 +23,12 @@ One run does the following:
    decoded locally from the JWT (prompting only if the token carries no `user_id` claim).
 2. **Download existing observations.** Fetch the user's iNaturalist observations into memory,
    200 per page, restricted only to the `--after`/`--before` date window when set
-   (`inat.Client.DownloadObservations`). Deliberately not filtered by taxon:
+   (`inat.Client.DownloadObservations` / `DownloadObservationsUpdatedSince`). On unwindowed runs
+   after the first, `birdsync()` loads the per-account local state cache (`state.go`, default
+   `$XDG_STATE_HOME/birdsync/state.json` or `os.UserCacheDir()/birdsync/state.json`), fetches only
+   observations modified since the cached watermark (`updated_since` with a 1-minute overlap), and
+   merges them into the cached observations (`--full` forces a complete re-download to reconcile
+   deletions; `--dryrun` never writes the state file). Deliberately not filtered by taxon:
    see [`noTaxonFilterOnDownload`](../river/requirements/decisions/decisions.md#notaxonfilterondownload) (formerly CR-003).
 3. **Build three indexes** over those observations, at the top of `birdsync()`:
    - `previouslySynced`, keyed by `ebird.ObservationID` — the pair of eBird observation-field
@@ -104,6 +109,9 @@ dependency (`github.com/google/uuid`).
   of Macaulay Library asset IDs; `eBirdMLAssets` parses them from the CSV column and
   `iNatMLAssets` parses them back out of an iNaturalist observation's description text.
   `mediaChange` diffs the two and reports what changed.
+- **`state.go`** — per-account local JSON state cache (`last_synced_at` watermark, cached
+  observation summaries, and 24-hour API request timestamps), written atomically on non-dry-run
+  completion.
 
 ### `ebird`
 
@@ -147,10 +155,11 @@ the default matches iNaturalist's one per second) and refuses requests past `Def
 package passes through `roundTrip`, which is why a single choke point bounds downloads and
 `--dryrun` runs as well as writes ([birdsync.requestRate](../river/requirements/composed/internal/birdsync/download.md#requestrate)).
 
-To keep back-to-back runs within the same 24-hour budget without storing local state, `birdsync()`
-requests `created_at` when downloading the user's observations and estimates write requests already
-made in the past 24 hours (one create per recent observation, one upload per attached or
-permanently failed asset, and one description update when assets were handled). Before starting an
+To keep back-to-back runs within the same 24-hour budget, `birdsync()` combines the exact 24-hour
+request timestamps stored in the local state cache (`state.go`, [`localStateCache`](../river/requirements/decisions/decisions.md#localstatecache))
+with the stateless estimate from downloaded observations' `created_at` timestamps (one create per
+recent observation, one upload per attached or permanently failed asset, and one description update
+when assets were handled). Before starting an
 observation or media update whose writes would push the 24-hour total past 9,000, `birdsync()`
 stops cleanly so no observation is left created without its media, and reports the stop in the
 summary ([`dailyRequestBudget`](../river/requirements/decisions/decisions.md#dailyrequestbudget)).

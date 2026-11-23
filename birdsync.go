@@ -30,6 +30,8 @@ var (
 	before             dateTimeFlag
 	after              dateTimeFlag
 	positionalAccuracy int
+	fullSync           bool
+	statePath          string
 
 	// Seams for testing the 24-hour iNaturalist API request budget
 	// (tech.dailyRequestBudget) deterministically without real clocks or
@@ -55,6 +57,10 @@ func init() {
 		"Sync only observations observed after the provided DateTime (2006-01-02 15:04:05). The time can be omitted (2006-01-02).")
 	flag.IntVar(&positionalAccuracy, "positional_accuracy_meters", ebird.PositionalAccuracy,
 		"Positional accuracy in meters of the iNaturalist observations created by birdsync.")
+	flag.BoolVar(&fullSync, "full", false,
+		"Ignore the local state cache watermark and download all iNaturalist observations")
+	flag.StringVar(&statePath, "state", defaultStatePath(),
+		"Path to the local sync state cache file (set to empty string to disable caching)")
 }
 
 func debugf(format string, args ...any) {
@@ -288,12 +294,56 @@ func isSpeciesEpithet(s string) bool {
 }
 
 func birdsync(eBirdCSVFilename string, ebirdClient ebirdClient, inatUserID string, inatClient inatClient) stats {
-	results, err := inatClient.DownloadObservations(inatUserID, after.Time(), before.Time(),
-		"created_at", "description", "observed_on", "photos.all", "sounds.all", "taxon.all", "ofvs.all")
+	syncStart := nowFunc().UTC()
+	windowed := !after.Time().IsZero() || !before.Time().IsZero()
+	fields := []string{"created_at", "description", "observed_on", "photos.all", "sounds.all", "taxon.all", "ofvs.all"}
+
+	var st *stateFile
+	var acct *accountState
+	var priorRecorded int
+	if statePath != "" {
+		st = loadState(statePath)
+		acct = st.account(inatUserID)
+		acct.pruneRecentRequests(syncStart)
+		priorRecorded = len(acct.RecentRequests)
+	}
+
+	var downloaded []inat.Result
+	var err error
+	var incremental bool
+	if acct != nil && !fullSync && !windowed && !acct.LastSyncedAt.IsZero() {
+		incremental = true
+		since := acct.LastSyncedAt.Add(-syncOverlap)
+		downloaded, err = inatClient.DownloadObservationsUpdatedSince(inatUserID, since, fields...)
+	} else {
+		downloaded, err = inatClient.DownloadObservations(inatUserID, after.Time(), before.Time(), fields...)
+	}
 	if err != nil {
 		// Nothing useful can happen without the existing observations: syncing
 		// blind would duplicate everything the user already has.
 		log.Fatalf("Downloading iNaturalist observations: %v", err)
+	}
+
+	var results []inat.Result
+	if acct != nil {
+		if !windowed {
+			if incremental {
+				acct.mergeResults(downloaded)
+			} else {
+				acct.replaceResults(downloaded)
+			}
+			acct.LastSyncedAt = syncStart
+			results = acct.allResults()
+		} else {
+			// A date-windowed run considers only observations inside the window
+			// and never advances the full-history watermark.
+			results = downloaded
+			if !acct.LastSyncedAt.IsZero() {
+				acct.mergeResults(downloaded)
+			}
+		}
+	} else {
+		results = downloaded
 	}
 
 	previouslySynced := map[ebird.ObservationID]inat.Result{}
@@ -378,7 +428,12 @@ func birdsync(eBirdCSVFilename string, ebirdClient ebirdClient, inatUserID strin
 		return inat.Result{}, false, "", nil, false
 	}
 
-	usedRequests := downloadPageRequests(len(results)) + estimateRecentWriteRequests(results, nowFunc())
+	downloadPages := downloadPageRequests(len(downloaded))
+	priorRequests := max(priorRecorded, estimateRecentWriteRequests(results, nowFunc()))
+	usedRequests := downloadPages + priorRequests
+	if acct != nil {
+		acct.recordRequests(syncStart, downloadPages)
+	}
 
 	log.Printf("Reading eBird observations from %s", eBirdCSVFilename)
 	records, err := ebirdClient.Records(eBirdCSVFilename)
@@ -439,6 +494,7 @@ func birdsync(eBirdCSVFilename string, ebirdClient ebirdClient, inatUserID strin
 				var pe permanentError
 				return errors.As(err, &pe) && pe.Permanent()
 			}
+			var addedPhotos, addedSounds int
 			// Upload the media
 			for _, id := range assetIDs.ids {
 				if dryRun {
@@ -461,6 +517,9 @@ func birdsync(eBirdCSVFilename string, ebirdClient ebirdClient, inatUserID strin
 					var tooLarge *inat.MediaTooLargeError
 					if !errors.As(err, &tooLarge) {
 						usedRequests++
+						if acct != nil {
+							acct.recordRequests(nowFunc().UTC(), 1)
+						}
 					}
 					// The download is a temp file that belongs to us now, so
 					// remove it whether or not the upload worked. Syncing an
@@ -483,8 +542,10 @@ func birdsync(eBirdCSVFilename string, ebirdClient ebirdClient, inatUserID strin
 					}
 					if isPhoto {
 						s.uploadedPhotos++
+						addedPhotos++
 					} else {
 						s.uploadedSounds++
+						addedSounds++
 					}
 					uploaded.Add(id)
 				}
@@ -509,8 +570,14 @@ func birdsync(eBirdCSVFilename string, ebirdClient ebirdClient, inatUserID strin
 			} else {
 				err = inatClient.UpdateObservation(obs)
 				usedRequests++
+				if acct != nil {
+					acct.recordRequests(nowFunc().UTC(), 1)
+				}
 				if err != nil {
 					log.Fatalf("UpdateObservation %s: %v", obs.URLWithSpecies(), err)
+				}
+				if acct != nil {
+					acct.recordUpdatedObservation(obs.UUID, obs.Description, addedPhotos, addedSounds)
 				}
 			}
 			s.updatedObservations++
@@ -680,12 +747,23 @@ func birdsync(eBirdCSVFilename string, ebirdClient ebirdClient, inatUserID strin
 				key, assetIDs.Len())
 			err = inatClient.CreateObservation(obs)
 			usedRequests++
+			if acct != nil {
+				acct.recordRequests(nowFunc().UTC(), 1)
+			}
 			if err != nil {
 				log.Fatalf("CreateObservation: %v", err)
+			}
+			if acct != nil {
+				acct.recordCreatedObservation(obs, observed.Format(time.DateOnly), nowFunc().UTC())
 			}
 		}
 		s.createdObservations++
 		addMedia(obs.UUID, obs.Description, assetIDs)
+	}
+	if !dryRun && statePath != "" && st != nil {
+		if err := saveState(statePath, st); err != nil {
+			log.Printf("Warning: couldn't save state file %s: %v", statePath, err)
+		}
 	}
 	return s
 }

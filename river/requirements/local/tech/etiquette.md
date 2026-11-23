@@ -131,16 +131,20 @@ Value: `9000/24h`
 
 Goals: [goals.communityNotBurdened](../../../goals/goals.md#communitynotburdened), [goals.accountsStaySafe](../../../goals/goals.md#accountsstaysafe)
 
-`inat.Client` refuses requests past a per-client cap of 9,000, and `birdsync()` estimates prior
-24-hour write requests from the `created_at` timestamps and media of the downloaded observations,
-adds the download and write requests of the current run, and stops cleanly at an observation
-boundary before exceeding 9,000 requests in 24 hours, logging instructions to re-run in 24 hours.
+`inat.Client` refuses requests past a per-client cap of 9,000, and `birdsync()` tracks prior
+24-hour requests using the greater of the timestamps recorded in the local state cache
+([decisions.localStateCache](../../decisions/decisions.md#localstatecache)) and the stateless
+estimate from downloaded observations' `created_at` timestamps and media, adds the download
+and write requests of the current run, and stops cleanly at an observation boundary before
+exceeding 9,000 requests in 24 hours, logging instructions to re-run in 24 hours.
 
 *Rationale: [inatapi.requestRate](../../imported/inaturalist.org/inatapi/inatapi.md#requestrate)
 asks for "around 10k API requests a day". Setting the budget at 9,000 leaves a 10% margin for
-manual browsing or uncounted calls. Estimating prior 24-hour writes from the observation download
-birdsync already performs ([decisions.dailyRequestBudget](../../decisions/decisions.md#dailyrequestbudget))
-tracks usage across back-to-back runs with zero extra API requests and no state file on disk.
-Stopping before starting an observation rather than mid-observation avoids leaving an observation
-created without its media, and [product.idempotentRerun](../product/identity.md#idempotentrerun)
-lets the next run continue where this one stopped.*
+manual browsing or uncounted calls. Combining exact cached request timestamps with the
+`created_at` estimate ([decisions.dailyRequestBudget](../../decisions/decisions.md#dailyrequestbudget),
+[decisions.localStateCache](../../decisions/decisions.md#localstatecache)) counts updates to
+older observations and download pages when the cache is enabled while remaining accurate when
+the cache is disabled or fresh. Stopping before starting an observation rather than
+mid-observation avoids leaving an observation created without its media, and
+[product.idempotentRerun](../product/identity.md#idempotentrerun) lets the next run continue
+where this one stopped.*
